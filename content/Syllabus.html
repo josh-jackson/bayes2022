@@ -1,0 +1,156 @@
+---
+title: "Applied Bayesian Statistics, Psych 5167"
+author: 
+date: Spring 2022
+output:
+  html_document: default
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p><br></p>
+<p><strong>Instructor</strong>: Joshua Jackson<br />
+<strong>Office</strong>: Spare Bedroom<br />
+<strong>Office hours</strong>: By appointment</p>
+<p><br></p>
+<div id="course-description" class="section level4">
+<h4>Course Description</h4>
+<p>Bayesian parameter estimation and hypothesis testing offer a useful alternative to the classic frequentist paradigm within psychological science. This class will cover the foundations of Bayesian inference and hypothesis testing with the primary emphasis on fitting multiple regression and multi-level models common within psychology. A variety of response distributions will be discussed: Gaussian, binary and count, ordinal, survival, probability, and zero-inflated models, among others. Topics include: model calibration, regularization, prior and posterior predictions, Bayes factors, missing data, Bayesian power, cross-validation, Bayesian meta-analysis, distributional models, and multivariate response models.</p>
+<p><br></p>
+</div>
+<div id="class-textbook" class="section level4">
+<h4>Class textbook</h4>
+<p>-McElreath, R. (2020). Statistical Rethinking: A Bayesian Course with Examples in R. SECOND EDITION CRC Press.</p>
+<p>Note that McElreath also has lectures from his book posted on his youtube. They are excellent. While some bits of the materialcovered in class are covered in his lectures I believe the content of this course and his course compliment one another. His focus is making the content digestible, viewing the broader picture, and delving into philosophy of science more so. We will focus more on the applied aspects, using specific programs and making sure we are comfortable “doing” the work rather than just understanding it at the high level.</p>
+<p>Please check them out, especially if you are lost:
+<a href="https://tinyurl.com/yckrrzjy" class="uri">https://tinyurl.com/yckrrzjy</a></p>
+<p><em>Recommended text (not required)</em></p>
+<p>-Kruschke, J. (2015). Doing Bayesian Data Analysis. SECOND EDITION.</p>
+<p>(This is more of a traditional stats textbook from a psychologist. It is less detailed but more comprehensive. However, some practices are no longer standard and misses some of the very important details).</p>
+<ul>
+<li>Farrell, S., &amp; Lewandowsky, S. (2018). Computational modeling of cognition and behavior. Cambridge University Press</li>
+</ul>
+<p>(Very good for those who predominantly do cognitive models/behavioral tasks. These are more advanced models that we will touch on at the end of the semester, however, go ahead and read this earlier if you are inclined)</p>
+<ul>
+<li>Gelman, A., Hill, J., &amp; Vehtari, A. (2020). Regression and other stories. Cambridge University Press.</li>
+</ul>
+<p>(A practical compendium of how to approach GLMs.)</p>
+<ul>
+<li>Lee, M. D., &amp; Wagenmakers, E. J. (2014). Bayesian cognitive modeling: A practical course. Cambridge university press</li>
+</ul>
+<p>(Terse but technically correct intro of Bayesian stats, best for completing your collection of Bayesian books by psychologists)</p>
+<p><br></p>
+</div>
+<div id="grading" class="section level4">
+<h4>Grading</h4>
+<p>Grades consist of two components: weekly homework and a takehome project. Each will count for half of your grade.</p>
+<p>Weekly homework consists of thought questions, as well as computations. Homework may be worked on together in groups. However, short answer portions should be in your own words. Each homework is graded on a scale of 1-10.</p>
+<p>You will also have random “quizzes,” which are not graded but are submitted. These serves as progress checks for both me and you.</p>
+<p>The takehome project is a series of models and visualizations using your own data. We (you and Josh) will work together to go over what your data are, and what sort of analyses, checks and visualizations you should do. The sooner in the semester you have these conversations with me, the better. By week 6 you need to have a plan approved by me.</p>
+<p><strong>Grades</strong>:<br />
+100% - A+<br />
+99-92 - A<br />
+90-91 - A-<br />
+89 - B+<br />
+88-81 - B<br />
+80 - B-<br />
+79-70 - C<br />
+69-60 - D<br />
+&lt;60 - F</p>
+<p><br></p>
+</div>
+<div id="class-procedure" class="section level4">
+<h4>Class procedure</h4>
+<p>The class will be a mix of in person and recorded lectures. Synchronous and Asynchronous are the latest buzz words. The mix will hopefully be beneficial. On one hand, you can be more flexible with your schedule – something that everyone needs during these times. On the other hand, having in person sessions facilitates discussion and QnA, an important component of learning the material. The exact breakdown will differ from week to week. However, after the first week, we will likely have Thursday’s be the day that will minimize in-person contact. Thursday instead will be for viewing lectures and for doing the weekly homework.</p>
+</div>
+<div id="schedule" class="section level4">
+<h4>Schedule</h4>
+<p>Note that dates and readings are tentative. Topics will likely shift; all changes will be updated on the homepage, not necessarily in the syllabus below.</p>
+<table>
+<colgroup>
+<col width="10%" />
+<col width="62%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Week</th>
+<th>Topic</th>
+<th>Readings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Probability, counting, and learning via Bayes</td>
+<td>SR 1 &amp; 2</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Model building, sampling, evaluation with brms</td>
+<td>SR 3</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Linear Models (t-test, Regression)</td>
+<td>SR 4</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Basic Linear Models (continued)</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Markov Chain Monte Carlo Estimation (MCMC)</td>
+<td>SR 9</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Multiple regression</td>
+<td>SR 5</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Interactions</td>
+<td>SR 8</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Information, NHST and model fit</td>
+<td>SR 7</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Generalized Linear Models</td>
+<td>SR 10 - 12</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Multilevel Models</td>
+<td>SR 13 &amp; 14</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Multilevel Models</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Multivariate and Distributional Models</td>
+<td>Williams et al 2021 psych methods</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Cognitive IRT models</td>
+<td>F&amp;L 14, Burkner, 2019</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Grabbag: Mediation Models, missing Data, power</td>
+<td>SR 15</td>
+</tr>
+</tbody>
+</table>
+</div>

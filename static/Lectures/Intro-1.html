@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>intro</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Josh Jackson" />
+    <script src="Intro-1_files/header-attrs-2.11/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+&lt;style type="text/css"&gt;
+.remark-slide-content {
+    font-size: 30px;
+    padding: 1em 4em 1em 4em;
+}
+
+.small .remark-code { 
+  font-size: 80% !important;
+}
+.tiny .remark-code {
+  font-size: 65% !important;
+}
+&lt;/style&gt;
+
+
+## Goals for the week
+
+Probability, counting, and learning via Bayes
+
+---
+## Goals for the semester
+
+1. Take what you know (regression) and do it Bayesian (and more!)
+2. Know the advantages of Bayesian data analysis
+3. Rethink your approach to statistical inference
+
+---
+## "Frequentist" analysis
+
+$$ Y_i = \beta_0 + \beta_1 X + \epsilon_i     $$
+
+- OLS, sampling distributions around zero, p-values, large samples so as to invoke CLT
+
+
+
+---
+## Why Bayes? 
+1. Intuitive concept of probability 
+2. Estimation flexibility (did you care about OLS -&gt; ML?)
+3. More explicit in terms of assumptions
+4. Generative model building ie represents a random process that could generate a new dataset
+5. Better for small samples/lots of parameters
+6. Better at making predictions for novel events
+7. Some tasks are simpler in Bayesian Frameworks (regularization, error-corrections, contrasts, robust analysis, calculating error bars/bands)  
+...  
+8. Incorporate prior intuitions
+
+---
+## What is Bayes?
+
+
+---
+## A working mental model
+
+What is Bayesian regression? 
+1. "Normal" regression with a different algorithm. 
+2. Priors that differ from "regular" regression, which are uniform
+3. Results that represent a distribution rather than a point estimate and some uncertainty. 
+
+
+---
+##  "Normal" regression with a different algorithm. 
+
+You typically use OLS to get estimates of beta. Maybe WLS or maximum likelihood. With bayes we will use counting. 
+
+Counting for simple tasks is easy but it doesn't scale well. For complex tasks we will "guess" at our counts, much in the same way that maximum likelihood does (ie it isn't analytic). But the logic of counting is the same. 
+
+---
+## "Bayesian analysis is just counting"
+
+- Counting is just a simplified way of understanding probability, which is central to all stats. 
+
+- What is the proportion of blue (vs white) marbles in a bag? The proportion of blue marbles can be thought of as a parameter we want to estimate, much like we want to estimate beta. 
+
+- If there are only four marbles in the bag there are 5 possible combinations of marbles. So my parameter can take 5 different values. We can collect some data and ask: How likely are each my possible parameters? 
+
+---
+## What are our possibilities?
+
+![](Intro-1_files/figure-html/unnamed-chunk-1-1.png)&lt;!-- --&gt;
+
+---
+### Bayesian analysis is just counting
+Marbles^draws = number of possibilities. 1 data point, there are 4 options. 2: 16;  3: 64. 
+
+We then go out and collect data. Say Blue, White, Blue. If you got this, what would you say about your parameter estimate, ie how many blues are in the bag? 2/4? 3/4? 1/4?
+
+The way a Bayesian counts is they to count ALL ways that the data *could* happen. To assist with this we can make a conjecture or a guess about the world. Based on the previous graph, we can see that we could only have blue white blue for 3/5 possibilities. 
+
+Assuming that the true bag contains only 1 blue (1/4 blue), how likely is it to give us Blue, White, Blue?
+
+---
+## Bayesian analysis is just counting
+
+.pull-left[
+.small[
+![](Intro-1_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+]]
+
+.pull-right[
+These are the 64 ways that could come out of a 1 blue bag (number of marbles ^ number of draws). We make assumptions (1 blue in a bag) and then probability gives us  a way to count them.   
+
+How many of these give us our Blue, White, Blue? 
+
+]
+
+--- 
+## Bayesian analysis is just counting
+.pull-left[
+.small[
+![](Intro-1_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+]]
+
+.pull-right[
+We see that 3 pathways could give us our data. Is that good, bad? what do we compare it to? 
+]
+
+---
+## Bayesian analysis is just counting
+
+.pull-left[ We need to compare to other possible states of the world. Namely, what if it was 1/2 blue or 3/4 blue? (0 and all blue are not possible based on our data) ]
+
+.pull-right[
+![](Intro-1_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+]
+
+---
+## Bayesian analysis is just counting
+There are 3, 9 and 8 ways. This is all the ways the marbles could appear based on our assumptions about the model. 
+
+So what can we do with this? Looks like the bag as 3 or 2 blue marbles, but it is close. It still could be 1 blue marble. Not completely unthinkable. What about if we collected more data? 
+
+---
+### Collecting more data
+Collect 1 more blue (bwbb). Counting is just multiplication. 
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; d_1 &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; d_2 &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; d_3 &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; d_4 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; ways to produce &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; previous counts &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; new count &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 16 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; w &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 27 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+Ways to produce is how many different blue marbles we could pull. New counts serve as our new data, created through multiplication.
+
+---
+### Counts as probabilities
+"We don't know what caused the data, potential causes that may produce the data in more ways are more plausible/credible."
+
+Counts are difficult to work with because once you collect more data you get more possibilities. "Plausibilities" or "credibilities" can be defined as taking the number of ways p can produce the data divided by the sum of the products so the plausibility adds up to 1.
+
+
+```
+## # A tibble: 5 × 7
+##   d_1   d_2   d_3   d_4       p `ways to produce data` plausibility
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;                  &lt;dbl&gt;        &lt;dbl&gt;
+## 1 w     w     w     w      0                         0       0     
+## 2 b     w     w     w      0.25                      3       0.0652
+## 3 b     b     w     w      0.5                      16       0.348 
+## 4 b     b     b     w      0.75                     27       0.587 
+## 5 b     b     b     b      1                         0       0
+```
+
+---
+## Bayesian analysis is just counting
+
+The p here is a `parameter` that we want to estimate. Similar to regression equation bs. Note we are interested in plausibility of all parameters, not to estimate a single best one. 
+
+The `likelihood` is the relative number of ways to produce the data 
+
+The `posterior probability` is the credibilities/plausibility 
+
+---
+## you've seen this before
+.pull-left[
+data = bwbb. 3 blues out of 4 trials. 
+
+
+```r
+p &lt;- seq(0.01, 0.99, by = 0.01)
+loglike &lt;- dbinom(3, size = 4, prob = p)
+plot(loglike)
+```
+]
+
+.pull-right[
+![](Intro-1_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+]
+
+---
+## Bayesian analysis is just counting
+
+- Bayesian analysis counts all ways that something can happen (according to assumptions/model). Assumptions with more ways that are consistent with data are more plausible. 
+
+- This method is not demonstrably different than standard approaches. Standard likelihood approaches uses the values that are most consistent with the data. An explain it me like I'm five way for ML is to try out all possible numbers and tell you which ones are most likely.  
+
+- Where Bayes differs, is 1) we will focus beyond just a "best estimate" and 2) we will incorporate prior intuition. 
+
+---
+## A working mental model
+
+What is Bayesian regression? 
+1. "Normal" regression with a different algorithm. 
+2. Priors that differ from "regular" regression, which are uniform
+3. Results that represent a distribution rather than a point estimate and some uncertainty. 
+
+---
+##  Are frequentists more objective? 
+
+What prior information is incorporated into frequentist regression?
+None. 
+
+But what do we mean by that? Graphically, this is a uniform distribution where all values are equally likely. 
+
+---
+## Priors
+Priors are a way to incorporate your beliefs into the model. Priors will be discussed in the form of a probability distribution. 
+
+Think about this as initial possibilities in a murder mystery. The prior is another way of saying how likely someone is for the murder prior to collecting any clues (data). When we start collecting data these clues are interpreted through our original intuitions (priors). If I find that the murder weapon is a candlestick, I'll look more closely at the candlestick maker and less at the baker who has an irrational fear of candlesticks. 
+
+---
+### "Bayesian inference is reallocation of plausibility"
+
+How often do we have these prior intuitions or data? Often!!  
+
+Above we assumed all parameter values, p, were equally likely. But we have previous information all the time in terms of plausible effect sizes and previous research. 
+
+Some possible prior  `distributions`
+
+---
+![](Intro-1_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+### Frequentist prior
+
+![](Intro-1_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+## Bayesian inference is reallocation of plausibility 
+
+.pull-left[
+These prior distributions are then going to be incorporated with data to give us a posterior distribution (aka results). What does a posterior distribution (results) look like? 
+
+]
+
+.pull-right[
+
+![](Intro-1_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+]
+
+---
+## A working mental model summary
+
+What is Bayesian regression? 
+1. "Normal" regression with a different algorithm. 
+2. Priors that incorporate information via a distribution 
+3. Results that represent a distribution rather than a point estimate and some uncertainty. 
+
+
+---
+## Distributions and model descriptions
+Because we are going to be working with a lot of distributions, priors, and different analytic machinery we need to have a new way to describe out models. Much like y = b0 + b1X but more elaborate.  
+
+1. Describe how our DV is related to the data via a likelihood distribution. 
+
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)`)
+
+Here we say that our DGP is normal, with two parameters. The mean differs among i people. The first step will always be describing how DGP for our DV.  
+
+---
+Many possibilities
+$$ y_{i} \sim \operatorname{Bernoulli}(\theta_i) $$
+
+$$ y_{i} \sim \operatorname{Binomial}(1, p_i) $$
+$$ y_i \sim \text{Poisson}(\lambda_i) $$
+
+$$ y_i  \sim \operatorname{BetaBinomial}(n_i, \bar p_i, \phi) $$
+$$ y_i  \sim \operatorname{ZIPoisson}({p_i}, {\lambda_i})\\
+ $$
+$$ y_i \sim \operatorname{Categorical} (\mathbf p) \\ $$ where P is a vector of probabilities (this is for ordered logits like in IRT or when you have likert rating scales as your IV)
+
+
+---
+## Design the model
+
+.pull-left[
+2. We can predict or decompose those parameters through other variables. For example, we want to understand why i people differ on the mean of the DV.  
+
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
+
+`\(\mu_i\)` = `\(\beta\)` X `\(X_i\)`
+]
+
+.pull-right[
+At this point, no different that a normal regression you are familiar with, just a different way of writing it. 
+
+You also have a parameter that is estimated called sigma, which in R output is hidden under Residual Standard Error. This way is more explicit about 1. your data generating process and 2. what parameters you are modeling. 
+]
+
+---
+## Design the model
+
+.pull-left[
+3. We will use this same nomenclature to describe our priors on each of the parameters we are modeling. For example, we are estimating `\(\beta\)` and `\(\sigma\)`, and thus we need two priors. 
+]
+
+.pull-right[
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
+`\(\mu_i\)` = `\(\beta\)` X `\(X_i\)`
+
+`\(\beta\)` ~ Normal(0, 5)  
+`\(\sigma\)` ~ HalfCauchy(0,1)
+]
+
+---
+## 3 components of bayesian regression models
+1. priors
+2. likelihood
+3. posterior
+
+---
+## Priors
+.pull-left[
+In the above example, we have a prior of `\(\beta\)` ~ Normal(0, 5), which provides us a general idea about what we would expect the regression to be BEFORE WE COLLECTED DATA. 
+]
+
+.pull-right[
+![](Intro-1_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+]
+
+---
+## Priors
+![](Intro-1_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+---
+###  Thinking in probability distributions
+ 
+Gaussian/normal (mean and SD, also known as location and scale). Binomial, Bernouli. Student too. 
+
+Negative binomial, Poisson and geometric for counts
+
+Exponential, lognormal, gamma, weibull for survival models
+
+LKJ for correlations
+
+Cumulative for categorical
+
+Exgaussian, weiner for response time. 
+
+---
+## Priors
+We will often choose priors that are called `regularizing` or `weakly informative`. The purpose of these priors is to make sure that we are not over fitting our models. We want to be both conservative as well as put in prior feelings of the model. 
+
+This approach can be contrasted with a view that makes "guesses" about the effects rather than a weakly informative prior. We will encounter some uses for this later in the semester, but at the moment this type of prior is not considered as cooth as the regularizing/weakly informative priors. 
+
+When we have enough data the prior will be inconsequential. So we wont worry about specifics until later in the semester
+
+---
+## Likelihood
+We will use the likelihood along with the prior to get our posterior. This formula is exactly what we did in our counting example above. 
+
+`$$p(\theta | data) \propto \frac{p(data | \theta) \times p(\theta )}{p(data)}$$`
+P(θ|data) is the posterior probability. 
+
+P(θ) is the prior probability, which describes how sure we were that theta was true, before we observed the data.
+
+The likelihood of `\(\theta\)` = p(data| `\(\theta\)` ).  
+
+
+---
+
+Mathematical function (often) to identify the probability of different parameters. Technically it is the distribution of the likelihood of various hypothesis. p(data | `\(\theta\)` )
+
+You've seen this before! Maximum likelihood estimation for frequentist SEM or MLM is the same. 
+
+Above we specified how we are going to compute the likelihood via: 
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )
+
+---
+## Likelihood
+
+.pull-left[
+Binomial distribution. Given number of trials (N) and the probability of being correct (p), you could calculate the probability of different number of successes (k).
+
+`$$p(k|N,p) =   {{N}\choose{k}} \cdot p^kq^{N-k}$$`
+]
+
+.pull-right[
+After we collect some data, we can figure out the probability of getting 3 successes out of 10 trials, assuming a probability of .5. 
+
+```r
+dbinom(3, size = 10, prob = .5)
+```
+
+```
+## [1] 0.1171875
+```
+]
+
+---
+## Likelihood
+.pull-left[
+In intro stats you used this to asked whether a coin appeared fair. Also calculated the probability of getting 3 or less, as more extreme is what we were interested in. 
+
+
+```r
+pbinom(3, size = 10, prob = .5)
+```
+
+```
+## [1] 0.171875
+```
+]
+
+.pull-right[
+But what we typically want when figuring out a parameter is not one specific parameter (ie is the fair or not) but what is the MOST likely parameter -- AND what is the probability of each possibility parameter. That is what the likelihood tells us. L( `\(\theta\)` ) = p(data| `\(\theta\)` ) The probability of the data that you actually got, assuming a particular theta is true.
+]
+
+---
+.pull-left[
+
+```r
+ggplot(tibble(x = c(0, 1)),  aes(x = x)) + 
+  stat_function(fun = dbinom, args = list(x = 3, size = 10)) + labs(x = expression(theta), 
+       y = "likelihood")
+```
+
+The likelihood of `\(\theta\)` = p(data| `\(\theta\)` ).
+For conditional probabilities, theta (your hypothesis) is treated as a given, and the data are free to vary. For likelihood, the data are treated as a given, and value of theta varies.
+]
+
+.pull-right[
+ 
+
+![](Intro-1_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+
+]
+
+---
+### Maximum Likelihood estimation
+Maximum likelihood is similar to  the above binomial example where there is a p(data| `\(\theta\)` ). However, in frequentist theta does not vary, it is fixed. 
+
+But what is typically reported with ML? A mean estimate and an estimate of standard error, not a distribution. Moreover, there is an assumed normal distribution of these likelihoods. This is why robust ML is a thing. 
+
+When the prior is flat, our likelihood ends up becoming the posterior distribution and thus is going to be equivalent to the ML estimate. 
+
+---
+## Posterior
+The `posterior distribution` is the distribution of our belief about the parameter values after taking into account the data and one's priors. p( `\(\theta\)` |data). 
+
+In terms of our murder mystery example, it is an updated prior distribution. That is, the only difference between the prior and the posterior is that you collected data. If you collect data and have a posterior and then want to collect more data, your posterior can then become the prior. Repeat this process an infinite number of possible times. This process is called `Bayesian Updating`.
+
+---
+## Posterior
+.pull-left[
+
+
+`$$p(\theta | data) \propto \frac{p(data | \theta) \times p(\theta )}{p(data)}$$`
+P(θ|data) is the posterior probability. It describes how confident we are that hypothesis H is true, given the observed data. 
+
+ P(θ) is the prior probability, which describes how sure we were that theta was true, before we observed the data.
+ 
+ ]
+
+.pull-right[
+
+
+P(data|θ) is the likelihood. If you were to assume that theta is true, this is the probability that you would have observed data.
+
+P(data) is the average or marginal likelihood, sometimes called "the evidence". The main purpose of this is to standardize the posterior so it integrates to 1. 
+]
+
+---
+## Priors influencing Posterior
+
+
+![](Intro-1_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+
+---
+### Building intuition
+ 
+1. The probability of any parameter in the posterior is found by counting, but the counting depends on the prior (previous counts or information) as well as new data collected. 
+
+2. If your prior says an option is impossible (Eg below .5, second row) your posterior will incorporate that information, just as if you were a detective and you already ruled out a suspect.  
+
+3. When the prior is uniform (ie flat) the likelihood is equivalent to the posterior. 
+
+---
+## Sample size influences
+
+.pull-left[
+The relative influence of the prior and the likelihood depends on 1) the sample size of the data collected and 2) the extremity of the prior (think peaked vs very flat)
+
+]
+
+.pull-right[
+![](Intro-1_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+]
+
+---
+### Posterior = sampling distribution? 
+This is right and wrong. It is wrong in the sense that a sampling distribution is "in the long run". With Bayesian, this is the logical result of inputs (along with choice of likelihood and estimation). 
+
+The similarity is that with more data you have more accurate inferences, in so much as the precision of your inference is closer. With larger sample size (all else being the same) you have a skinnier posterior distribution. 
+
+---
+### Grid Estimation
+
+.pull-left[
+How do we "turn the Bayesian crank" and find the posterior?
+
+1. Define the grid you want to estimate. a) the range of parameters you want and b) the number of values. Remember, Bayesian analysis counts all ways that something can happen (according to assumptions/model -- 1 blue vs 2 blues in the bag). Assumptions with more ways that are consistent with data are more plausible. 
+
+
+]
+
+.pull-right[
+
+
+```r
+library(tidyverse)
+grid &lt;-tibble(p_grid= seq(from = 0, to = 1, length.out = 20), prior = 1) 
+grid
+```
+
+
+```
+## # A tibble: 20 × 2
+##    p_grid prior
+##     &lt;dbl&gt; &lt;dbl&gt;
+##  1 0          1
+##  2 0.0526     1
+##  3 0.105      1
+##  4 0.158      1
+##  5 0.211      1
+##  6 0.263      1
+##  7 0.316      1
+##  8 0.368      1
+##  9 0.421      1
+## 10 0.474      1
+## 11 0.526      1
+## 12 0.579      1
+## 13 0.632      1
+## 14 0.684      1
+## 15 0.737      1
+## 16 0.789      1
+## 17 0.842      1
+## 18 0.895      1
+## 19 0.947      1
+## 20 1          1
+```
+]
+
+---
+## Grid Estimation
+.pull-left[
+
+2. Define the prior. Lets use 1 (everything is equal) to begin
+
+'3. Compute the likelihood at each parameter value you want to estimate. 
+
+
+```r
+grid &lt;- grid %&gt;% 
+ mutate(likelihood  = dbinom(6, size = 9, prob = p_grid)) 
+```
+]
+
+.pull-right[
+
+```
+## # A tibble: 20 × 3
+##    p_grid prior likelihood
+##     &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;
+##  1 0          1 0         
+##  2 0.0526     1 0.00000152
+##  3 0.105      1 0.0000819 
+##  4 0.158      1 0.000777  
+##  5 0.211      1 0.00360   
+##  6 0.263      1 0.0112    
+##  7 0.316      1 0.0267    
+##  8 0.368      1 0.0529    
+##  9 0.421      1 0.0908    
+## 10 0.474      1 0.138     
+## 11 0.526      1 0.190     
+## 12 0.579      1 0.236     
+## 13 0.632      1 0.267     
+## 14 0.684      1 0.271     
+## 15 0.737      1 0.245     
+## 16 0.789      1 0.190     
+## 17 0.842      1 0.118     
+## 18 0.895      1 0.0503    
+## 19 0.947      1 0.00885   
+## 20 1          1 0
+```
+
+]
+
+---
+## Grid Estimation
+.pull-left[
+'4. Now that we have the likelihood, we can multiply it by the prior to get the unstandardized posterior
+
+```r
+grid &lt;- grid %&gt;% 
+mutate(unstd_posterior = likelihood * prior) 
+
+grid
+```
+]
+
+.pull-right[
+
+```
+## # A tibble: 20 × 4
+##    p_grid prior likelihood unstd_posterior
+##     &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;           &lt;dbl&gt;
+##  1 0          1 0               0         
+##  2 0.0526     1 0.00000152      0.00000152
+##  3 0.105      1 0.0000819       0.0000819 
+##  4 0.158      1 0.000777        0.000777  
+##  5 0.211      1 0.00360         0.00360   
+##  6 0.263      1 0.0112          0.0112    
+##  7 0.316      1 0.0267          0.0267    
+##  8 0.368      1 0.0529          0.0529    
+##  9 0.421      1 0.0908          0.0908    
+## 10 0.474      1 0.138           0.138     
+## 11 0.526      1 0.190           0.190     
+## 12 0.579      1 0.236           0.236     
+## 13 0.632      1 0.267           0.267     
+## 14 0.684      1 0.271           0.271     
+## 15 0.737      1 0.245           0.245     
+## 16 0.789      1 0.190           0.190     
+## 17 0.842      1 0.118           0.118     
+## 18 0.895      1 0.0503          0.0503    
+## 19 0.947      1 0.00885         0.00885   
+## 20 1          1 0               0
+```
+]
+
+---
+## Grid Estimation
+.pull-left[
+'5. we standardized the posterior by dividing by sum of all values. 
+
+```r
+grid &lt;- grid %&gt;% 
+mutate(posterior = unstd_posterior / sum(unstd_posterior))
+```
+
+Now it sums up to 1
+]
+
+.pull-right[
+
+```
+## # A tibble: 20 × 2
+##    unstd_posterior   posterior
+##              &lt;dbl&gt;       &lt;dbl&gt;
+##  1      0          0          
+##  2      0.00000152 0.000000799
+##  3      0.0000819  0.0000431  
+##  4      0.000777   0.000409   
+##  5      0.00360    0.00189    
+##  6      0.0112     0.00587    
+##  7      0.0267     0.0140     
+##  8      0.0529     0.0279     
+##  9      0.0908     0.0478     
+## 10      0.138      0.0728     
+## 11      0.190      0.0999     
+## 12      0.236      0.124      
+## 13      0.267      0.140      
+## 14      0.271      0.143      
+## 15      0.245      0.129      
+## 16      0.190      0.0999     
+## 17      0.118      0.0621     
+## 18      0.0503     0.0265     
+## 19      0.00885    0.00466    
+## 20      0          0
+```
+]
+
+---
+## Grid Estimation
+![](Intro-1_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+
+---
+### smaller grid
+![](Intro-1_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+
+---
+### add a (peaked) prior
+
+.pull-left[
+
+```r
+peaked &lt;- tibble(p_grid = seq(from = 0, to = 1, length.out = 20),
+       prior = c(seq(from = 0, to = 1, length.out = 10), seq(from = 0.998, to = 0, length.out = 10)))
+```
+]
+
+.pull-right[
+
+```
+## # A tibble: 20 × 2
+##    p_grid prior
+##     &lt;dbl&gt; &lt;dbl&gt;
+##  1 0      0    
+##  2 0.0526 0.111
+##  3 0.105  0.222
+##  4 0.158  0.333
+##  5 0.211  0.444
+##  6 0.263  0.556
+##  7 0.316  0.667
+##  8 0.368  0.778
+##  9 0.421  0.889
+## 10 0.474  1    
+## 11 0.526  0.998
+## 12 0.579  0.887
+## 13 0.632  0.776
+## 14 0.684  0.665
+## 15 0.737  0.554
+## 16 0.789  0.444
+## 17 0.842  0.333
+## 18 0.895  0.222
+## 19 0.947  0.111
+## 20 1      0
+```
+]
+
+---
+### add a (peaked) prior
+![](Intro-1_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+
+.pull-right[
+We will see other types of estimation in the next few weeks. We cannot rely on grid approximation because more complex models will require too large of grids to efficiently compute. For example, if we use 100 grid points for a regression with three predictors (not that large of a model) we would need to do &gt; 1,000,000 calculations. 
+]
+
+---
+## Model evaluation
+ 
+1. Design the model
+2. Condition on the model with data
+3. Evaluate the model
+4. Rinse and Repeat
+
+After we fit the model we then make sense of it the same way we usually do with frequentist stats...plus more
+
+---
+## Model evaluation
+
+How do we describe the posterior?  
+1. Maximum A Posterior (MAP)
+2. Mean estimate (with SD and CI)
+3. HPDI/HDI
+4. Posterior Predictive Checks
+
+MAP is equivalent to maximum likelihood with uniform prior
+
+Use the posterior mean, unless the posterior distribution is clearly skewed where the posterior median would be more appropriate
+
+---
+## Credible Intervals (CIs)
+
+Will use SD as metric of dispersion. Equivalent in thought to the standard error in frequentist stats, as standard error = standard deviation of the sampling distribution. 
+
+Much like taking the estimate plus or minus a number (eg 1.96) multiplied by the SE, we will calculate a credible interval. Thought of as range of parameter values compatible with the model and data
+
+Differs in interpretation: 95% probability for the true value to be in the credible interval, without any reference to samples that could have been observed 
+
+---
+## High Posterior Density Interval (HPDI)
+
+![](Intro-1_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+
+
+---
+### Posterior Predictive Distribution
+Predictions help us evaluate models. Remember R^2 and RSE/SEE?  
+
+When we make predictions there will be error. Where does this error come from? 1) Our inability to know the "actual" value of some parameter theta. 2) Our variability from person-to-person. 
+
+"Since there is uncertainty about theta, there is uncertainty about everything that depends upon it."
+
+ Posterior predictive distribution: For each possible value of theta, there is an implied distribution of outcomes. Compute the sampling distribution of outcomes at each value of theta. Average all of these prediction distributions together, using the posterior probabilities of each value of theta. 
+
+---
+## PP Checks
+.pull-left[
+Let's evaluate our model. How do we do that? Binomial where we have 6 success in 9 trials]
+
+.pull-right[
+![](Intro-1_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+]
+
+---
+## PP Checks
+
+.pull-left[
+Now lets assume each of these parameter values are true. What would we expect? But we know they are not true; we know .1 while possible is very unlikely. So we need to weight that evidence. 
+]
+
+.pull-right[
+![](Intro-1_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
+]
+
+---
+## PP Checks
+
+.pull-left[
+![](Intro-1_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter. For normal regressions when we make predictions (and for R2/SEE) we use the mean estimate. But of course, that mean estimate is merely our best guess. ]
+
+---
+## PP Checks
+How do you interpret the line that Yhat gives you? 
+
+$$ \hat{Y}_i = \beta_0 + \beta_1 X     $$
+Another standard regression predictions including error in our model, captured by sigma. 
+
+$$ \hat{Y}_i = \beta_0 + \beta_1 X + \epsilon_i     $$
+
+The first method does not incorporate any error at all. The second incorporates error at the individual level. However, both assume Beta is true and does not incorporate what we know about sampling variability in our estimate of beta. PP checks do.   
+
+---
+## Terminological Summary
+
+We went over the basics. Be sure you can describe what is meant by: 
+
+Prior, Likelihood, Posterior. 
+Grid estimation, Credible Interval, Highest Posterior Density Interval, MAP, Posterior Predictive Distribution
+
+
+
+
+
+
+
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

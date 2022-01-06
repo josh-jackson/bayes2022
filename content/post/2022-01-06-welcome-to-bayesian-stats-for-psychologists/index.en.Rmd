@@ -1,0 +1,20 @@
+---
+title: 'welcome to bayesian stats for psychologists! '
+author: josh
+date: '2022-01-06'
+slug: welcome-to-bayesian-stats-for-psychologists
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-01-06T13:51:12-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+All class related updates will appear here on the landing page such as homework postings, lecture updates, etcetera. Of course you can click on the headings to take you to each of those, but this will have the updates in one tidy place for you. 

@@ -1,0 +1,44 @@
+---
+title: "Lectures"
+author: "Josh Jackson"
+date: "1/15/2022"
+output: html_document
+---
+
+
+## 10. Cognitive and IRT models
+[cog and irt](/Lectures/irt.html)
+
+## 9. Multivariate and distributional models
+[Multivariate and distributional](/Lectures/multi.html)
+
+## 8. MLM
+[MLM](/Lectures/mlm-8.html)
+
+## 7. GLM
+[GLM](/Lectures/glm-7.html)
+
+## 6. Information, NHST and model fit
+[Information](/Lectures/info-6.html)
+
+## 5. Multiple Regression
+[Multiple Regression](/Lectures/MR-5.html)
+
+## 4. MCMC go brrrr
+[MCMC](/Lectures/MCMC-4.html)
+
+## 3. Advanced Regression 
+[Regression](/Lectures/week-3.html)
+
+## 2. Regression basics
+[Regression intro](/Lectures/week-2.html)
+
+## 1. INTRO
+[Introduction](/Lectures/Intro-1.html)
+
+
+
+
+
+
+
