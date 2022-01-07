@@ -1,0 +1,21 @@
+---
+title: First Lecture Slides
+author: josh
+date: '2022-01-06'
+slug: lecture-1
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-01-06T18:09:07-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+https://bayes2022.netlify.app/lectures/intro-1#1  
+
+Also linked in the lecture page
