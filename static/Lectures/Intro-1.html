@@ -404,7 +404,7 @@ In the above example, we have a prior of `\(\beta\)` ~ Normal(0, 5), which provi
 ---
 ###  Thinking in probability distributions
  
-Gaussian/normal (mean and SD, also known as location and scale). Binomial, Bernouli. Student too. 
+Gaussian/normal (mean and SD, also known as location and scale). Binomial (Beta-binomial), Bernouli. Student too. 
 
 Negative binomial, Poisson and geometric for counts
 
@@ -519,6 +519,12 @@ The `posterior distribution` is the distribution of our belief about the paramet
 
 In terms of our murder mystery example, it is an updated prior distribution. That is, the only difference between the prior and the posterior is that you collected data. If you collect data and have a posterior and then want to collect more data, your posterior can then become the prior. Repeat this process an infinite number of possible times. This process is called `Bayesian Updating`.
 
+
+---
+
+&lt;img src="../media/updating.png" width="850" height="550" /&gt;
+
+
 ---
 ## Posterior
 .pull-left[
@@ -543,7 +549,7 @@ P(data) is the average or marginal likelihood, sometimes called "the evidence". 
 ## Priors influencing Posterior
 
 
-![](Intro-1_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
 
 ---
 ### Building intuition
@@ -563,7 +569,7 @@ The relative influence of the prior and the likelihood depends on 1) the sample 
 ]
 
 .pull-right[
-![](Intro-1_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -751,11 +757,11 @@ Now it sums up to 1
 
 ---
 ## Grid Estimation
-![](Intro-1_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
 
 ---
 ### smaller grid
-![](Intro-1_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
 
 ---
 ### add a (peaked) prior
@@ -799,7 +805,7 @@ peaked &lt;- tibble(p_grid = seq(from = 0, to = 1, length.out = 20),
 
 ---
 ### add a (peaked) prior
-![](Intro-1_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
 
 .pull-right[
 We will see other types of estimation in the next few weeks. We cannot rely on grid approximation because more complex models will require too large of grids to efficiently compute. For example, if we use 100 grid points for a regression with three predictors (not that large of a model) we would need to do &gt; 1,000,000 calculations. 
@@ -840,7 +846,7 @@ Differs in interpretation: 95% probability for the true value to be in the credi
 ---
 ## High Posterior Density Interval (HPDI)
 
-![](Intro-1_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -859,7 +865,7 @@ When we make predictions there will be error. Where does this error come from? 1
 Let's evaluate our model. How do we do that? Binomial where we have 6 success in 9 trials]
 
 .pull-right[
-![](Intro-1_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -870,14 +876,14 @@ Now lets assume each of these parameter values are true. What would we expect? B
 ]
 
 .pull-right[
-![](Intro-1_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
 ]
 
 ---
 ## PP Checks
 
 .pull-left[
-![](Intro-1_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
+![](Intro-1_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[

@@ -1,0 +1,925 @@
+---
+title: "Week 2"
+author: Josh Jackson
+date: "10-22-20"
+output:
+  xaringan::moon_reader:
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    css: xaringan-themer.css
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      ratio: "16:9"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_light(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Droid Mono"),
+)
+
+library(tidyverse)
+library(broom)
+```
+
+<style type="text/css">
+.remark-slide-content {
+    font-size: 30px;
+    padding: 1em 4em 1em 4em;
+}
+
+.small .remark-code { 
+  font-size: 80% !important;
+}
+.tiny .remark-code {
+  font-size: 65% !important;
+}
+</style>
+
+
+## Goals for the week
+
+Circle back to the material we covered and walk through regression examples. Also, we will be doing analyses using `brms`, the primary package we will be using in class. 
+
+---
+## Basic linear model
+Y_i ~ Normal( $\mu$ , $\sigma$ )  [Likelihood we want to estimate]  
+$\mu_i$ ~ Normal(0, 5)  [Prior for mu ]  
+$\sigma$ ~ HalfCauchy(0,1)  [Prior for sigma]  
+
+Note that this does not have a predictor, it only describes your DV. It says that Y is distributed normally, with a prior centered around 0 for the mean, and a half Cauchy for sigma.  
+
+---
+### Simple regression model as an example
+What happens when we want to add a predictor?
+
+DV ~ Normal( $\mu_i$ , $\sigma$ )  [Likelihood]  #Note SD not vary   
+
+$\mu_i$ = $\beta_0$ + $\beta_1$ $X_i$ [linear model]  #Note the = not the ~   
+
+Priors  
+$\beta_0$ ~ Normal(10, 4)  [prior for intercept]  
+$\beta_1$ ~ Normal(0, 5)  [prior for b1]  
+$\sigma$  ~ HalfCauchy(0,1) [prior for sigma]  
+
+---
+### Generative model
+Together the above equation makes a *generative* model, one that can simulate new observations and analyze your data. It puts a parameter on ALL components that create the data. Your hypothesized Data Generating Process (DGP) is fully described. 
+
+Standard regression models do not go this far. For example, they merely describes sigma rather than estimate sigma. 
+
+
+---
+### Why is this a different formulation? 
+
+1. Because y = mx + b isn't enough, as it doesn't specify all of our parameters
+
+2. Because $\epsilon$ ~ Normal (0, $\sigma$ ) doesn't generalize. While this is what is often provided in intro stats classes (I did it) and even more advanced MLM classes (I'm sure Mike did it), eventually you need to discuss the estimation of other parameters. 
+
+
+---
+## Example
+.pull-left[Let's fit some simple data. We are going to use 
+```{r}
+library(psychTools)
+galton.data <- galton
+library(tidyverse)
+glimpse(galton.data)
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+galton.data %>% 
+  ggplot(aes(x = parent, y = child)) +
+  geom_jitter(alpha = 1/2) 
+
+```
+]
+
+---
+## Height data
+
+.pull-left[
+```{r, echo = FALSE}
+g1 <- galton.data %>% 
+ggplot(aes(x = child)) +geom_density()
+g1
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+g2<-galton.data %>% 
+ggplot(aes(x = parent)) +geom_histogram(bins=10)
+g2
+```
+]
+
+
+---
+## Describe our model
+
+C_Height_i ~ Normal( $\mu_i$ , $\sigma$ )  [Likelihood]   
+
+$\mu_i$ = $\beta_0$ + $\beta_1$ ( $\text{P_Height}_i$ - ${\overline{\mbox{P_Height}}}$ ) [linear model]
+
+
+priors  
+$\beta_0$ ~ Normal(68, 5)  [prior for intercept]  
+$\beta_1$ ~ Normal(0, 5)  [prior for b1]  
+$\sigma$  ~ HalfCauchy(0,1) [prior for sigma]  
+
+---
+### Prior for intercept
+.pull-left[
+```{r, echo = FALSE}
+p.0 <-
+  tibble(x = seq(from = 0, to = 100, by = .1)) %>% 
+  
+  ggplot(aes(x = x, y = dnorm(x, mean = 68, sd = 5))) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 10)) +
+  labs(title = "mu ~ dnorm(68, 5)",
+       y = "density")
+
+p.0
+```
+]
+
+.pull-right[
+Says we think the mean of male height is between 5 and 6 feet 4 inches feet, most likely. 
+
+If this was too narrow for our likes (maybe we are living in Belgium) then we could change the SD (and mean). 
+]
+
+---
+### Prior for regression coefficent
+
+.pull-left[
+```{r, echo = FALSE}
+p.1 <-
+  tibble(x = seq(from = -15, to = 15, by = .1)) %>% 
+  
+  ggplot(aes(x = x, y = dnorm(x, mean = 0, sd = 5))) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(from = -15, to = 15, by = 3)) +
+  labs(title = "mu ~ dnorm(0, 5)",
+       y = "density")
+
+p.1
+```
+]
+
+.pull-right[
+This is centered around  0, saying we think prior to collecting any data that we think there is no effect. 
+
+We also do not know if it will be positive or negative.
+
+We are saying it isn't likely to be a b = 20+
+]
+
+---
+### Prior for sigma
+
+.pull-left[
+```{r, echo = FALSE}
+p.s <- ggplot(data.frame(x = c(0, 10)), aes(x)) +
+  stat_function(fun = dcauchy, n = 200, args = list(0, 10)) +
+  labs(title = "sigma ~ HalfCauchy(0,10)")
+p.s
+```
+]
+
+.pull-right[
+We know that variances are going to be positive. So zero and below is not possible. 
+
+What is an upper bound possibility? 
+```{r, echo = FALSE}
+library(psych)
+describe(galton.data$parent)
+```
+]
+
+---
+## Prior predictive
+
+What do our priors say about what our model expects? This is a way to check if our priors our too liberal or conservative. 
+
+We can take our "guesses" and estimate what they say about our potential results. Helpful to make sure we do not set up a model that creates unreasonable possibilities. 
+
+Our goal is to create an efficient and useful model. One that makes impossible predictions prior to seeing the data isn't too useful.  
+
+---
+## Prior predictive
+
+How do we create it? We sample from the priors. Use that to create regression lines (intercept and slope). Then plot.
+
+```{r, eval = FALSE}
+pp <- tibble(n = 1:100,
+         a = rnorm(100, mean = 68, sd = 5),
+         b = rnorm(100, mean = 0,   sd = 5)) %>% 
+  expand(nesting(n, a, b), height = range(galton.data$parent)) %>% 
+  mutate(c.height = a + b * (height - mean(galton.data$parent))) 
+```
+
+
+---
+## Prior predictive
+.pull-left[
+```{r, echo = FALSE}
+
+pp <-
+  tibble(n = 1:100,
+         a = rnorm(100, mean = 68, sd = 5),
+         b = rnorm(100, mean = 0,   sd = 5)) %>% 
+  expand(nesting(n, a, b), height = range(galton.data$parent)) %>%   
+  mutate(c.height = a + b * (height - mean(galton.data$parent))) 
+
+g.pp <- pp %>% 
+  ggplot(aes(x = height, y = c.height, group = n)) +
+  geom_line(alpha = 1/10) +
+  coord_cartesian(ylim = c(36, 96)) 
+
+g.pp
+
+
+```
+]
+
+.pull-right[
+Our priors are not great, as it says we could expect associations that we know to not be true, a priori ]
+---
+## Prior predictive
+We could do a few things: 
+
+1. Constrain the slope to be positive
+2. Reduce the uncertainty (SDs) in our priors
+3. Leave as is
+
+It really depends on whether the priors are important and/or costly, computationally
+
+---
+## Running the model
+
+Use grid estimation for the moment. But again, Bayesian estimation is just counting. 
+
+Define the grid you want to estimate. 
+a) the range of parameters you want and b) the number of values. 
+
+Parameter values with more ways that are consistent with data are more plausible. 
+
+---
+## Running the model
+
+.pull-left[
+We have 3 parameters to estimate (b0, b1, sigma). With grid approximation it is going to be computationally expensive (~ million+ calculations). Try a simple intercept only model instead (only 40k). 
+
+C.Height_i ~ Normal( $\mu$ , $\sigma$ )  
+$\mu$ ~ Normal(68, 5)   
+$\sigma$ ~ HalfCauchy(0,10)  
+
+]
+
+.right-pull[
+Define my grid
+```{r}
+grid <-
+  crossing(mu = seq(from = 66, to = 69, length.out = 200), sigma = seq(from = 2, to = 3, length.out = 200))
+grid
+```
+]
+
+---
+### Grid approximation
+
+.pull-left[
+```{r, eval=FALSE}
+library(purrr)
+grid_function <- function(mu, sigma) {
+  dnorm(galton.data$child, mean = mu, sd = sigma, log = T) %>%
+    sum() 
+  }
+
+p_grid <-
+  grid %>% 
+  mutate(log_likelihood = map2(mu, sigma, grid_function)) %>%
+  unnest(log_likelihood) %>% 
+  mutate(prior_mu  = dnorm(mu, mean = 68, sd  = 5, log = T), prior_sigma = dcauchy(sigma, 0, 10, log = T)) %>% mutate(product = log_likelihood + prior_mu + prior_sigma) %>% 
+  mutate(probability = exp(product - max(product)))
+  
+```
+]
+
+.pull-right[
+1. After defining the grid space we need to calculate the likelihood (are these numbers likely or not, given some distribution)
+
+2. Likelihood of our data (each child's height) assuming each part of our grid is true. So if we take the first line of our grid (mu = 66, sigma = 2) we can see how likely each child (all 928) by dnorm(height, 66, 2) 
+
+]
+
+---
+### Grid approximation
+
+```{r, echo=FALSE}
+library(purrr)
+grid_function <- function(mu, sigma) {
+  dnorm(galton.data$child, mean = mu, sd = sigma, log = T) %>%
+    sum() 
+  }
+
+p_grid <-
+  grid %>% 
+  mutate(log_likelihood = map2(mu, sigma, grid_function)) %>%
+  unnest(log_likelihood) %>% 
+  mutate(prior_mu  = dnorm(mu, mean = 68, sd  = 5, log = T), prior_sigma = dcauchy(sigma, 0, 10, log = T)) %>% mutate(product = log_likelihood + prior_mu + prior_sigma) %>% 
+  mutate(probability = exp(product - max(product)))
+
+p_grid
+
+```
+
+
+---
+### Grid approximation
+
+3. The log-likelihood for each data point is averaged across all 928 participants  to get the average log-likelihood for each grid spot 
+
+4. We then incorporate the priors for mu and sigma (just multiplying but done with the log scale for math reasons). 
+
+5. The result is a posterior probability for each grid spot we defined. Ie how likely are these parameters, given the data. 
+
+---
+### Grid approximation
+```{r, echo=FALSE, message=FALSE}
+library(viridis)
+p_grid %>% 
+  ggplot(aes(x = mu, y = sigma, fill = probability)) + 
+  geom_raster(interpolate = T) +
+  scale_fill_viridis_c(option = "C") +
+  labs(x = expression(mu),
+       y = expression(sigma)) +
+  theme(panel.grid = element_blank())
+```
+
+
+---
+## sampling to summarize
+We will randomly sample from this joint distribution to learn more about it. What we have now are probabilities for each possible parameter. So we can randomly sample based on the probabilities much like randomly sampling different bags of marbles with different amounts of blues in them. 
+
+With samples we can visualize, create credible intervals, HDIs, etc. 
+
+---
+## 10k samples
+```{r, echo = FALSE}
+p_grid_samples <- 
+  p_grid %>% 
+  sample_n(size = 1e4, replace = T, weight = probability) %>% 
+  pivot_longer(mu:sigma) 
+
+gg_grid_samples <- p_grid_samples %>% 
+  ggplot(aes(x = value)) + 
+  geom_density() +
+  scale_y_continuous(NULL, breaks = NULL) +
+  xlab(NULL) +
+  theme(panel.grid = element_blank()) +
+  facet_wrap(~name, scales = "free",
+             labeller = label_parsed)
+
+gg_grid_samples
+```
+
+---
+## Point Estimate and CIs
+```{r, echo = FALSE}
+library(tidybayes)
+p_grid_samples %>% 
+  group_by(name) %>% 
+  mode_hdi(value)
+```
+
+```{r}
+tidy(lm(child ~ 1,data = galton.data))
+```
+
+```{r}
+glance(lm(child ~ 1,data = galton.data))
+```
+
+---
+## brms
+.pull-left[
+We are going to fit our y ~ x models with the {brms} package. Uses syntax similar to {lme4}. Requires {rstan}.
+```{r, message = FALSE}
+library(brms)
+```
+
+
+]
+
+.pull-right[
+P_Height $_i$ ~ Normal( $\mu_i$ , $\sigma$ )   
+
+$\mu_i$ = $\beta_0$ + $\beta_1$ ( $\text{C_Height}_i$ - ${\overline{\mbox{C_Height}}}$ ) 
+
+
+$\beta_0$ ~ Normal(68, 5)   
+$\beta_1$ ~ Normal(0, 5)   
+$\sigma$  ~ HalfCauchy(0,1)   
+
+]
+
+---
+## brms
+
+```{r, eval = FALSE}
+model.name <- # name your fit
+  brm(family = gaussian, # what is your likelihood? 
+      Y ~ X, # insert model
+      prior = prior, # your priors go here
+      data = data,  # your data goes here
+      iter = 1000, warmup = 500, chains = 4, cores = 4, # wait for this 
+      file = "fits/b04.01") # save your samples
+```
+
+---
+## brms
+You can also set aspects of it separately
+```{r, eval = FALSE}
+
+#formulas
+brmsformula()
+brmsformula(x~y, family = gaussian())
+bf()
+
+#priors
+set_prior()
+set_prior("normal(0, 5)", class = "b", coef = "parent")
+
+```
+
+
+---
+## brms
+```{r, messages = FALSE}
+m.1 <- 
+  brm(family = gaussian,
+      child ~ 1 + parent,
+      prior = c(prior(normal(68, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(cauchy(0, 1), class = sigma)),
+      data = galton.data, 
+      iter = 1000, warmup = 500, chains = 2, cores = 2, 
+      file = "m.1")
+```
+
+---
+## brms
+```{r}
+summary(m.1)
+```
+
+---
+## compare with lm
+
+```{r}
+summary(lm(child ~ parent, data = galton.data))
+```
+
+---
+```{r}
+plot(m.1)
+```
+
+---
+
+.pull-left[
+```{r}
+plot(conditional_effects(m.1), points = TRUE)
+
+```
+
+]
+
+.pull-right[
+
+Lots of options for some quick visualizations. And these are all ggplot compatible, so you can change themes, add labels etc. 
+
+But we will largely not use these, instead favoring {tidybayes}
+]
+
+---
+## Posterior
+
+The posterior is made up of samples. Much like we did with grid approximation, and then sampled from the prior. Behind the scenes brms is using H-MCMC, which we will describe in more detail later. It is basically an algorithm used to define the posterior. It consists only of samples.
+
+Very simplistically, the algorithm tries different potential values (much like we predefined using our grid approximation). But rather than completely random, it chooses depending on whether the parameter is "likely" given the data.
+
+---
+```{r}
+library(tidybayes)
+get_variables(m.1)
+```
+
+---
+```{r, warning=FALSE, message=FALSE}
+#deprecated but it is easy to see
+posterior_samples(m.1)
+```
+
+
+---
+```{r}
+library(tidybayes)
+tidy_draws(m.1)
+```
+
+
+---
+### Pairs plot
+
+.pull-left[
+marginal posteriors and the covariances
+```{r, eval = FALSE}
+pairs(m.1)
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+pairs(m.1)
+```
+]
+
+---
+
+{brms} assumes that the intercept is the expected response value when all predictors are at their means. This is done to improve sampling efficiency. 
+
+We can either 
+1. center
+2. change prior & use 0 + Intercept
+
+---
+```{r, messages = FALSE}
+
+galton.data <-
+  galton.data %>% 
+  mutate(parent_c = parent - mean(parent))
+
+m.2 <- 
+  brm(family = gaussian,
+      child ~ 1 + parent_c,
+      prior = c(prior(normal(68, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(cauchy(0, 1), class = sigma)),
+      data = galton.data, 
+      iter = 1000, warmup = 500, chains = 2, cores = 2, 
+      file = "m.2")
+```
+
+---
+```{r}
+pairs(m.2)
+```
+
+---
+
+```{r}
+summary(m.2)
+```
+
+---
+
+```{r, messages = FALSE}
+
+m.2a <- 
+  brm(family = gaussian,
+      child ~ 0 + Intercept + parent,
+      prior = c(prior(normal(28, 5), class = b, coef ="Intercept" ),
+                prior(normal(0, 5), class = b, coef ="parent"),
+                prior(cauchy(0, 1), class = sigma)),
+      data = galton.data, 
+      iter = 1000, warmup = 500, chains = 2, cores = 2, 
+      file = "m.2a")
+```
+
+---
+
+```{r}
+pairs(m.2a)
+```
+
+
+---
+## Posterior
+
+Again the posterior is just made up of samples. In reality is it some hyperplaned space, but we don't have access to that so we must sample. 
+
+Now the difficulty is getting those samples into a shape that playes nicely with what we want. We will primarily use {tidybayes} and {posterior} to do so. {brms} has some built in functions but they do not extend well for certain situations. 
+
+
+---
+```{r}
+post.tidy <- m.2 %>% 
+spread_draws(b_Intercept, b_parent_c)
+post.tidy
+```
+
+---
+```{r}
+post.tidy %>% 
+  ggplot(aes(x = b_parent_c)) +
+  stat_dotsinterval()
+```
+
+---
+```{r}
+post.tidy %>% 
+  select(b_parent_c) %>% 
+  mean_qi(.width = c(.5, .89, .99))
+```
+
+```{r}
+post.tidy %>% select(b_parent_c) %>% 
+  mode_hdi(.width = c(.5, .89, .99))
+```
+
+---
+## fitted values
+
+Much like in regular regression, we may be interested in the predicted values (Y-hats) at certain values of X. These Y-hats are called fitted values. We use them a lot to calculate residuals and other fit metrics. This gives us the predicted mean at a given X
+```{r}
+library(broom)
+augment(lm(child ~ parent, galton.data))
+```
+
+---
+## fitted values
+
+.pull-left[]
+Bayesian analysis also has fitted values, but now we have many samples of parameters rather than just a single estimate for each value.
+
+```{r, eval = FALSE}
+mu_at_64 <- 
+  post.tidy %>% 
+  select(b_Intercept,b_parent_c) %>% 
+  mutate(mu_at_64 = b_Intercept + (b_parent_c * -4.3))
+ mu_at_64
+```
+
+]
+
+.pull-right[
+```{r, echo = FALSE}
+mu_at_64 <- 
+  post.tidy %>% 
+  select(b_Intercept,b_parent_c) %>% 
+  mutate(mu_at_64 = b_Intercept + (b_parent_c * -4.3))
+ mu_at_64
+```
+]
+
+
+---
+## fitted values
+.pull-left[
+This is nice because we can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. 
+
+
+```{r, messages = FALSE, warning=FALSE}
+
+mu_at_64 %>% 
+mean_hdi(mu_at_64)
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+mu_at_64 %>%
+  ggplot(aes(x = mu_at_64)) +
+  geom_density() +
+  scale_y_continuous(NULL, breaks = NULL) +
+  xlab(expression(mu["C-height at parent 64"])) 
+
+```
+
+]
+
+---
+## fitted values
+
+We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} 'epred_draws()' better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot
+
+
+```{r}
+galton.data %>% 
+ add_epred_draws(m.2)
+```
+
+---
+### many ways to predict
+epred = fitted = uncertainty in the fixed coefficients and the uncertainty in the variance parameters for the grouping factors (for MLMs). Can be thought of as expected values or the mean prediction 
+
+"predict" accounts for the residual (observation-level) variance, plus the other sources of variance in epred. This is used not to describe an expected value/mean but observation/individual level data. eg what is plausible when we collect a new subject. 
+
+Whereas expectation values were good for inference, predictions are more for model checking. 
+
+---
+## fitted values
+.pull-left[
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(modelr)
+```
+
+```{r, message=FALSE, warning=FALSE, eval = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  stat_lineribbon(aes(y = .epred), .width = c(.99), color = "grey") +
+  geom_point(data = galton.data, size = 2)
+```
+]
+
+.pull-right[
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  stat_lineribbon(aes(y = .epred), .width = c(.99), color = "grey") +
+  geom_point(data = galton.data, size = 2)
+```
+]
+
+---
+
+```{r}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2)
+```
+
+
+---
+## fitted values
+
+.pull-left[
+```{r, eval = FALSE}
+
+labels <-  c(-2.5, 0, 2.5, 5) + mean(galton.data$parent) %>%   round(digits = 0)
+
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2, ndraws = 100) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  geom_point(data = galton.data, size = 2) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels) 
+
+```
+
+]
+
+.pull-right[
+
+
+```{r, echo = FALSE}
+
+labels <-  c(-2.5, 0, 2.5, 5) + mean(galton.data$parent) %>%   round(digits = 0)
+
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2, ndraws = 100) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  geom_point(data = galton.data, size = 2) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels) 
+
+```
+
+]
+
+---
+
+```{r}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2, ndraws = 100)
+```
+why only 10,100 rows? 
+
+---
+## fitted values
+
+.pull-left[
+Posterior samples provides us an estimate of different parameter values proportional to their likelihood (and prior) ie more samples near the mean. 
+
+They also give an indication of the spread of the posterior, which is useful to create confidence intervals and do NHST like statistical tests of parameters.
+]
+
+.pull-right[
+We use them to: 
+1. create model implied estimates at a specific value of X, ( $\hat{Y}$ | X )  
+2. create CIs around these values
+3. visualize model implied fits
+
+In other words, if it involves a specific value or different values of X we need to use fitted values. 
+
+]
+
+
+---
+## predicted values
+.pull-left[
+```{r, eval = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+  add_predicted_draws(m.2) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+     stat_lineribbon(aes(y = .prediction), 
+                  .width = seq(.5, .99, by = .01), 
+                  alpha = .5,
+                  show.legend = F) +
+  geom_point(data = galton.data, size = 2,alpha = .5) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels)
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+  add_predicted_draws(m.2) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+     stat_lineribbon(aes(y = .prediction), 
+                  .width = seq(.5, .99, by = .01), 
+                  alpha = .5,
+                  show.legend = F) +
+  geom_point(data = galton.data, size = 2,alpha = .5) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels)
+```
+]
+
+--- 
+## predicted values
+
+The plotted predictions can show you the potential spread in the cases. As opposed to epred/fitted values which are specific to $\mu$ s or other parameters we are trying to estimate, predicted values serve as simulated new data. 
+
+If a model is a good fit we should be able to use it to generate data that resemble the data we observed. This is the basis of the posterior predictive distribution and PP checks. 
+
+This is also what is meant by a `generative` model. 
+
+
+---
+```{r}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+  add_predicted_draws(m.2)
+```
+Where does 101,000 come from? 
+
+
+---
+## 3 types of predictions
+
+$\hat{Y}_{prediction}$ ~ $b_o$ + $b_1$X, where we put in new values of X (often our data Xs we collected or values across the range of X)
+
+1. lm style, where there is 1 value, our estimate, of $b_o$ & $b_1$
+
+2. epred/fitted style, where we are propagating uncertainty in $b_o$ & $b_1$, as these parameters can take on many values according to the posterior distribution. The mean of this is equal to #1. 
+
+3. prediction style, where we are propagating uncertainty in $b_o$, $b_1$ & $\hat{\sigma}$ . 
+
+---
+## posterior predictive distribution 
+.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. We can simulate from the posterior predictive distribution. 
+
+This is just #3 we did previously. Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
+]
+
+.pull-right[]
+```{r, message = FALSE}
+pp_check(m.2)
+```
+]
+
+---
+## posterior predictive distribution 
+
+```{r, eval = FALSE}
+library(shinystan)
+launch_shinystan(m.2)
+```
+
+---
+
+

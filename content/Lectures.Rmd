@@ -31,7 +31,7 @@ output: html_document
 [Regression](/Lectures/week-3.html)
 
 ## 2. Regression basics
-[Regression intro](/Lectures/week-2.html)
+[Regression intro](/Lectures/regression-2.html)
 
 ## 1. INTRO
 [Introduction](/Lectures/Intro-1.html)

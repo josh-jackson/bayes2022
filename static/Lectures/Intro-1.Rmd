@@ -692,7 +692,7 @@ s10 <- ggplot(data.frame(x = c(0, 10)), aes(x)) +
 ---
 ###  Thinking in probability distributions
  
-Gaussian/normal (mean and SD, also known as location and scale). Binomial, Bernouli. Student too. 
+Gaussian/normal (mean and SD, also known as location and scale). Binomial (Beta-binomial), Bernouli. Student too. 
 
 Negative binomial, Poisson and geometric for counts
 
@@ -802,6 +802,14 @@ When the prior is flat, our likelihood ends up becoming the posterior distributi
 The `posterior distribution` is the distribution of our belief about the parameter values after taking into account the data and one's priors. p( $\theta$ |data). 
 
 In terms of our murder mystery example, it is an updated prior distribution. That is, the only difference between the prior and the posterior is that you collected data. If you collect data and have a posterior and then want to collect more data, your posterior can then become the prior. Repeat this process an infinite number of possible times. This process is called `Bayesian Updating`.
+
+
+---
+
+```{r echo=FALSE, out.height=550, out.width= 850}
+knitr::include_graphics("../media/updating.png")
+```
+
 
 ---
 ## Posterior
