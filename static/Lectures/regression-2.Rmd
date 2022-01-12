@@ -664,7 +664,7 @@ augment(lm(child ~ parent, galton.data))
 ---
 ## fitted values
 
-.pull-left[]
+.pull-left[
 Bayesian analysis also has fitted values, but now we have many samples of parameters rather than just a single estimate for each value.
 
 ```{r, eval = FALSE}
@@ -907,7 +907,7 @@ This is just #3 we did previously. Taking samples of those possible "datasets" a
 ]
 
 .pull-right[]
-```{r, message = FALSE}
+```{r, message = FALSE, echo = FALSE}
 pp_check(m.2)
 ```
 ]
