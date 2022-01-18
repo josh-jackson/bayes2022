@@ -20,3 +20,5 @@ projects: []
 https://wustl.zoom.us/j/92973177016?pwd=MzR3alM2OW9jVHM1M3VseEpSY0d0UT09
 
 Same link, every class. 
+
+Speaking of links: https://github.com/josh-jackson/bayes2022
