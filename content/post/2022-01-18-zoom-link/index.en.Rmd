@@ -1,0 +1,22 @@
+---
+title: zoom link
+author: Package Build
+date: '2022-01-18'
+slug: zoom-link
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-01-18T17:52:00-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+https://wustl.zoom.us/j/92973177016?pwd=MzR3alM2OW9jVHM1M3VseEpSY0d0UT09
+
+Same link, every class. 

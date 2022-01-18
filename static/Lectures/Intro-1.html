@@ -318,6 +318,12 @@ These prior distributions are then going to be incorporated with data to give us
 ]
 
 ---
+
+
+
+
+
+---
 ## A working mental model summary
 
 What is Bayesian regression? 
@@ -334,7 +340,7 @@ Because we are going to be working with a lot of distributions, priors, and diff
 
 DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)`)
 
-Here we say that our DGP is normal, with two parameters. The mean differs among i people. The first step will always be describing how DGP for our DV.  
+Here we say that our DGP is normal, with two parameters. The mean differs among i people. The first step will always be describing the DGP for our DV.  
 
 ---
 Many possibilities
@@ -346,14 +352,14 @@ $$ y_i \sim \text{Poisson}(\lambda_i) $$
 $$ y_i  \sim \operatorname{BetaBinomial}(n_i, \bar p_i, \phi) $$
 $$ y_i  \sim \operatorname{ZIPoisson}({p_i}, {\lambda_i})\\
  $$
-$$ y_i \sim \operatorname{Categorical} (\mathbf p) \\ $$ where P is a vector of probabilities (this is for ordered logits like in IRT or when you have likert rating scales as your IV)
+$$ y_i \sim \operatorname{Categorical} (\mathbf p) \\ $$ where P is a vector of probabilities (this is for ordered logits like in IRT or when you have likert rating scales as your DV)
 
 
 ---
 ## Design the model
 
 .pull-left[
-2. We can predict or decompose those parameters through other variables. For example, we want to understand why i people differ on the mean of the DV.  
+'2. We can predict or decompose those parameters through other variables. For example, we want to understand why i people differ on the mean of the DV.  
 
 DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
 
@@ -370,7 +376,7 @@ You also have a parameter that is estimated called sigma, which in R output is h
 ## Design the model
 
 .pull-left[
-3. We will use this same nomenclature to describe our priors on each of the parameters we are modeling. For example, we are estimating `\(\beta\)` and `\(\sigma\)`, and thus we need two priors. 
+'3. We will use this same nomenclature to describe our priors on each of the parameters we are modeling. For example, we are estimating `\(\beta\)` and `\(\sigma\)`, and thus we need two priors. 
 ]
 
 .pull-right[

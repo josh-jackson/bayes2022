@@ -561,11 +561,13 @@ pairs(m.1)
 
 ---
 
+Intercept and slope are correlated. This is often the case when we do not center! (This is one of the reasons people center when running an interaction)
+
 {brms} assumes that the intercept is the expected response value when all predictors are at their means. This is done to improve sampling efficiency. 
 
 We can either 
 1. center
-2. change prior & use 0 + Intercept
+2. change prior & use 0 + Intercept (more about this later)
 
 ---
 ```{r, messages = FALSE}
@@ -596,34 +598,13 @@ pairs(m.2)
 summary(m.2)
 ```
 
----
-
-```{r, messages = FALSE}
-
-m.2a <- 
-  brm(family = gaussian,
-      child ~ 0 + Intercept + parent,
-      prior = c(prior(normal(28, 5), class = b, coef ="Intercept" ),
-                prior(normal(0, 5), class = b, coef ="parent"),
-                prior(cauchy(0, 1), class = sigma)),
-      data = galton.data, 
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "m.2a")
-```
-
----
-
-```{r}
-pairs(m.2a)
-```
-
 
 ---
 ## Posterior
 
-Again the posterior is just made up of samples. In reality is it some hyperplaned space, but we don't have access to that so we must sample. 
+Again the posterior is just made up of samples. In reality is it some hyperplanned space, but we don't have access to that so we must sample. 
 
-Now the difficulty is getting those samples into a shape that playes nicely with what we want. We will primarily use {tidybayes} and {posterior} to do so. {brms} has some built in functions but they do not extend well for certain situations. 
+Now the difficulty is getting those samples into a shape that plays nicely with what we want. We will primarily use {tidybayes} and {posterior} to do so. {brms} has some built in functions but they do not extend well for certain situations. 
 
 
 ---
@@ -653,9 +634,42 @@ post.tidy %>% select(b_parent_c) %>%
 ```
 
 ---
+
+```{r}
+post.tidy %>% 
+  ggplot(aes(x = b_parent_c)) +
+  stat_halfeye()
+```
+
+
+---
+
+.pull-left[
+```{r, eval = FALSE}
+post.tidy %>% 
+  ggplot(aes(x = b_parent_c)) +
+  stat_slab() +
+  stat_function(data = data.frame(x = c(-10, 10)), aes(x), fun = dnorm, n = 100, args = list(0, 5)) 
+```
+]
+
+.pull-right[
+
+```{r, echo = FALSE}
+post.tidy %>% 
+  ggplot(aes(x = b_parent_c)) +
+  stat_slab() +
+  stat_function(data = data.frame(x = c(-10, 10)), aes(x), fun = dnorm, n = 100, args = list(0, 5)) 
+```
+
+
+]
+
+
+---
 ## fitted values
 
-Much like in regular regression, we may be interested in the predicted values (Y-hats) at certain values of X. These Y-hats are called fitted values. We use them a lot to calculate residuals and other fit metrics. This gives us the predicted mean at a given X
+Much like in regular regression, we may be interested in the fitted/expected/predicted values (Y-hats) at certain values of X. We use them a lot to calculate residuals and other fit metrics. This gives us the predicted mean at a given X
 ```{r}
 library(broom)
 augment(lm(child ~ parent, galton.data))
@@ -664,8 +678,15 @@ augment(lm(child ~ parent, galton.data))
 ---
 ## fitted values
 
-.pull-left[
 Bayesian analysis also has fitted values, but now we have many samples of parameters rather than just a single estimate for each value.
+
+
+$$ \hat{Y}_{prediction} = b_o + b_1X $$
+If we previous had 928 fitted values. We now have 928 participants * 1000 samples = 928,000 fitted values to work with. (Though people with the same X have the same yhat so it is effectively less)
+
+
+---
+One reason fitted values are helpful is to showcase uncertainty. That is what our posterior is highlighting: that there is no ONE result, that there are many possible results. If we examine a predicted mean at a certain value across all of our samples we directly compute our uncertainty. 
 
 ```{r, eval = FALSE}
 mu_at_64 <- 
@@ -691,7 +712,7 @@ mu_at_64 <-
 ---
 ## fitted values
 .pull-left[
-This is nice because we can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. 
+This is nice because we can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. No assumptions. Just counting. 
 
 
 ```{r, messages = FALSE, warning=FALSE}
@@ -711,6 +732,32 @@ mu_at_64 %>%
 
 ```
 
+]
+
+---
+.pull-left[ You can use standard ggplot geoms but I recommend using tidybayes (ggist) specialty ones
+
+```{r, eval=FALSE}
+
+mu_at_64 %>%
+  ggplot(aes(x = mu_at_64)) +
+  stat_slab() +
+  scale_y_continuous(NULL, breaks = NULL) +
+  xlab(expression(mu["C-height at parent 64"])) 
+
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+
+mu_at_64 %>%
+  ggplot(aes(x = mu_at_64)) +
+  stat_slab() +
+  scale_y_continuous(NULL, breaks = NULL) +
+  xlab(expression(mu["C-height at parent 64"])) 
+
+```
 ]
 
 ---
@@ -764,10 +811,30 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %>%
 
 ```{r}
 galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101))
+```
+
+
+---
+
+.pull-left[
+```{r, eval=FALSE}
+galton.data %>% 
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
  add_epred_draws(m.2)
 ```
 
+Why is there 101,000 rows? 
+
+]
+
+.pull-right[
+```{r, echo=FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2)
+```
+]
 
 ---
 ## fitted values
@@ -815,7 +882,7 @@ galton.data %>%
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
  add_epred_draws(m.2, ndraws = 100)
 ```
-why only 10,100 rows? 
+why only 10,100 rows whereas previously we had 101,000? 
 
 ---
 ## fitted values
@@ -901,9 +968,9 @@ $\hat{Y}_{prediction}$ ~ $b_o$ + $b_1$X, where we put in new values of X (often 
 
 ---
 ## posterior predictive distribution 
-.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. We can simulate from the posterior predictive distribution. 
+.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. Simulate from the posterior predictive distribution. 
 
-This is just #3 we did previously. Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
+This is just #3. Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
 ]
 
 .pull-right[]
@@ -921,5 +988,5 @@ launch_shinystan(m.2)
 ```
 
 ---
-
+##
 
