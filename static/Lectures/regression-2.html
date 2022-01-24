@@ -35,6 +35,63 @@
 Circle back to the material we covered and walk through regression examples. Also, we will be doing analyses using `brms`, the primary package we will be using in class. 
 
 ---
+## Distributions and model descriptions
+Because we are going to be working with a lot of distributions, priors, and different analytic machinery we need to have a new way to describe out models. Much like y = b0 + b1X but more elaborate.  
+
+1. Describe how our DV is related to the data via a likelihood distribution. 
+
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)`)
+
+Here we say that our DGP is normal, with two parameters. The mean differs among i people. The first step will always be describing the DGP for our DV.  
+
+---
+Many possibilities
+$$ y_{i} \sim \operatorname{Bernoulli}(\theta_i) $$
+
+$$ y_{i} \sim \operatorname{Binomial}(1, p_i) $$
+$$ y_i \sim \text{Poisson}(\lambda_i) $$
+
+$$ y_i  \sim \operatorname{BetaBinomial}(n_i, \bar p_i, \phi) $$
+$$ y_i  \sim \operatorname{ZIPoisson}({p_i}, {\lambda_i})\\
+ $$
+$$ y_i \sim \operatorname{Categorical} (\mathbf p) \\ $$ where P is a vector of probabilities (this is for ordered logits like in IRT or when you have likert rating scales as your DV)
+
+
+---
+## Design the model
+
+.pull-left[
+'2. We can predict or decompose those parameters through other variables. For example, we want to understand why i people differ on the mean of the DV.  
+
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
+
+`\(\mu_i\)` = `\(\beta\)` X `\(X_i\)`
+]
+
+.pull-right[
+At this point, no different that a normal regression you are familiar with, just a different way of writing it. 
+
+You also have a parameter that is estimated called sigma, which in R output is hidden under Residual Standard Error. This way is more explicit about 1. your data generating process and 2. what parameters you are modeling. 
+]
+
+---
+## Design the model
+
+.pull-left[
+'3. We will use this same nomenclature to describe our priors on each of the parameters we are modeling. For example, we are estimating `\(\beta\)` and `\(\sigma\)`, and thus we need two priors. 
+]
+
+.pull-right[
+DV ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
+`\(\mu_i\)` = `\(\beta\)` X `\(X_i\)`
+
+`\(\beta\)` ~ Normal(0, 5)  
+`\(\sigma\)` ~ HalfCauchy(0,1)
+]
+
+
+
+---
 ## Basic linear model
 Y_i ~ Normal( `\(\mu\)` , `\(\sigma\)` )  [Likelihood we want to estimate]  
 `\(\mu_i\)` ~ Normal(0, 5)  [Prior for mu ]  
@@ -347,7 +404,7 @@ With samples we can visualize, create credible intervals, HDIs, etc.
 ##   name  value .lower .upper .width .point .interval
 ##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
 ## 1 mu    68.1   67.9   68.2    0.95 mode   hdi      
-## 2 sigma  2.52   2.40   2.63   0.95 mode   hdi
+## 2 sigma  2.51   2.40   2.63   0.95 mode   hdi
 ```
 
 
@@ -2048,15 +2105,15 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .epred
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1   65.2
-##  2    -4.31     1     NA         NA     2   65.3
-##  3    -4.31     1     NA         NA     3   65.3
-##  4    -4.31     1     NA         NA     4   65.2
+##  1    -4.31     1     NA         NA     1   65.4
+##  2    -4.31     1     NA         NA     2   65.4
+##  3    -4.31     1     NA         NA     3   65.4
+##  4    -4.31     1     NA         NA     4   65.0
 ##  5    -4.31     1     NA         NA     5   65.1
-##  6    -4.31     1     NA         NA     6   65.5
-##  7    -4.31     1     NA         NA     7   65.2
-##  8    -4.31     1     NA         NA     8   65.7
-##  9    -4.31     1     NA         NA     9   65.2
+##  6    -4.31     1     NA         NA     6   65.6
+##  7    -4.31     1     NA         NA     7   65.3
+##  8    -4.31     1     NA         NA     8   65.1
+##  9    -4.31     1     NA         NA     9   65.1
 ## 10    -4.31     1     NA         NA    10   65.4
 ## # … with 10,090 more rows
 ```
@@ -2127,16 +2184,16 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .prediction
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1        67.9
-##  2    -4.31     1     NA         NA     2        68.2
-##  3    -4.31     1     NA         NA     3        64.3
-##  4    -4.31     1     NA         NA     4        67.7
-##  5    -4.31     1     NA         NA     5        62.8
-##  6    -4.31     1     NA         NA     6        68.0
-##  7    -4.31     1     NA         NA     7        66.8
-##  8    -4.31     1     NA         NA     8        65.3
-##  9    -4.31     1     NA         NA     9        62.0
-## 10    -4.31     1     NA         NA    10        65.6
+##  1    -4.31     1     NA         NA     1        68.2
+##  2    -4.31     1     NA         NA     2        66.2
+##  3    -4.31     1     NA         NA     3        68.0
+##  4    -4.31     1     NA         NA     4        64.9
+##  5    -4.31     1     NA         NA     5        64.3
+##  6    -4.31     1     NA         NA     6        66.2
+##  7    -4.31     1     NA         NA     7        65.9
+##  8    -4.31     1     NA         NA     8        67.8
+##  9    -4.31     1     NA         NA     9        61.8
+## 10    -4.31     1     NA         NA    10        65.1
 ## # … with 100,990 more rows
 ```
 Where does 101,000 come from? 

@@ -50,6 +50,63 @@ library(broom)
 Circle back to the material we covered and walk through regression examples. Also, we will be doing analyses using `brms`, the primary package we will be using in class. 
 
 ---
+## Distributions and model descriptions
+Because we are going to be working with a lot of distributions, priors, and different analytic machinery we need to have a new way to describe out models. Much like y = b0 + b1X but more elaborate.  
+
+1. Describe how our DV is related to the data via a likelihood distribution. 
+
+DV ~ Normal( $\mu_i$ , $\sigma$)
+
+Here we say that our DGP is normal, with two parameters. The mean differs among i people. The first step will always be describing the DGP for our DV.  
+
+---
+Many possibilities
+$$ y_{i} \sim \operatorname{Bernoulli}(\theta_i) $$
+
+$$ y_{i} \sim \operatorname{Binomial}(1, p_i) $$
+$$ y_i \sim \text{Poisson}(\lambda_i) $$
+
+$$ y_i  \sim \operatorname{BetaBinomial}(n_i, \bar p_i, \phi) $$
+$$ y_i  \sim \operatorname{ZIPoisson}({p_i}, {\lambda_i})\\
+ $$
+$$ y_i \sim \operatorname{Categorical} (\mathbf p) \\ $$ where P is a vector of probabilities (this is for ordered logits like in IRT or when you have likert rating scales as your DV)
+
+
+---
+## Design the model
+
+.pull-left[
+'2. We can predict or decompose those parameters through other variables. For example, we want to understand why i people differ on the mean of the DV.  
+
+DV ~ Normal( $\mu_i$ , $\sigma$ )  
+
+$\mu_i$ = $\beta$ X $X_i$
+]
+
+.pull-right[
+At this point, no different that a normal regression you are familiar with, just a different way of writing it. 
+
+You also have a parameter that is estimated called sigma, which in R output is hidden under Residual Standard Error. This way is more explicit about 1. your data generating process and 2. what parameters you are modeling. 
+]
+
+---
+## Design the model
+
+.pull-left[
+'3. We will use this same nomenclature to describe our priors on each of the parameters we are modeling. For example, we are estimating $\beta$ and $\sigma$, and thus we need two priors. 
+]
+
+.pull-right[
+DV ~ Normal( $\mu_i$ , $\sigma$ )  
+$\mu_i$ = $\beta$ X $X_i$
+
+$\beta$ ~ Normal(0, 5)  
+$\sigma$ ~ HalfCauchy(0,1)
+]
+
+
+
+---
 ## Basic linear model
 Y_i ~ Normal( $\mu$ , $\sigma$ )  [Likelihood we want to estimate]  
 $\mu_i$ ~ Normal(0, 5)  [Prior for mu ]  

@@ -1,0 +1,20 @@
+---
+title: 1/19 Lecture recording
+author: Package Build
+date: '2022-01-20'
+slug: 1-19-lecture-recording
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-01-20T10:25:04-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+https://wustl.zoom.us/rec/share/3FUlavyxKDVyWnYJSKIwBlivdu88S3hoXdVhjd6XdpDG0d3exX0RA7GGYnab_Eyd.PVjMSRh2iPq_KpkJ
