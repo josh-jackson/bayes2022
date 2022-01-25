@@ -1,0 +1,56 @@
+---
+title: "HW-1"
+output: html_document
+---
+
+
+1. To get refreshed with thinking in terms of distributions (as well as ggplot), please plot 2 different versions of each of the following probability distributions (ie change up the parameters). It is your choice on choosing the different parameters of each of the distributions. If you are unfamiliar with these distributions, wikipedia has a pretty good section for each. These are distributions we will use throughout the class
+
+a) t-distribution
+b) Beta distribution
+c) Cauchy distribution
+d) Gamma distribution
+e) Exponential distribution
+f) uniform distribution
+
+
+2. Based on what you know about the normal distribution and your substantive area of research, please describe two types of priors you might put around one of your recent analyses or a future one First, briefly describe what your parameter you want to estimate is (eg comparison of two groups with a regression coefficient) and the corresponding effect size you found for that parameter (eg d =.3). Then describe:
+
+a) a prior distribution that represents your "best guess" for the parameter if you replicated this study. This is an "informed" prior. Bonus points for plotting the distribution. 
+
+b) a prior distribution that would serve to regularize the data ie a weakly informative prior. 
+
+For both, please describe what each prior influences. 
+
+3. We will be working with the following posterior. https://raw.githubusercontent.com/josh-jackson/bayes/master/p_grid.csv Because I do not want you to actually do any grid approximation, we are going to be working from one I already calculated. Within this posterior are two parameters, mu and sigma. 
+
+Modify and use the below code to sample from the posterior. Create a dataframe with 100 samples, 1000 samples and 10,000 samples for both mu and sigma
+```{r,eval = FALSE}
+library(tidyverse)
+p_grid_samples <- 
+  p_grid %>% 
+  sample_n(size = XX, replace = T, weight = probability) %>% 
+  pivot_longer(mu:sigma) 
+```
+
+Graph the posterior of each of these (your choice if you want to do the heatmap or the densities of each)
+
+4. For each of the three different samples you took, summarize the distribution. Specifically some measure of central tendency and a measure of dispersion. 
+
+{tidybayes} is a package we will use a lot this semester and has some convenience functions to summarize samples. You can use your own code or utilize tidybayes functions. 
+
+tidybayes summary stats have two parts. The first, specifies which measure of central tendency --mean median mode. 
+```{r, eval = FALSE}
+mode_hdi()
+mean_hdi()
+median_hdi()
+```
+
+The second component describes which type of summary you want. Do you want a percentile interval (aka an equal tailed interval, referred here as a quantile interval, qi) or do you want a hpdi, referred here as hdi interval. Note you can change the %s quite easily with .width. The default is .95. 
+```{r, eval = FALSE}
+mode_qi(.width = 0.95)
+mode_hdi()
+```
+
+
+

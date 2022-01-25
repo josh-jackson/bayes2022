@@ -101,38 +101,8 @@ DV ~ Normal( $\mu_i$ , $\sigma$ )
 $\mu_i$ = $\beta$ X $X_i$
 
 $\beta$ ~ Normal(0, 5)  
-$\sigma$ ~ HalfCauchy(0,1)
+$\sigma$ ~ HalfCauchy(0,10)
 ]
-
-
-
----
-## Basic linear model
-Y_i ~ Normal( $\mu$ , $\sigma$ )  [Likelihood we want to estimate]  
-$\mu_i$ ~ Normal(0, 5)  [Prior for mu ]  
-$\sigma$ ~ HalfCauchy(0,1)  [Prior for sigma]  
-
-Note that this does not have a predictor, it only describes your DV. It says that Y is distributed normally, with a prior centered around 0 for the mean, and a half Cauchy for sigma.  
-
----
-### Simple regression model as an example
-What happens when we want to add a predictor?
-
-DV ~ Normal( $\mu_i$ , $\sigma$ )  [Likelihood]  #Note SD not vary   
-
-$\mu_i$ = $\beta_0$ + $\beta_1$ $X_i$ [linear model]  #Note the = not the ~   
-
-Priors  
-$\beta_0$ ~ Normal(10, 4)  [prior for intercept]  
-$\beta_1$ ~ Normal(0, 5)  [prior for b1]  
-$\sigma$  ~ HalfCauchy(0,1) [prior for sigma]  
-
----
-### Generative model
-Together the above equation makes a *generative* model, one that can simulate new observations and analyze your data. It puts a parameter on ALL components that create the data. Your hypothesized Data Generating Process (DGP) is fully described. 
-
-Standard regression models do not go this far. For example, they merely describes sigma rather than estimate sigma. 
-
 
 ---
 ### Why is this a different formulation? 
@@ -140,6 +110,7 @@ Standard regression models do not go this far. For example, they merely describe
 1. Because y = mx + b isn't enough, as it doesn't specify all of our parameters
 
 2. Because $\epsilon$ ~ Normal (0, $\sigma$ ) doesn't generalize. While this is what is often provided in intro stats classes (I did it) and even more advanced MLM classes (I'm sure Mike did it), eventually you need to discuss the estimation of other parameters. 
+
 
 
 ---
@@ -250,8 +221,8 @@ We are saying it isn't likely to be a b = 20+
 .pull-left[
 ```{r, echo = FALSE}
 p.s <- ggplot(data.frame(x = c(0, 10)), aes(x)) +
-  stat_function(fun = dcauchy, n = 200, args = list(0, 10)) +
-  labs(title = "sigma ~ HalfCauchy(0,10)")
+  stat_function(fun = dcauchy, n = 200, args = list(0, 1)) +
+  labs(title = "sigma ~ HalfCauchy(0,1)")
 p.s
 ```
 ]
@@ -262,7 +233,7 @@ We know that variances are going to be positive. So zero and below is not possib
 What is an upper bound possibility? 
 ```{r, echo = FALSE}
 library(psych)
-describe(galton.data$parent)
+describe(galton.data$child)
 ```
 ]
 
@@ -342,7 +313,7 @@ We have 3 parameters to estimate (b0, b1, sigma). With grid approximation it is 
 
 C.Height_i ~ Normal( $\mu$ , $\sigma$ )  
 $\mu$ ~ Normal(68, 5)   
-$\sigma$ ~ HalfCauchy(0,10)  
+$\sigma$ ~ HalfCauchy(0,1)  
 
 ]
 
@@ -370,7 +341,7 @@ p_grid <-
   grid %>% 
   mutate(log_likelihood = map2(mu, sigma, grid_function)) %>%
   unnest(log_likelihood) %>% 
-  mutate(prior_mu  = dnorm(mu, mean = 68, sd  = 5, log = T), prior_sigma = dcauchy(sigma, 0, 10, log = T)) %>% mutate(product = log_likelihood + prior_mu + prior_sigma) %>% 
+  mutate(prior_mu  = dnorm(mu, mean = 68, sd  = 5, log = T), prior_sigma = dcauchy(sigma, 0, 1, log = T)) %>% mutate(product = log_likelihood + prior_mu + prior_sigma) %>% 
   mutate(probability = exp(product - max(product)))
   
 ```
@@ -382,6 +353,22 @@ p_grid <-
 2. Likelihood of our data (each child's height) assuming each part of our grid is true. So if we take the first line of our grid (mu = 66, sigma = 2) we can see how likely each child (all 928) by dnorm(height, 66, 2) 
 
 ]
+
+---
+
+3. The log-likelihood for each data point is averaged across all 928 participants to get the average log-likelihood for each grid spot 
+
+```{r}
+dnorm(galton.data$child, mean = 66, sd = 2, log = T)
+```
+
+---
+
+```{r}
+dnorm(galton.data$child, mean = 66, sd = 2, log = T) %>%  sum()
+```
+Higher values (closer to zero) indicate better fit
+
 
 ---
 ### Grid approximation
@@ -404,11 +391,8 @@ p_grid
 
 ```
 
-
 ---
 ### Grid approximation
-
-3. The log-likelihood for each data point is averaged across all 928 participants  to get the average log-likelihood for each grid spot 
 
 4. We then incorporate the priors for mu and sigma (just multiplying but done with the log scale for math reasons). 
 
@@ -588,17 +572,18 @@ get_variables(m.1)
 
 ---
 ```{r, warning=FALSE, message=FALSE}
-#deprecated but it is easy to see
+#deprecated but it is easy to see. Parameters more consistent with the data will appear more, just like with our grid approximation sampling. 
 posterior_samples(m.1)
 ```
 
 
 ---
+Same information, but an easier way to handle all this information.
 ```{r}
 library(tidybayes)
 tidy_draws(m.1)
 ```
-
+1k rows indicate 1k parameter samples. All of these parameters represent *possible* states of the world given our data. Parameters more consistent with the data will appear more often. 
 
 ---
 ### Pairs plot
@@ -618,13 +603,12 @@ pairs(m.1)
 
 ---
 
-Intercept and slope are correlated. This is often the case when we do not center! (This is one of the reasons people center when running an interaction)
+Intercept and slope are correlated. This is often the case when we do not center! (This is one of the reasons people center when running an interaction). This means that no new information is provided with this extra parameter (ie it is redundant)
 
 {brms} assumes that the intercept is the expected response value when all predictors are at their means. This is done to improve sampling efficiency. 
 
-We can either 
-1. center
-2. change prior & use 0 + Intercept (more about this later)
+For now we will center, and later we will see how not centering impacts our estimation. 
+
 
 ---
 ```{r, messages = FALSE}
@@ -753,9 +737,9 @@ mu_at_64 <-
  mu_at_64
 ```
 
-]
 
-.pull-right[
+---
+
 ```{r, echo = FALSE}
 mu_at_64 <- 
   post.tidy %>% 
@@ -763,13 +747,13 @@ mu_at_64 <-
   mutate(mu_at_64 = b_Intercept + (b_parent_c * -4.3))
  mu_at_64
 ```
-]
+
 
 
 ---
 ## fitted values
 .pull-left[
-This is nice because we can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. No assumptions. Just counting. 
+TWe can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. 
 
 
 ```{r, messages = FALSE, warning=FALSE}
@@ -820,7 +804,7 @@ mu_at_64 %>%
 ---
 ## fitted values
 
-We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} 'epred_draws()' better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot
+We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} `epred_draws()` better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot
 
 
 ```{r}
@@ -829,12 +813,12 @@ galton.data %>%
 ```
 
 ---
-### many ways to predict
-epred = fitted = uncertainty in the fixed coefficients and the uncertainty in the variance parameters for the grouping factors (for MLMs). Can be thought of as expected values or the mean prediction 
+Fitted or expected values has 928,000 rows in the dataframe. Where does this number come from?  
 
-"predict" accounts for the residual (observation-level) variance, plus the other sources of variance in epred. This is used not to describe an expected value/mean but observation/individual level data. eg what is plausible when we collect a new subject. 
+Our posterior had 1000 rows (samples). So this is taking each person and feeding them into the 1000 different regression equations and spitting out a fitted/expected/predicted value. 
 
-Whereas expectation values were good for inference, predictions are more for model checking. 
+Our posterior previously provided parameter level information. Here we are looking at fitted values for each individual/subject. 
+
 
 ---
 ## fitted values
@@ -874,24 +858,24 @@ data_grid(parent_c = seq_range(parent_c, n = 101))
 
 ---
 
-.pull-left[
+
 ```{r, eval=FALSE}
 galton.data %>% 
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
  add_epred_draws(m.2)
 ```
 
-Why is there 101,000 rows? 
+Why are there 101,000 rows? 
 
-]
 
-.pull-right[
+
+
 ```{r, echo=FALSE}
 galton.data %>% 
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
  add_epred_draws(m.2)
 ```
-]
+
 
 ---
 ## fitted values
@@ -962,6 +946,14 @@ In other words, if it involves a specific value or different values of X we need
 
 
 ---
+### many ways to predict
+epred = fitted = uncertainty in the fixed coefficients and the uncertainty in the variance parameters for the grouping factors (for MLMs). Can be thought of as expected values or the mean prediction 
+
+"predict" accounts for the residual (observation-level) variance, plus the other sources of variance in epred. This is used not to describe an expected value/mean but observation/individual level data. eg what is plausible when we collect a new subject. 
+
+Whereas expectation values were good for inference, predictions are more for model checking. 
+
+---
 ## predicted values
 .pull-left[
 ```{r, eval = FALSE}
@@ -1025,7 +1017,7 @@ $\hat{Y}_{prediction}$ ~ $b_o$ + $b_1$X, where we put in new values of X (often 
 
 ---
 ## posterior predictive distribution 
-.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. Simulate from the posterior predictive distribution. 
+.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. 
 
 This is just #3. Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
 ]
@@ -1044,6 +1036,5 @@ library(shinystan)
 launch_shinystan(m.2)
 ```
 
----
-##
+
 

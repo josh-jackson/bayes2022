@@ -1,0 +1,19 @@
+---
+title: 'Homework #1 posted'
+author: Package Build
+date: '2022-01-25'
+slug: homework-1-posted
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-01-25T10:53:45-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+Due Feb 2nd
