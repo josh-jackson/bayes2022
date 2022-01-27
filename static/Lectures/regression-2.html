@@ -530,7 +530,7 @@ With samples we can visualize, create credible intervals, HDIs, etc.
 ##   name  value .lower .upper .width .point .interval
 ##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
 ## 1 mu    68.1   67.9   68.2    0.95 mode   hdi      
-## 2 sigma  2.51   2.40   2.63   0.95 mode   hdi
+## 2 sigma  2.51   2.41   2.63   0.95 mode   hdi
 ```
 
 
@@ -626,6 +626,7 @@ m.1 &lt;-
       iter = 1000, warmup = 500, chains = 2, cores = 2, 
       file = "m.1")
 ```
+
 
 ---
 ## brms
@@ -731,6 +732,15 @@ get_variables(m.1)
 ##  [5] "accept_stat__" "stepsize__"    "treedepth__"   "n_leapfrog__" 
 ##  [9] "divergent__"   "energy__"
 ```
+
+---
+
+{tidybayes} is a helpful package to work with your posterior. It consists of a number of helper functions to put your posterior in a format to neatly graph and or compute values. Once we get to more complicated models this will be invaluable. 
+
+Please take a look at the overview and download the package http://mjskay.github.io/tidybayes/articles/tidy-brms.html
+
+Note that {ggist} is a package that is loaded with {tidybayes}. It was spun off of the original {tidybayes} to assist with frequentist model visualization too. 
+
 
 ---
 
@@ -1745,7 +1755,8 @@ posterior_samples(m.1)
 
 
 ---
-Same information, but an easier way to handle all this information.
+1k rows indicate 1k parameter samples. All of these parameters represent *possible* states of the world given our data. Parameters more consistent with the data will appear more often. 
+
 
 ```r
 library(tidybayes)
@@ -1769,13 +1780,39 @@ tidy_draws(m.1)
 ## # … with 990 more rows, and 5 more variables: stepsize__ &lt;dbl&gt;,
 ## #   treedepth__ &lt;dbl&gt;, n_leapfrog__ &lt;dbl&gt;, divergent__ &lt;dbl&gt;, energy__ &lt;dbl&gt;
 ```
-1k rows indicate 1k parameter samples. All of these parameters represent *possible* states of the world given our data. Parameters more consistent with the data will appear more often. 
+
+
+---
+Instead of looking at all of our "draws" we often want to look at just some of the parameters we estimated. Spread draws is an oft used function similar to select in {dplyr} to get at what parameters we care about
+
+```r
+ m.1 %&gt;% 
+spread_draws(b_Intercept, b_parent)
+```
+
+```
+## # A tibble: 1,000 × 5
+##    .chain .iteration .draw b_Intercept b_parent
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+##  1      1          1     1        26.1    0.614
+##  2      1          2     2        24.8    0.635
+##  3      1          3     3        21.0    0.689
+##  4      1          4     4        18.2    0.730
+##  5      1          5     5        24.9    0.631
+##  6      1          6     6        27.9    0.588
+##  7      1          7     7        21.5    0.682
+##  8      1          8     8        22.4    0.668
+##  9      1          9     9        27.8    0.591
+## 10      1         10    10        20.4    0.697
+## # … with 990 more rows
+```
+
 
 ---
 ### Pairs plot
 
 .pull-left[
-marginal posteriors and the covariances
+marginal (i.e., averaged over the other parameters) posteriors and the covariances across draws (e.g., when the algorithm found a high value for bo did it also find a high value for sigma)
 
 ```r
 pairs(m.1)
@@ -1783,7 +1820,7 @@ pairs(m.1)
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1819,7 +1856,7 @@ m.2 &lt;-
 pairs(m.2)
 ```
 
-![](regression-2_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1854,12 +1891,13 @@ summary(m.2)
 ---
 ## Posterior
 
-Again the posterior is just made up of samples. In reality is it some hyperplanned space, but we don't have access to that so we must sample. 
+Again the posterior is just made up of samples. In reality is it some hyperplanned space, but we don't have access to that so we must sample. Think of it as us doing `rnorm` with me hiding what the mean and SD are, but then figuring out what the mean and SD are through counting the samples. Same as drawing marbles from a bag to find % blue.  
 
-Now the difficulty is getting those samples into a shape that plays nicely with what we want. We will primarily use {tidybayes} and {posterior} to do so. {brms} has some built in functions but they do not extend well for certain situations. 
+Now the difficulty is getting those samples into a shape that plays nicely with what we want. {brms} has some built in functions but they do not extend well for certain situations so we will primarily use {tidybayes}. 
 
 
 ---
+Briefly: chain is how many of these sampling processes we want to do do simultaneously. Default is 4. Iterations are how many parameter values we have per chain. Draws tells us how many total parameter estimates we have. 
 
 ```r
 post.tidy &lt;- m.2 %&gt;% 
@@ -1885,6 +1923,16 @@ post.tidy
 ```
 
 ---
+Once we have the posterior in an easy to use format, we can: 
+1. Visualize it. 
+  - Distributions
+  - Predicted values
+2. Calculate values from it. 
+  - Summary statistics
+  - New parameters
+
+Anything we want to accomplish with our model is IN the posterior
+---
 
 ```r
 post.tidy %&gt;% 
@@ -1892,7 +1940,7 @@ post.tidy %&gt;%
   stat_dotsinterval()
 ```
 
-![](regression-2_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1928,6 +1976,20 @@ post.tidy %&gt;% select(b_parent_c) %&gt;%
 
 ---
 
+We can even go and easily plot these values we calculated
+
+
+```r
+  post.tidy %&gt;% select(b_parent_c) %&gt;% 
+  mode_hdi(.width = c(.5, .89, .99)) %&gt;%  
+ggplot(aes(y = as.factor(.width), x = b_parent_c, xmin = .lower, xmax = .upper)) + geom_pointinterval() 
+```
+
+![](regression-2_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+
+
+---
+
 
 ```r
 post.tidy %&gt;% 
@@ -1935,12 +1997,12 @@ post.tidy %&gt;%
   stat_halfeye()
 ```
 
-![](regression-2_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
 
 
 ---
 
-.pull-left[
+.pull-left[ Prior and posterior together at the same time. 
 
 ```r
 post.tidy %&gt;% 
@@ -1952,7 +2014,7 @@ post.tidy %&gt;%
 
 .pull-right[
 
-![](regression-2_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
 
 
 ]
@@ -1961,7 +2023,7 @@ post.tidy %&gt;%
 ---
 ## fitted values
 
-Much like in regular regression, we may be interested in the fitted/expected/predicted values (Y-hats) at certain values of X. We use them a lot to calculate residuals and other fit metrics. This gives us the predicted mean at a given X
+Much like in regular regression, we may be interested in the fitted/expected/predicted values (Y-hats) at certain values of X. We use them a lot for graphing, to calculate residuals, and other fit metrics. This gives us the predicted mean at a given X
 
 ```r
 library(broom)
@@ -2033,7 +2095,7 @@ mu_at_64 &lt;-
 ---
 ## fitted values
 .pull-left[
-TWe can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. 
+We can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. 
 
 
 
@@ -2051,7 +2113,7 @@ mean_hdi(mu_at_64)
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -2069,13 +2131,34 @@ mu_at_64 %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
 ]
+
+---
+
+.pull-left[
+
+```r
+mu_at_64 %&gt;%
+  ggplot(aes(x = mu_at_64)) +
+  stat_halfeye(aes(fill = stat(cut_cdf_qi(cdf, 
+    .width = c(.5, .8, .95),
+    labels = scales::percent_format())))) +
+  scale_fill_brewer(direction = -1, na.translate = FALSE) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(fill = "Interval")
+```
+]
+
+.pull-right[
+![](regression-2_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+]
+
 
 ---
 ## fitted values
 
-We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} `epred_draws()` better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot
+We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} `epred_draws()` better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot and scales better
 
 
 
@@ -2105,7 +2188,7 @@ galton.data %&gt;%
 ---
 Fitted or expected values has 928,000 rows in the dataframe. Where does this number come from?  
 
-Our posterior had 1000 rows (samples). So this is taking each person and feeding them into the 1000 different regression equations and spitting out a fitted/expected/predicted value. 
+Our posterior had 1000 rows (samples/draws). So this is taking each person and feeding them into the 1000 different regression equations and spitting out a fitted/expected/predicted value. 
 
 Our posterior previously provided parameter level information. Here we are looking at fitted values for each individual/subject. 
 
@@ -2127,10 +2210,11 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
 ]
 
 ---
+Why data_grid from the modelr package? Because it makes feeding in values to our model very easy. What sort of values would we want to feed into it? Well if we want to graph across X, we should feed in all X values we want to plot against. 
 
 
 ```r
@@ -2169,26 +2253,23 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 Why are there 101,000 rows? 
 
 
+---
 
+.pull-left[
 
-
+```r
+galton.data %&gt;% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;% 
+ add_epred_draws(m.2) %&gt;% 
+  ggplot(aes(x = parent_c, y = child)) +
+  stat_lineribbon(aes(y = .epred), .width = c(.95), color = "grey") +
+  geom_point(data = galton.data, size = 2)
 ```
-## # A tibble: 101,000 × 6
-## # Groups:   parent_c, .row [101]
-##    parent_c  .row .chain .iteration .draw .epred
-##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1   65.4
-##  2    -4.31     1     NA         NA     2   65.3
-##  3    -4.31     1     NA         NA     3   65.4
-##  4    -4.31     1     NA         NA     4   65.6
-##  5    -4.31     1     NA         NA     5   65.2
-##  6    -4.31     1     NA         NA     6   65.6
-##  7    -4.31     1     NA         NA     7   65.1
-##  8    -4.31     1     NA         NA     8   65.1
-##  9    -4.31     1     NA         NA     9   65.3
-## 10    -4.31     1     NA         NA    10   65.2
-## # … with 100,990 more rows
-```
+]
+
+.pull-right[
+![](regression-2_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+]
 
 
 ---
@@ -2213,11 +2294,13 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 .pull-right[
 
 
-![](regression-2_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
 
 ]
 
 ---
+
+Different from before is we are only adding a random subject of draws. Instead of all of them we are only doing 100. 
 
 
 ```r
@@ -2231,19 +2314,41 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .epred
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1   65.0
-##  2    -4.31     1     NA         NA     2   65.3
-##  3    -4.31     1     NA         NA     3   65.4
-##  4    -4.31     1     NA         NA     4   65.2
-##  5    -4.31     1     NA         NA     5   65.0
-##  6    -4.31     1     NA         NA     6   65.4
-##  7    -4.31     1     NA         NA     7   65.8
-##  8    -4.31     1     NA         NA     8   65.5
+##  1    -4.31     1     NA         NA     1   65.4
+##  2    -4.31     1     NA         NA     2   65.4
+##  3    -4.31     1     NA         NA     3   65.3
+##  4    -4.31     1     NA         NA     4   65.4
+##  5    -4.31     1     NA         NA     5   65.2
+##  6    -4.31     1     NA         NA     6   65.5
+##  7    -4.31     1     NA         NA     7   65.3
+##  8    -4.31     1     NA         NA     8   65.2
 ##  9    -4.31     1     NA         NA     9   65.4
-## 10    -4.31     1     NA         NA    10   65.5
+## 10    -4.31     1     NA         NA    10   65.4
 ## # … with 10,090 more rows
 ```
 why only 10,100 rows whereas previously we had 101,000? 
+
+---
+
+Prevously we used: `stat_lineribbon(aes(y = .epred), .width = c(.95), color = "grey") ` to get the full confidence band. 
+
+Here we are using `geom_line(aes(y = .epred, group = .draw), alpha = .1)` and creating a fitted value for each draw. 
+
+This shows us that the posterior is just different possible regression lines. 
+
+
+```r
+galton.data %&gt;% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;% 
+ add_epred_draws(m.2, ndraws = 100) %&gt;% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  geom_point(data = galton.data, size = 2) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels)
+```
+
+---
+![](regression-2_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
 
 ---
 ## fitted values
@@ -2251,16 +2356,14 @@ why only 10,100 rows whereas previously we had 101,000?
 .pull-left[
 Posterior samples provides us an estimate of different parameter values proportional to their likelihood (and prior) ie more samples near the mean. 
 
-They also give an indication of the spread of the posterior, which is useful to create confidence intervals and do NHST like statistical tests of parameters.
+They also give an indication of the precision of the estimate, which is useful to create confidence intervals and do NHST like statistical tests of parameters. All uncertainty is captured in the posterior.
 ]
 
 .pull-right[
-We use them to: 
+Rather than just visualizing the marginal distribution, we use these samples to calculated fitted/expected values to: 
 1. create model implied estimates at a specific value of X, ( `\(\hat{Y}\)` | X )  
 2. create CIs around these values
 3. visualize model implied fits
-
-In other words, if it involves a specific value or different values of X we need to use fitted values. 
 
 ]
 
@@ -2292,7 +2395,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-69-1.png)&lt;!-- --&gt;
 ]
 
 --- 
@@ -2318,24 +2421,44 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .prediction
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1        66.9
-##  2    -4.31     1     NA         NA     2        62.5
-##  3    -4.31     1     NA         NA     3        67.1
-##  4    -4.31     1     NA         NA     4        63.2
-##  5    -4.31     1     NA         NA     5        62.4
-##  6    -4.31     1     NA         NA     6        66.8
-##  7    -4.31     1     NA         NA     7        65.5
-##  8    -4.31     1     NA         NA     8        65.2
-##  9    -4.31     1     NA         NA     9        65.7
-## 10    -4.31     1     NA         NA    10        66.1
+##  1    -4.31     1     NA         NA     1        66.7
+##  2    -4.31     1     NA         NA     2        70.3
+##  3    -4.31     1     NA         NA     3        65.8
+##  4    -4.31     1     NA         NA     4        67.0
+##  5    -4.31     1     NA         NA     5        65.3
+##  6    -4.31     1     NA         NA     6        67.8
+##  7    -4.31     1     NA         NA     7        67.7
+##  8    -4.31     1     NA         NA     8        68.5
+##  9    -4.31     1     NA         NA     9        65.9
+## 10    -4.31     1     NA         NA    10        65.8
 ## # … with 100,990 more rows
 ```
 Where does 101,000 come from? 
 
 
+
+
+---
+# prediction in frequentist land
+$$ \hat{Y}_i = \beta_0 + \beta_1 X     $$
+
+
+```r
+predict(lm_object, interval = confidence)
+```
+
+ 
+$$ \hat{Y}_i = \beta_0 + \beta_1 X + \epsilon_i $$
+
+
+```r
+predict(lm_object, interval = prediction)
+```
+
+The first method does not incorporate any error at all. The second incorporates error at the individual level. However, both assume Beta is true (they draw the best fit line) and do not incorporate what we know about sampling variability in our estimate of beta (outside of calculating CIs centered around that estimate). Bayesian methods take into account we do not know beta. 
+
 ---
 ## 3 types of predictions
-
 `\(\hat{Y}_{prediction}\)` ~ `\(b_o\)` + `\(b_1\)`X, where we put in new values of X (often our data Xs we collected or values across the range of X)
 
 1. lm style, where there is 1 value, our estimate, of `\(b_o\)` &amp; `\(b_1\)`
@@ -2344,27 +2467,111 @@ Where does 101,000 come from?
 
 3. prediction style, where we are propagating uncertainty in `\(b_o\)`, `\(b_1\)` &amp; `\(\hat{\sigma}\)` . 
 
+
+
+---
+## Posterior predictive distribtion
+.pull-left[
+
+We can make a distribution based on this later form of prediction. 
+
+.pull-right[
+![](regression-2_files/figure-html/unnamed-chunk-73-1.png)&lt;!-- --&gt;
+]
+
+---
+## Posterior predictive
+
+.pull-left[
+Now lets assume each of these parameter values are true. What would we expect? But we know they are not true; we know .1 while possible is very unlikely. So we need to weight that evidence. 
+]
+
+.pull-right[
+![](regression-2_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+]
+
+---
+## Posterior predictive
+
+.pull-left[
+![](regression-2_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter.]
+
+
 ---
 ## posterior predictive distribution 
-.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. 
+.pull-left[How can we use this distribution? If a model is a good fit we should be able to generate data that resemble the data we observed. 
 
-This is just #3. Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
+Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
 ]
 
 .pull-right[]
-![](regression-2_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 
 ---
-## posterior predictive distribution 
-
+# prior predictive by only sampling prior
+This posterior predictive distribution is similar to the prior predictive distribution. Instead of taking our results and asking what could be, we are takin our priors and asking what could be. 
 
 ```r
-library(shinystan)
-launch_shinystan(m.2)
+m.2p &lt;- 
+  brm(family = gaussian,
+      child ~ 1 + parent_c,
+      prior = c(prior(normal(68, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(cauchy(0, 1), class = sigma)),
+      data = galton.data,
+      sample_prior = "only",
+      iter = 1000, warmup = 500, chains = 2, cores = 2, 
+      file = "m.2p")
 ```
 
 
+---
+
+
+```r
+summary(m.2p)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: child ~ 1 + parent_c 
+##    Data: galton.data (Number of observations: 928) 
+##   Draws: 2 chains, each with iter = 1000; warmup = 500; thin = 1;
+##          total post-warmup draws = 1000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept    67.83      5.00    58.62    77.71 1.01     1480      876
+## parent_c     -0.14      5.19    -9.85     9.75 1.01      808      614
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     4.15     32.09     0.05    19.40 1.00      814      548
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+
+```r
+galton.data %&gt;% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;% 
+ add_epred_draws(m.2p, ndraws = 100) %&gt;% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels) 
+```
+
+![](regression-2_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

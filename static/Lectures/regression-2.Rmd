@@ -522,6 +522,7 @@ m.1 <-
       file = "m.1")
 ```
 
+
 ---
 ## brms
 ```{r}
@@ -571,6 +572,15 @@ get_variables(m.1)
 ```
 
 ---
+
+{tidybayes} is a helpful package to work with your posterior. It consists of a number of helper functions to put your posterior in a format to neatly graph and or compute values. Once we get to more complicated models this will be invaluable. 
+
+Please take a look at the overview and download the package http://mjskay.github.io/tidybayes/articles/tidy-brms.html
+
+Note that {ggist} is a package that is loaded with {tidybayes}. It was spun off of the original {tidybayes} to assist with frequentist model visualization too. 
+
+
+---
 ```{r, warning=FALSE, message=FALSE}
 #deprecated but it is easy to see. Parameters more consistent with the data will appear more, just like with our grid approximation sampling. 
 posterior_samples(m.1)
@@ -578,18 +588,27 @@ posterior_samples(m.1)
 
 
 ---
-Same information, but an easier way to handle all this information.
+1k rows indicate 1k parameter samples. All of these parameters represent *possible* states of the world given our data. Parameters more consistent with the data will appear more often. 
+
 ```{r}
 library(tidybayes)
 tidy_draws(m.1)
 ```
-1k rows indicate 1k parameter samples. All of these parameters represent *possible* states of the world given our data. Parameters more consistent with the data will appear more often. 
+
+
+---
+Instead of looking at all of our "draws" we often want to look at just some of the parameters we estimated. Spread draws is an oft used function similar to select in {dplyr} to get at what parameters we care about
+```{r}
+ m.1 %>% 
+spread_draws(b_Intercept, b_parent)
+```
+
 
 ---
 ### Pairs plot
 
 .pull-left[
-marginal posteriors and the covariances
+marginal (i.e., averaged over the other parameters) posteriors and the covariances across draws (e.g., when the algorithm found a high value for bo did it also find a high value for sigma)
 ```{r, eval = FALSE}
 pairs(m.1)
 ```
@@ -643,18 +662,29 @@ summary(m.2)
 ---
 ## Posterior
 
-Again the posterior is just made up of samples. In reality is it some hyperplanned space, but we don't have access to that so we must sample. 
+Again the posterior is just made up of samples. In reality is it some hyperplanned space, but we don't have access to that so we must sample. Think of it as us doing `rnorm` with me hiding what the mean and SD are, but then figuring out what the mean and SD are through counting the samples. Same as drawing marbles from a bag to find % blue.  
 
-Now the difficulty is getting those samples into a shape that plays nicely with what we want. We will primarily use {tidybayes} and {posterior} to do so. {brms} has some built in functions but they do not extend well for certain situations. 
+Now the difficulty is getting those samples into a shape that plays nicely with what we want. {brms} has some built in functions but they do not extend well for certain situations so we will primarily use {tidybayes}. 
 
 
 ---
+Briefly: chain is how many of these sampling processes we want to do do simultaneously. Default is 4. Iterations are how many parameter values we have per chain. Draws tells us how many total parameter estimates we have. 
 ```{r}
 post.tidy <- m.2 %>% 
 spread_draws(b_Intercept, b_parent_c)
 post.tidy
 ```
 
+---
+Once we have the posterior in an easy to use format, we can: 
+1. Visualize it. 
+  - Distributions
+  - Predicted values
+2. Calculate values from it. 
+  - Summary statistics
+  - New parameters
+
+Anything we want to accomplish with our model is IN the posterior
 ---
 ```{r}
 post.tidy %>% 
@@ -676,6 +706,17 @@ post.tidy %>% select(b_parent_c) %>%
 
 ---
 
+We can even go and easily plot these values we calculated
+
+```{r}
+  post.tidy %>% select(b_parent_c) %>% 
+  mode_hdi(.width = c(.5, .89, .99)) %>%  
+ggplot(aes(y = as.factor(.width), x = b_parent_c, xmin = .lower, xmax = .upper)) + geom_pointinterval() 
+```
+
+
+---
+
 ```{r}
 post.tidy %>% 
   ggplot(aes(x = b_parent_c)) +
@@ -685,7 +726,7 @@ post.tidy %>%
 
 ---
 
-.pull-left[
+.pull-left[ Prior and posterior together at the same time. 
 ```{r, eval = FALSE}
 post.tidy %>% 
   ggplot(aes(x = b_parent_c)) +
@@ -710,7 +751,7 @@ post.tidy %>%
 ---
 ## fitted values
 
-Much like in regular regression, we may be interested in the fitted/expected/predicted values (Y-hats) at certain values of X. We use them a lot to calculate residuals and other fit metrics. This gives us the predicted mean at a given X
+Much like in regular regression, we may be interested in the fitted/expected/predicted values (Y-hats) at certain values of X. We use them a lot for graphing, to calculate residuals, and other fit metrics. This gives us the predicted mean at a given X
 ```{r}
 library(broom)
 augment(lm(child ~ parent, galton.data))
@@ -753,7 +794,7 @@ mu_at_64 <-
 ---
 ## fitted values
 .pull-left[
-TWe can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. 
+We can calculate not only the mean but also the dispersion. In lm land we had to use a funky equation to calculate the CI around some predicted value of X. Now we can use samples. It is just counting up where the xx% of samples fall. 
 
 
 ```{r, messages = FALSE, warning=FALSE}
@@ -802,9 +843,39 @@ mu_at_64 %>%
 ]
 
 ---
+
+.pull-left[
+```{r, eval=FALSE}
+mu_at_64 %>%
+  ggplot(aes(x = mu_at_64)) +
+  stat_halfeye(aes(fill = stat(cut_cdf_qi(cdf, 
+    .width = c(.5, .8, .95),
+    labels = scales::percent_format())))) +
+  scale_fill_brewer(direction = -1, na.translate = FALSE) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(fill = "Interval")
+```
+]
+
+.pull-right[
+```{r, echo=FALSE}
+mu_at_64 %>%
+  ggplot(aes(x = mu_at_64)) +
+  stat_halfeye(aes(fill = stat(cut_cdf_qi(
+    cdf, 
+    .width = c(.5, .8, .95),
+    labels = scales::percent_format())))) +
+  scale_fill_brewer(direction = -1, na.translate = FALSE) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(fill = "Interval")
+```
+]
+
+
+---
 ## fitted values
 
-We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} `epred_draws()` better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot
+We can also pass new data to this function. You can do this with {brms} `poseterior_predict` function, but I like the {tidybayes} `epred_draws()` better, especially when paired  with {modelr}::`data_grid`, as it is easier to pipe into ggplot and scales better
 
 
 ```{r}
@@ -815,7 +886,7 @@ galton.data %>%
 ---
 Fitted or expected values has 928,000 rows in the dataframe. Where does this number come from?  
 
-Our posterior had 1000 rows (samples). So this is taking each person and feeding them into the 1000 different regression equations and spitting out a fitted/expected/predicted value. 
+Our posterior had 1000 rows (samples/draws). So this is taking each person and feeding them into the 1000 different regression equations and spitting out a fitted/expected/predicted value. 
 
 Our posterior previously provided parameter level information. Here we are looking at fitted values for each individual/subject. 
 
@@ -849,6 +920,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %>%
 ]
 
 ---
+Why data_grid from the modelr package? Because it makes feeding in values to our model very easy. What sort of values would we want to feed into it? Well if we want to graph across X, we should feed in all X values we want to plot against. 
 
 ```{r}
 galton.data %>% 
@@ -868,13 +940,29 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %>%
 Why are there 101,000 rows? 
 
 
+---
 
-
-```{r, echo=FALSE}
+.pull-left[
+```{r, message=FALSE, warning=FALSE, eval = FALSE}
 galton.data %>% 
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
- add_epred_draws(m.2)
+ add_epred_draws(m.2) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  stat_lineribbon(aes(y = .epred), .width = c(.95), color = "grey") +
+  geom_point(data = galton.data, size = 2)
 ```
+]
+
+.pull-right[
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  stat_lineribbon(aes(y = .epred), .width = c(.95), color = "grey") +
+  geom_point(data = galton.data, size = 2)
+```
+]
 
 
 ---
@@ -918,6 +1006,8 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %>%
 
 ---
 
+Different from before is we are only adding a random subject of draws. Instead of all of them we are only doing 100. 
+
 ```{r}
 galton.data %>% 
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
@@ -926,21 +1016,48 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %>%
 why only 10,100 rows whereas previously we had 101,000? 
 
 ---
+
+Prevously we used: `stat_lineribbon(aes(y = .epred), .width = c(.95), color = "grey") ` to get the full confidence band. 
+
+Here we are using `geom_line(aes(y = .epred, group = .draw), alpha = .1)` and creating a fitted value for each draw. 
+
+This shows us that the posterior is just different possible regression lines. 
+
+```{r, eval = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2, ndraws = 100) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  geom_point(data = galton.data, size = 2) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels)
+```
+
+---
+```{r, echo = FALSE}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2, ndraws = 100) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  geom_point(data = galton.data, size = 2) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels)
+```
+
+---
 ## fitted values
 
 .pull-left[
 Posterior samples provides us an estimate of different parameter values proportional to their likelihood (and prior) ie more samples near the mean. 
 
-They also give an indication of the spread of the posterior, which is useful to create confidence intervals and do NHST like statistical tests of parameters.
+They also give an indication of the precision of the estimate, which is useful to create confidence intervals and do NHST like statistical tests of parameters. All uncertainty is captured in the posterior.
 ]
 
 .pull-right[
-We use them to: 
+Rather than just visualizing the marginal distribution, we use these samples to calculated fitted/expected values to: 
 1. create model implied estimates at a specific value of X, ( $\hat{Y}$ | X )  
 2. create CIs around these values
 3. visualize model implied fits
-
-In other words, if it involves a specific value or different values of X we need to use fitted values. 
 
 ]
 
@@ -1004,9 +1121,27 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %>%
 Where does 101,000 come from? 
 
 
+
+
+---
+# prediction in frequentist land
+$$ \hat{Y}_i = \beta_0 + \beta_1 X     $$
+
+```{r, eval = FALSE}
+predict(lm_object, interval = confidence)
+```
+
+ 
+$$ \hat{Y}_i = \beta_0 + \beta_1 X + \epsilon_i $$
+
+```{r, eval = FALSE}
+predict(lm_object, interval = prediction)
+```
+
+The first method does not incorporate any error at all. The second incorporates error at the individual level. However, both assume Beta is true (they draw the best fit line) and do not incorporate what we know about sampling variability in our estimate of beta (outside of calculating CIs centered around that estimate). Bayesian methods take into account we do not know beta. 
+
 ---
 ## 3 types of predictions
-
 $\hat{Y}_{prediction}$ ~ $b_o$ + $b_1$X, where we put in new values of X (often our data Xs we collected or values across the range of X)
 
 1. lm style, where there is 1 value, our estimate, of $b_o$ & $b_1$
@@ -1015,11 +1150,120 @@ $\hat{Y}_{prediction}$ ~ $b_o$ + $b_1$X, where we put in new values of X (often 
 
 3. prediction style, where we are propagating uncertainty in $b_o$, $b_1$ & $\hat{\sigma}$ . 
 
+
+
+---
+## Posterior predictive distribtion
+.pull-left[
+
+We can make a distribution based on this later form of prediction. 
+
+.pull-right[
+```{r, echo = FALSE}
+# how many grid points would you like?
+n <- 1001
+n_success <- 6
+n_trials  <- 9
+
+
+  d <-
+  tibble(p_grid = seq(from = 0, to = 1, length.out = n),
+         # note we're still using a flat uniform prior
+         prior  = 1) %>% 
+  mutate(likelihood = dbinom(n_success, size = n_trials, prob = p_grid)) %>% 
+  mutate(posterior = (likelihood * prior) / sum(likelihood * prior))
+
+  d %>% 
+  ggplot(aes(x = p_grid)) +
+  geom_ribbon(aes(ymin = 0, ymax = posterior),
+              color = "grey67", fill = "grey67") +
+  geom_segment(data = . %>% 
+                 filter(p_grid %in% c(seq(from = .1, to = .9, by = .1), 3 / 10)),
+               aes(xend = p_grid,
+                   y = 0, yend = posterior, size = posterior),
+               color = "grey33", show.legend = F) +
+  geom_point(data = . %>%
+               filter(p_grid %in% c(seq(from = .1, to = .9, by = .1), 3 / 10)),
+             aes(y = posterior)) +
+  annotate(geom = "text", x = .08, y = .0025,
+           label = "Posterior probability") +
+  scale_size_continuous(range = c(0, 1)) +
+  scale_x_continuous("probability of water", breaks = c(0:10) / 10) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  theme(panel.grid = element_blank())
+```
+]
+
+---
+## Posterior predictive
+
+.pull-left[
+Now lets assume each of these parameter values are true. What would we expect? But we know they are not true; we know .1 while possible is very unlikely. So we need to weight that evidence. 
+]
+
+.pull-right[
+```{r, echo = FALSE}
+n_draws <- 1e5
+
+simulate_binom <- function(probability) {
+  set.seed(3)
+  rbinom(n_draws, size = 9, prob = probability) 
+}
+
+d_small <-
+  tibble(probability = seq(from = .1, to = .9, by = .1)) %>% 
+  mutate(draws = purrr::map(probability, simulate_binom)) %>% 
+  unnest(draws) %>% 
+  mutate(label = str_c("p = ", probability))
+
+d_small %>%
+  ggplot(aes(x = draws)) +
+  geom_histogram(binwidth = 1, center = 0,
+                 color = "grey92", size = 1/10) +
+  scale_x_continuous(NULL, breaks = seq(from = 0, to = 9, by = 3)) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(subtitle = "Sampling distributions") +
+  coord_cartesian(xlim = c(0, 9)) +
+  theme(panel.grid = element_blank()) +
+  facet_wrap(~ label, ncol = 9) 
+
+```
+]
+
+---
+## Posterior predictive
+
+.pull-left[
+```{r, echo = FALSE}
+samples <-
+  d %>% 
+  sample_n(size = 10000, weight = posterior, replace = T) %>% 
+  mutate(w = purrr::map_dbl(p_grid, rbinom, n = 1, size = 9))
+
+samples %>% 
+  ggplot(aes(x = w)) +
+  geom_histogram(binwidth = 1, center = 0,
+                 color = "grey92", size = 1/10) +
+  scale_x_continuous("number of water samples",
+                     breaks = seq(from = 0, to = 9, by = 3)) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  ggtitle("Posterior predictive distribution") +
+  coord_cartesian(xlim = c(0, 9),
+                  ylim = c(0, 3000)) +
+  theme(panel.grid = element_blank())
+
+```
+]
+
+.pull-right[
+This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter.]
+
+
 ---
 ## posterior predictive distribution 
-.pull-left[If a model is a good fit we should be able to use it to generate data that resemble the data we observed. 
+.pull-left[How can we use this distribution? If a model is a good fit we should be able to generate data that resemble the data we observed. 
 
-This is just #3. Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
+Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
 ]
 
 .pull-right[]
@@ -1029,12 +1273,38 @@ pp_check(m.2)
 ]
 
 ---
-## posterior predictive distribution 
+# prior predictive by only sampling prior
+This posterior predictive distribution is similar to the prior predictive distribution. Instead of taking our results and asking what could be, we are takin our priors and asking what could be. 
+```{r}
 
-```{r, eval = FALSE}
-library(shinystan)
-launch_shinystan(m.2)
+m.2p <- 
+  brm(family = gaussian,
+      child ~ 1 + parent_c,
+      prior = c(prior(normal(68, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(cauchy(0, 1), class = sigma)),
+      data = galton.data,
+      sample_prior = "only",
+      iter = 1000, warmup = 500, chains = 2, cores = 2, 
+      file = "m.2p")
+
 ```
 
 
+---
+
+```{r}
+summary(m.2p)
+```
+
+---
+
+```{r}
+galton.data %>% 
+data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
+ add_epred_draws(m.2p, ndraws = 100) %>% 
+  ggplot(aes(x = parent_c, y = child)) +
+  geom_line(aes(y = .epred, group = .draw), alpha = .1) +
+  scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels) 
+```
 
