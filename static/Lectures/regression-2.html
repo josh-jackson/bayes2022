@@ -529,8 +529,8 @@ With samples we can visualize, create credible intervals, HDIs, etc.
 ## # A tibble: 2 × 7
 ##   name  value .lower .upper .width .point .interval
 ##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 mu    68.1   67.9   68.2    0.95 mode   hdi      
-## 2 sigma  2.51   2.41   2.63   0.95 mode   hdi
+## 1 mu    68.1   67.9   68.3    0.95 mode   hdi      
+## 2 sigma  2.52   2.41   2.64   0.95 mode   hdi
 ```
 
 
@@ -739,7 +739,7 @@ get_variables(m.1)
 
 Please take a look at the overview and download the package http://mjskay.github.io/tidybayes/articles/tidy-brms.html
 
-Note that {ggist} is a package that is loaded with {tidybayes}. It was spun off of the original {tidybayes} to assist with frequentist model visualization too. 
+Note that {ggdist} is a package that is loaded with {tidybayes}. It was spun off of the original {tidybayes} to assist with frequentist model visualization too. 
 
 
 ---
@@ -1976,7 +1976,7 @@ post.tidy %&gt;% select(b_parent_c) %&gt;%
 
 ---
 
-We can even go and easily plot these values we calculated
+.pull-left[ We can even go and easily plot these values we calculated
 
 
 ```r
@@ -1984,9 +1984,12 @@ We can even go and easily plot these values we calculated
   mode_hdi(.width = c(.5, .89, .99)) %&gt;%  
 ggplot(aes(y = as.factor(.width), x = b_parent_c, xmin = .lower, xmax = .upper)) + geom_pointinterval() 
 ```
+]
 
-![](regression-2_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+.pull-right[
+![](regression-2_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
 
+]
 
 ---
 
@@ -1997,7 +2000,7 @@ post.tidy %&gt;%
   stat_halfeye()
 ```
 
-![](regression-2_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -2014,7 +2017,7 @@ post.tidy %&gt;%
 
 .pull-right[
 
-![](regression-2_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
 
 
 ]
@@ -2113,12 +2116,12 @@ mean_hdi(mu_at_64)
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
 
 ]
 
 ---
-.pull-left[ You can use standard ggplot geoms but I recommend using tidybayes (ggist) specialty ones
+.pull-left[ You can use standard ggplot geoms but I recommend using tidybayes (ggdist) specialty ones
 
 
 ```r
@@ -2131,7 +2134,7 @@ mu_at_64 %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2151,7 +2154,7 @@ mu_at_64 %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -2210,7 +2213,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2242,6 +2245,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101))
 
 ---
 
+Why are there 101,000 rows? 
 
 
 ```r
@@ -2250,7 +2254,23 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
  add_epred_draws(m.2)
 ```
 
-Why are there 101,000 rows? 
+```
+## # A tibble: 101,000 × 6
+## # Groups:   parent_c, .row [101]
+##    parent_c  .row .chain .iteration .draw .epred
+##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
+##  1    -4.31     1     NA         NA     1   65.4
+##  2    -4.31     1     NA         NA     2   65.3
+##  3    -4.31     1     NA         NA     3   65.4
+##  4    -4.31     1     NA         NA     4   65.6
+##  5    -4.31     1     NA         NA     5   65.2
+##  6    -4.31     1     NA         NA     6   65.6
+##  7    -4.31     1     NA         NA     7   65.1
+##  8    -4.31     1     NA         NA     8   65.1
+##  9    -4.31     1     NA         NA     9   65.3
+## 10    -4.31     1     NA         NA    10   65.2
+## # … with 100,990 more rows
+```
 
 
 ---
@@ -2268,7 +2288,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -2294,7 +2314,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 .pull-right[
 
 
-![](regression-2_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -2314,16 +2334,16 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .epred
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1   65.4
-##  2    -4.31     1     NA         NA     2   65.4
-##  3    -4.31     1     NA         NA     3   65.3
-##  4    -4.31     1     NA         NA     4   65.4
-##  5    -4.31     1     NA         NA     5   65.2
-##  6    -4.31     1     NA         NA     6   65.5
-##  7    -4.31     1     NA         NA     7   65.3
-##  8    -4.31     1     NA         NA     8   65.2
-##  9    -4.31     1     NA         NA     9   65.4
-## 10    -4.31     1     NA         NA    10   65.4
+##  1    -4.31     1     NA         NA     1   65.2
+##  2    -4.31     1     NA         NA     2   65.6
+##  3    -4.31     1     NA         NA     3   65.1
+##  4    -4.31     1     NA         NA     4   65.2
+##  5    -4.31     1     NA         NA     5   64.8
+##  6    -4.31     1     NA         NA     6   65.3
+##  7    -4.31     1     NA         NA     7   65.5
+##  8    -4.31     1     NA         NA     8   65.5
+##  9    -4.31     1     NA         NA     9   65.3
+## 10    -4.31     1     NA         NA    10   65.5
 ## # … with 10,090 more rows
 ```
 why only 10,100 rows whereas previously we had 101,000? 
@@ -2348,7 +2368,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ```
 
 ---
-![](regression-2_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-68-1.png)&lt;!-- --&gt;
 
 ---
 ## fitted values
@@ -2369,7 +2389,7 @@ Rather than just visualizing the marginal distribution, we use these samples to 
 
 
 ---
-### many ways to predict
+### Multiple ways to predict
 epred = fitted = uncertainty in the fixed coefficients and the uncertainty in the variance parameters for the grouping factors (for MLMs). Can be thought of as expected values or the mean prediction 
 
 "predict" accounts for the residual (observation-level) variance, plus the other sources of variance in epred. This is used not to describe an expected value/mean but observation/individual level data. eg what is plausible when we collect a new subject. 
@@ -2395,7 +2415,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-69-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
 ]
 
 --- 
@@ -2421,16 +2441,16 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .prediction
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1        66.7
-##  2    -4.31     1     NA         NA     2        70.3
-##  3    -4.31     1     NA         NA     3        65.8
-##  4    -4.31     1     NA         NA     4        67.0
-##  5    -4.31     1     NA         NA     5        65.3
-##  6    -4.31     1     NA         NA     6        67.8
-##  7    -4.31     1     NA         NA     7        67.7
-##  8    -4.31     1     NA         NA     8        68.5
-##  9    -4.31     1     NA         NA     9        65.9
-## 10    -4.31     1     NA         NA    10        65.8
+##  1    -4.31     1     NA         NA     1        64.5
+##  2    -4.31     1     NA         NA     2        62.5
+##  3    -4.31     1     NA         NA     3        64.6
+##  4    -4.31     1     NA         NA     4        64.6
+##  5    -4.31     1     NA         NA     5        67.9
+##  6    -4.31     1     NA         NA     6        66.3
+##  7    -4.31     1     NA         NA     7        63.2
+##  8    -4.31     1     NA         NA     8        69.1
+##  9    -4.31     1     NA         NA     9        67.7
+## 10    -4.31     1     NA         NA    10        67.8
 ## # … with 100,990 more rows
 ```
 Where does 101,000 come from? 
@@ -2474,10 +2494,12 @@ The first method does not incorporate any error at all. The second incorporates 
 .pull-left[
 
 We can make a distribution based on this later form of prediction. 
+]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-73-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
 ]
+
 
 ---
 ## Posterior predictive
@@ -2487,29 +2509,31 @@ Now lets assume each of these parameter values are true. What would we expect? B
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
 ]
 
 ---
 ## Posterior predictive
 
 .pull-left[
-![](regression-2_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
-This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter.]
+This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter.
+]
 
 
 ---
 ## posterior predictive distribution 
-.pull-left[How can we use this distribution? If a model is a good fit we should be able to generate data that resemble the data we observed. 
+.pull-left[
+How can we use this distribution? If a model is a good fit we should be able to generate data that resemble the data we observed. 
 
 Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
 ]
 
-.pull-right[]
-![](regression-2_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
+.pull-right[
+![](regression-2_files/figure-html/unnamed-chunk-77-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2571,7 +2595,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
   scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels) 
 ```
 
-![](regression-2_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-80-1.png)&lt;!-- --&gt;
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

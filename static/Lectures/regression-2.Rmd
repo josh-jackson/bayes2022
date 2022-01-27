@@ -577,7 +577,7 @@ get_variables(m.1)
 
 Please take a look at the overview and download the package http://mjskay.github.io/tidybayes/articles/tidy-brms.html
 
-Note that {ggist} is a package that is loaded with {tidybayes}. It was spun off of the original {tidybayes} to assist with frequentist model visualization too. 
+Note that {ggdist} is a package that is loaded with {tidybayes}. It was spun off of the original {tidybayes} to assist with frequentist model visualization too. 
 
 
 ---
@@ -706,14 +706,23 @@ post.tidy %>% select(b_parent_c) %>%
 
 ---
 
-We can even go and easily plot these values we calculated
+.pull-left[ We can even go and easily plot these values we calculated
 
-```{r}
+```{r, eval = FALSE}
+  post.tidy %>% select(b_parent_c) %>% 
+  mode_hdi(.width = c(.5, .89, .99)) %>%  
+ggplot(aes(y = as.factor(.width), x = b_parent_c, xmin = .lower, xmax = .upper)) + geom_pointinterval() 
+```
+]
+
+.pull-right[
+```{r, echo=FALSE}
   post.tidy %>% select(b_parent_c) %>% 
   mode_hdi(.width = c(.5, .89, .99)) %>%  
 ggplot(aes(y = as.factor(.width), x = b_parent_c, xmin = .lower, xmax = .upper)) + geom_pointinterval() 
 ```
 
+]
 
 ---
 
@@ -817,7 +826,7 @@ mu_at_64 %>%
 ]
 
 ---
-.pull-left[ You can use standard ggplot geoms but I recommend using tidybayes (ggist) specialty ones
+.pull-left[ You can use standard ggplot geoms but I recommend using tidybayes (ggdist) specialty ones
 
 ```{r, eval=FALSE}
 
@@ -930,14 +939,13 @@ data_grid(parent_c = seq_range(parent_c, n = 101))
 
 ---
 
+Why are there 101,000 rows? 
 
-```{r, eval=FALSE}
+```{r}
 galton.data %>% 
 data_grid(parent_c = seq_range(parent_c, n = 101)) %>% 
  add_epred_draws(m.2)
 ```
-
-Why are there 101,000 rows? 
 
 
 ---
@@ -1063,7 +1071,7 @@ Rather than just visualizing the marginal distribution, we use these samples to 
 
 
 ---
-### many ways to predict
+### Multiple ways to predict
 epred = fitted = uncertainty in the fixed coefficients and the uncertainty in the variance parameters for the grouping factors (for MLMs). Can be thought of as expected values or the mean prediction 
 
 "predict" accounts for the residual (observation-level) variance, plus the other sources of variance in epred. This is used not to describe an expected value/mean but observation/individual level data. eg what is plausible when we collect a new subject. 
@@ -1157,6 +1165,7 @@ $\hat{Y}_{prediction}$ ~ $b_o$ + $b_1$X, where we put in new values of X (often 
 .pull-left[
 
 We can make a distribution based on this later form of prediction. 
+]
 
 .pull-right[
 ```{r, echo = FALSE}
@@ -1193,6 +1202,7 @@ n_trials  <- 9
   theme(panel.grid = element_blank())
 ```
 ]
+
 
 ---
 ## Posterior predictive
@@ -1256,17 +1266,19 @@ samples %>%
 ]
 
 .pull-right[
-This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter.]
+This is the prediction if we include every value of θ to make the prediction, not just our best estimate. This prediction incorporates all the uncertainty in the estimation of our parameter.
+]
 
 
 ---
 ## posterior predictive distribution 
-.pull-left[How can we use this distribution? If a model is a good fit we should be able to generate data that resemble the data we observed. 
+.pull-left[
+How can we use this distribution? If a model is a good fit we should be able to generate data that resemble the data we observed. 
 
 Taking samples of those possible "datasets" and plugging them into the model to get Y. Replications of Y (Yrep) from the posterior predictive distribution through `pp_check`
 ]
 
-.pull-right[]
+.pull-right[
 ```{r, message = FALSE, echo = FALSE}
 pp_check(m.2)
 ```
