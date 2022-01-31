@@ -28,7 +28,7 @@ output: html_document
 [MCMC](/Lectures/MCMC-4.html)
 
 ## 3. Advanced Regression 
-[Regression](/Lectures/week-3.html)
+[Regression](/Lectures/regression-3.html)
 
 ## 2. Regression basics
 [Regression intro](/Lectures/regression-2.html)
