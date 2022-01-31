@@ -266,7 +266,7 @@ week3
 
 Health ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
 
-`\(\mu_i\)` = `\(\beta_0\)` + `\(\beta_1\)` $Happy_i - {\overline{\mbox{Happy}}}  $    
+`\(\mu_i\)` = `\(\beta_0\)` + `\(\beta_1\)` `\(Happy_i - {\overline{\mbox{Happy}}}\)`    
 
 `\(\beta_0\)` ~ Normal(0, 5)   
 `\(\beta_1\)` ~ Normal(0, 5)   
@@ -2891,7 +2891,7 @@ slideshow._releaseMath(document);
 (function () {
   var script = document.createElement('script');
   script.type = 'text/javascript';
-  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
   if (location.protocol !== 'file:' && /^https?:/.test(script.src))
     script.src  = script.src.replace(/^https?:/, '');
   document.getElementsByTagName('head')[0].appendChild(script);
