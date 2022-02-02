@@ -181,7 +181,7 @@ data_grid(happy_c = seq_range(happy_c, n = 101)) %>%
 
 ---
 
-```{r, echo = FALSE}
+```{r, warning=FALSE, message = FALSE, echo = FALSE}
 
 library(modelr)
 labels <-  c(-2, -1, 0, 1, 2) + mean(week3$happy) %>%   round(digits = 0)
@@ -196,6 +196,7 @@ data_grid(happy_c = seq_range(happy_c, n = 101)) %>%
 
 
 ---
+What happens if we try skinnier priors?
 
 ```{r}
 prior.2 <- prior(normal(0, 2), class = Intercept) +
@@ -245,6 +246,7 @@ prior.1 %>%
 ]
 
 ---
+### Too conservative 
 .pull-left[
 ```{r, echo=FALSE, warning=FALSE, message = FALSE}
 pp_check(h.2p) + xlim(-25,25)
@@ -278,6 +280,7 @@ h.1 <-
 ---
 ### view priors
 
+A helpful function to let you know how brms is coding the priors. This will be useful when we need to manually specifiy different priors that are similar in some way (eg two regression coefficients but speceficied by coef). Will become quite important for MLM models later. 
 ```{r}
 prior_summary(h.1)
 ```
@@ -306,7 +309,9 @@ plot(h.1)
 ---
 ### what are chains? 
 
-Chains are the different sampling processes occurring simultaneously. The default is 4 chains, with 1000 samples from each chain, resulting in 40,000 samples of the posterior. 
+Chains are the different sampling processes occurring simultaneously. Think of the same algorithm run at the same time as N others. The default is 4 chains, with 1000 samples from each chain, resulting in 40,000 samples of the posterior. 
+
+However we do not use all 40k, as a certain number are discarded as they are used to help us "tune" our algo. Referred to as warmup samples. 
 
 Each chain is independent of other chains so as to ensure that the procedure can replicate 
 
@@ -392,34 +397,37 @@ knitr::include_graphics("../media/p-is-lines.gif")
 
 So far the model is the same as frequentist. The major difference is in the posterior, but even then we can use what we know about sampling to get estimates, fitted values, CIs, etc. 
 
-How can we evaluate our model like we normally do? R2 is most common and we have an equivalent. However, we will have additional tricks up our sleeve as the semester progresses in temrs of model comparison (eg waic, loo -- similar to AIC/BIC, likelihood ratio tests etc).
+How can we evaluate our model like we normally do? R2 is most common and we have an equivalent. However, we will have additional tricks up our sleeve as the semester progresses in terms of model comparison (eg waic, loo -- similar to AIC/BIC, likelihood ratio tests etc). Also PP checks. 
 
 
 ---
+Ever sample implies a different set of regression coefficients. Every regression coefficient has an R2 associated with it. 
 ```{r}
-bayes_R2(h.1, summary = F) # use = FALSE to get samples of each R2
+head(bayes_R2(h.1, summary = F)) # use = FALSE to get samples of each R2
 ```
 
-
+Typically R2 is the variance of the predicted values divided by total variance. But for Bayes we have 1) many predicted values (1 for each sample) and 2) we want to incorporate uncertainty in the estimates
 
 ---
 ## Bayesian R2
+
+This is a summary of our 1000 R2 values. Like other parameters it has a distribution. 
 
 ```{r}
 bayes_R2(h.1, summary = T) # use = true to get a summary
 ```
-Typically it is the variance of the predicted values divided by total variance. 
 
-But for Bayes we have 1) many predicted values (1 for each sample) and 2) we want to incorporate uncertainty in the estimates
 
 
 ---
 
 ## Bayesian R2
 
-(Predicted) explained variance over (predicted) explained variance + unexplained variance. But what is explained variance? What is unexplained variance? In frequentist land it was specific to our sample. But we know our sample estimates are subject to sampling variability.
+R2 = (Predicted) explained variance over (predicted) explained variance + unexplained variance. 
 
-We use: posterior predictive distribution & sigma
+But what is explained variance? What is unexplained variance? In frequentist land it was specific to our sample. But we know our sample estimates are subject to sampling variability.
+
+We use: posterior predictive distribution & sigma. This incorporates are uncertainty about our estimate. 
 
 
 ---
@@ -435,9 +443,9 @@ pp_check(h.1)
 ## Variable coding? 
 
 Of course anytime we use group variables we need to assign them numeric values. How does that work in Bayesian land? Mostly the same but 
-1. we need to be careful about our priors. 
-2. need to work with the prior to give us what we want
-3. There is an addition coding option that is often helpful  
+1. we need to be careful about our priors  
+2. We will manipulate the posterior to get what we want  
+3. there is an addition coding option that is often helpful    
 
 ---
 ## Categorical data
@@ -615,7 +623,7 @@ h.3 <-
 We suppress the intercept by putting in a 0. This "no intercept" model is a general strategy for working with categorical data within Bayes. 
 
 ---
-Note the ridiculous R2. Formula doesn't work without an intercept 
+Note the ridiculous R2. Formula doesn't work without an intercept. Changes the F too.  
 ```{r}
 test2 <- lm(health ~ 0 + mood.group.d, data = week3)
 summary(test2)
@@ -630,7 +638,7 @@ summary(h.3)
 ---
 
 .pull-left[
-```{r}
+```{r, eval = FALSE}
 
 h.3 %>%
   gather_draws(b_mood.group.dcontrol, b_mood.group.dtx) %>%
@@ -644,6 +652,7 @@ h.3 %>%
 
 .pull-right[
 
+Posterior from the dummy coded model. 
 ```{r, echo = FALSE}
 posth.2 
 ```
@@ -652,7 +661,9 @@ posth.2
 ---
 Index variables
 
-In addition to getting everything you want from a normal dummy treatment of variables, an additional benefit is fewer priors! Think about a prior for 4 group variable typical way where you have to have a new dummy for each of them. That dummy would be a new parameter where you would have to do a new prior on. Here there is one prior for all categories AND they are on the mean of the category rather than the difference.  
+In addition to getting everything you want from a normal dummy treatment of variables, an additional benefit is fewer priors! 
+
+Think about a prior for 4 group variable where you have to have a new dummy for each of them. Each dummy would be a new parameter where you  have to add a prior. With index coding there is one prior for all groups AND they are on the mean of the category rather than the difference -- which should make it easier.  
 
 
 ---
@@ -664,7 +675,8 @@ a way to set up contrasts within brms
 hyp.1 <- hypothesis(h.3, "mood.group.dtx = mood.group.dcontrol")
 hyp.1
 ```
-Equivalent* to our dummy coded regression coefficient (*within sampling error)
+Equivalent to our dummy coded regression coefficient (within sampling error)
+
 ---
 
 ```{r, message=FALSE}
@@ -690,6 +702,7 @@ plot(hyp.1)
 
 .pull-right[
 
+Plot of the difference btw groups
 ```{r, echo = FALSE}
 ph2.1 %>% 
   select(difference) %>% 
@@ -709,20 +722,30 @@ hyp.1
 ```
 
 ---
-There are other packages that we will use to further explore our groups. Two of note: 
+There are other packages that we will use to  explore our groups. Two of note: 
 1. the {easystats} suite, specifically {bayestestR}
 2. {emmeans}
 
 ---
-```{r}
+```{r, message=FALSE}
 library(easystats)
 describe_posterior(h.3)
 ```
+This package will be used later in the semester when we introduce more NHST-alternative based metrics. 
+
+---
+While hypothesis is very flexible you may already have familiarity with a different package: emmeans. And if you don't and are figuring out which one to learn, I'd suggest emmeans as it works with frequentist models too. 
+
+```{r}
+library(emmeans)
+h.3.em <- emmeans(h.3, "mood.group.d")
+pairs(h.3.em)
+```
+
+
 
 ---
 
-
----
 ## posterior predictive checks
 
 *If a model is a good fit we should be able to use it to generate data that resemble the data we observed.*
@@ -732,7 +755,8 @@ To evaluate our model we want to take our posteriors we estimated and plug them 
 
 ---
 
-.pull-left[We can compare a distribution of simulated Ys to our actual Ys. Do they look similar? To the extent they don't this represents misfit in our model. ]
+.pull-left[We can compare a distribution of simulated Ys to our actual Ys. Do they look similar? To the extent they don't this represents misfit in our model. 
+]
 
 .pull-right[
 ```{r}
@@ -750,15 +774,24 @@ pp_check(h.3,"violin_grouped", group = "mood.group.d")
 
 
 ---
+## Extending the basic model
+
+Now we have the basics down we can extend the model, tweaking different components of it. We have already seen what happens if we tweak the priors a little. Thus far they have been mostly inconsequential. 
+
+What if we tweak the likelihood and model? 
+1. Robust regression
+2. Heterogeneous variances
+
+---
 ## Robust regression
 
-The normal is great as a a distribution of "maximum entropy" but lets be honest, in psych we have a lot of error prone people/experiments/data-entry that leads to "outliers"
+In psych we have a lot of error prone people/experiments/data-entry that leads to "outliers"
 
 Trimming them is one option. But why not incorporate our model to expect outliers, especially when working with low N situations. 
 
-Enter the t-distribution. Modeling with heavy tailed distributions like the t-distribution helps minimize the effect of outliers on central tendency. Other "robust" approaches outside of Bayes use medians instead of means. 
+Enter the t-distribution. Modeling with heavy tailed distributions like the t helps minimize the effect of outliers on central tendency. Other "robust" approaches outside of Bayes use medians instead of means. 
 
-(Note that a t-test does not assume a t DGP -- only that the sampling distribution is distributed as a t)
+(Note that a frequentist t-test does not assume a t DGP -- only that the sampling distribution is distributed as a t, just like any linear model)
 
 ---
 ### Model
@@ -767,7 +800,7 @@ Health ~ T( $\nu$ , $\mu_i$ , $\sigma$ )
 
 $\mu_i$ = $\beta_0$ + $\beta_1$ $G_i$    
 
-$\nu$ ~ Gamma(2,.1)
+$\nu$ ~ Gamma(2,.1)  
 $\beta_0$ ~ Normal(0, 10)   
 $\beta_1$ ~ Normal(0, 10)   
 $\sigma$  ~ HalfCauchy(0,10) 
@@ -799,6 +832,19 @@ prior(gamma(2,.1), class = nu) %>%
 ```
 ]
 
+---
+
+```{r, echo =FALSE}
+expand.grid(
+  df = c(1,3,5,10,30),
+  scale = c(1)) %>%
+  ggplot(aes(y = 0, dist = "student_t", arg1 = df, arg2 = 0, arg3 = scale, color = ordered(df))) +
+  stat_dist_slab(p_limits = c(.01, .99), fill = NA) +
+  scale_y_continuous(breaks = NULL) +
+  facet_grid( ~ scale)+ xlim(-5,5)
+```
+
+
 
 ---
 We are going to use a t-distribution as our likelihood. 
@@ -817,23 +863,41 @@ h.4 <-
 
 
 ---
+```{r}
+summary(h.4)
+```
+
+---
 ### fixing nu
+Instead of estimating nu we could also fix it to be low, thereby ensuring that we have fat tails. The previous approach allowed us to have skinnier tails if the data suggested skinnier tails. 
 
 ```{r, eval = FALSE}
 
 h.5 <- 
   brm(family = student,
       bf(health ~ 1 + mood.group.d, nu = 4),
-      prior =   prior(normal(0, 10), class = Intercept),
+      prior = c(prior(normal(0, 10), class = Intercept),
                 prior(normal(0, 10), class = b),
                 prior(cauchy(0, 1),  class = sigma)),
                 file = "h.5.rds",
                 data = week3)
 ```
 
+---
+```{r}
+summary(h.5)
+```
+
 
 ---
 ## Welches t-test?
+
+One assumption that often gets relaxed in ANOVA and other group models is the assumption that there are equal variances. Welches t-test does not assume groups to have equal variances. 
+
+We could run a model that is both 
+
+
+---
 
 .pull-left[
 Robust and unequal variances
@@ -865,6 +929,19 @@ $\gamma_0$ ~ Normal(0, 3)
 $\gamma_1$ ~ Normal(0, 3) 
 ]
 
+
+---
+Index variable for robust and unequal variances
+
+Health ~ T( $\nu$ , $\mu_i$ , $\sigma_i$ )  
+
+$\mu_i$ =  $\beta_1$ $Group_i$    
+$\sigma_i$ = $\gamma_1$ $Group_i$ 
+
+$\nu$ ~     Gamma(2,.1)  
+$\beta_1$ ~ Normal(0, 10)   
+$\gamma_1$ ~ Normal(0, 3)  
+]
 
 ---
 ```{r}
@@ -915,6 +992,11 @@ h.7 <-
 summary(h.7)
 ```
 
+---
+
+```{r}
+t.test(health ~ mood.group.d, week3)
+```
 
 ---
 The sigmas are modeled through a log-link (to make them positive). Convert them back to the scale by exponential.
@@ -945,8 +1027,201 @@ post.h7 %>%
 ```
 
 ---
+## ANOVA models
+
+This easily extends past the t-test into multi-category models
+
+```{r, message = FALSE}
+MR <-read_csv("https://raw.githubusercontent.com/josh-jackson/bayes/master/hw3.csv")
+MR <- MR %>% 
+  mutate(SS_c = `schoool success` - mean(`schoool success`),
+         FQ_c = `friendship quality` - mean(`friendship quality`),
+         iv = `intervention group`,
+         iv = factor(iv))
+MR
+```
+
+---
+## More than 2 groups
+
+happiness ~ Normal( $\mu_i$ , $\sigma$ )  
+
+$\mu_i$ = $\alpha_{\text{IV}[i]}$    
+
+$\alpha_j$  ~ Normal(0, 5) , for j = 1,2,3   
+$\sigma$  ~ Exponential(1) 
+
+
+---
+Note that we have one prior for all our groups
+```{r}
+a.1 <- 
+  brm(family = gaussian,
+      happiness ~ 0 + iv,
+      prior = c(prior(normal(5, 2), class = b),
+                prior(exponential(1), class = sigma)),
+      iter = 2000, warmup = 1000, chains = 2, cores = 2,
+      data = MR,
+      sample_prior = T,
+      file = "a.1")
+
+```
+
+---
+
+```{r}
+prior.a.1<- prior_draws(a.1)
+prior.a.1
+```
+
+
+
+---
+## prior predictive visualization
+
+.pull-left[
+```{r, eval = FALSE}
+prior.a.1 %>% 
+  ggplot(aes(x = b)) +
+  geom_density() +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.position = c(.84, .84))
+```
+]
+
+.pull-right[
+
+```{r, echo = FALSE}
+prior.a.1 %>% 
+  ggplot(aes(x = b)) +
+  geom_density() +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.position = c(.84, .84))
+```
+]
+
+---
+```{r}
+summary(a.1)
+```
+
+---
+
+```{r}
+get_variables(a.1)
+```
+Notice that we have a parameter for each group mean
+
+---
+.pull-left[
+```{r}
+a.1 %>% 
+ gather_draws(b_iv1, b_iv2,b_iv3) %>% 
+  head()
+```
+
+]
+
+.pull-right[
+```{r}
+a.1 %>% 
+ spread_draws(b_iv1, b_iv2,b_iv3) %>% 
+  head()
+```
+]
+
+
+
+---
+
+```{r}
+a.1 %>% 
+ gather_draws(b_iv1, b_iv2,b_iv3) %>% 
+    ggplot(aes(y = .variable, x = .value)) +
+  stat_halfeye()
+```
+
+---
+## Post hoc test
+
+Our posterior captures all information in the model. Thus any sort of additional information we may want (eg group comparison) we can get through manipulating our posterior! 
+
+
+```{r}
+post.a.1 <- a.1 %>% 
+  spread_draws(b_iv1, b_iv2,b_iv3,sigma) %>% 
+  mutate(`D_1-2`  = `b_iv1` - `b_iv2`,
+         `D_1-3`  = `b_iv1` - `b_iv3`,
+         `D_2-3`  = `b_iv2` - `b_iv3`,
+         `E_1-2` = ((`D_1-2`) / `sigma`),
+         `E_1-3` = ((`D_1-3`) / `sigma`),
+          `E_2-3` = ((`D_2-3`) / `sigma`))
+```
+
+
+---
+```{r}
+post.a.1 
+```
+
+---
+
+```{r}
+post.a.1 %>% 
+ gather_draws(`D_1-2`, `D_1-3`,`D_2-3`) %>% 
+    ggplot(aes(y = .variable, x = .value)) +
+  stat_halfeye()
+```
+
+
+---
+```{r}
+post.a.1 %>% 
+ gather_draws(`D_1-2`, `D_1-3`,`D_2-3`) %>% 
+  mean_qi()
+```
+
+---
+Hypothesis function makes post hoc comparisons easy! Just tell the function which model you want and put in the variable names (not the posterior labels, the variable names from the summary output)
+
+```{r}
+hypothesis(a.1, "iv1 =iv3")
+```
+
+---
+
+
+```{r}
+library(emmeans)
+a.1.em <- emmeans(a.1, "iv")
+pairs(a.1.em)
+```
+
+---
+### A note on graphing ANOVA models
+
+What I see often presented are means (sometimes w/distributions) (and  sometimes with CIs around the mean) showing a star(s) or something to demonstrate the model found differences. 
+
+But this is descriptive information. Not your model that you spent time building. Moreover, it boils down the decision into a dichotomous conclusion in terms of whether there are or are not differences. 
+
+Thus, I believe modeling differences directly is more helpful/accurate. 
+
+---
+What do you want to see in your group comparison figures? 
+```{r}
+post.a.1 %>% 
+ gather_draws(`D_1-2`, `D_1-3`,`D_2-3`) %>% 
+    ggplot(aes(y = .variable, x = .value)) +
+  stat_dots() +xlab("difference btw groups")
+```
+
+
+---
 ## Robust metric variables
 
+Robust procedure does not need to be limited to categorical variables
 ```{r}
 h.8 <- 
   brm(family = student,
@@ -973,119 +1248,14 @@ pp_check(h.8)
 ```
 
 
----
-
-```{r}
-summary(h.1)
-```
-
-
----
-## Correlation 
-multivariate model preview
-
-```{r}
-h.9 <- 
-  brm(family = gaussian,
-      mvbind(health, happy) ~ 1 ,
-      prior = c(prior(normal(0, 10), class = Intercept),
-                prior(normal(0, 10), class = sigma, resp = health),
-                prior(normal(0, 10), class = sigma, resp = happy),
-                prior(lkj(1), class = rescor)),
-      data = week3,
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "h.9")
-
-```
-
----
-```{r}
-summary(h.9)
-```
-
----
-
-
-```{r, message = FALSE}
-library(psych)
-week3 %>% 
-  select(health,happy) %>% 
-  describe()
-```
 
 
 
 
-```{r}
-week3 %>% 
-  select(health,happy) %>% 
-  cor()
-```
 
 
----
-```{r}
-plot(h.9)
-```
 
 
----
-## Robust correlations
-```{r}
-h.9a <- 
-  brm(family = student,
-      mvbind(health, happy) ~ 1 ,
-      prior = c(prior(gamma(2, .1), class = nu),
-                prior(normal(0, 10), class = Intercept),
-                prior(normal(0, 10), class = sigma, resp = health),
-                prior(normal(0, 10), class = sigma, resp = happy),
-                prior(lkj(1), class = rescor)),
-      data = week3,
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "h.9a")
 
-```
-
-
----
-
-```{r, echo=FALSE}
-summary(h.9a)
-```
-
-
----
-
-```{r}
-
-bf_health <- bf(health ~ 1)
-bf_happy <- bf(happy ~ 1)
-
-
-h.9b <- 
-  brm(family = student,
-      bf_health + bf_happy,
-      prior = c(prior(gamma(2, .1), class = nu),
-                prior(normal(0, 10), class = Intercept),
-                prior(normal(0, 10), class = sigma, resp = health),
-                prior(normal(0, 10), class = sigma, resp = happy),
-                prior(lkj(1), class = rescor)),
-      data = week3,
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "h.9b")
-```
-
-
----
-
-```{r, echo=FALSE}
-summary(h.9b)
-```
-
----
-
-```{r, echo=FALSE}
-plot(h.9b)
-```
 
 

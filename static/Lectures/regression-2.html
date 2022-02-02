@@ -529,8 +529,8 @@ With samples we can visualize, create credible intervals, HDIs, etc.
 ## # A tibble: 2 × 7
 ##   name  value .lower .upper .width .point .interval
 ##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 mu    68.1   67.9   68.3    0.95 mode   hdi      
-## 2 sigma  2.51   2.40   2.63   0.95 mode   hdi
+## 1 mu    68.1   67.9   68.2    0.95 mode   hdi      
+## 2 sigma  2.53   2.41   2.63   0.95 mode   hdi
 ```
 
 
@@ -2061,7 +2061,31 @@ If we previous had 928 fitted values. We now have 928 participants * 1000 sample
 
 
 ---
-One reason fitted values are helpful is to showcase uncertainty. That is what our posterior is highlighting: that there is no ONE result, that there are many possible results. If we examine a predicted mean at a certain value across all of our samples we directly compute our uncertainty. 
+.pull-left[ 
+One reason fitted values are helpful is to showcase uncertainty. That is what our posterior is highlighting: that there is no ONE result, that there are many possible results. 
+
+
+```r
+ggplot(galton.data, aes(x = child, y = parent)) + 
+  geom_point() +
+  stat_smooth(method = "lm")
+```
+]
+
+.pull-right[
+
+
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+![](regression-2_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
+
+]
+
+
+---
+.pull-left[ If we examine a expected/predicted mean at a certain value across all of our samples we directly compute our uncertainty. In contrast to frequentist where we have to use an ugly equation, which also uses the SEE equation, which has big assumptions. 
 
 
 ```r
@@ -2071,8 +2095,15 @@ mu_at_64 &lt;-
   mutate(mu_at_64 = b_Intercept + (b_parent_c * -4.3))
  mu_at_64
 ```
+]
+
+.pull-right[
+
+$$  \hat{Y}\pm t_{critical} * se_{residual}*\sqrt{\frac {1}{n}+\frac{(X-\bar{X})^2}{(n-1)s_{X}^2}}  $$
 
 
+
+]
 ---
 
 
@@ -2116,7 +2147,7 @@ mean_hdi(mu_at_64)
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -2134,7 +2165,7 @@ mu_at_64 %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2154,8 +2185,11 @@ mu_at_64 %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
 ]
+
+
+
 
 
 ---
@@ -2213,7 +2247,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2288,7 +2322,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -2314,7 +2348,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 .pull-right[
 
 
-![](regression-2_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -2335,15 +2369,15 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ##    parent_c  .row .chain .iteration .draw .epred
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
 ##  1    -4.31     1     NA         NA     1   65.3
-##  2    -4.31     1     NA         NA     2   65.1
-##  3    -4.31     1     NA         NA     3   65.3
+##  2    -4.31     1     NA         NA     2   65.6
+##  3    -4.31     1     NA         NA     3   65.0
 ##  4    -4.31     1     NA         NA     4   65.5
-##  5    -4.31     1     NA         NA     5   65.4
-##  6    -4.31     1     NA         NA     6   65.4
-##  7    -4.31     1     NA         NA     7   65.5
+##  5    -4.31     1     NA         NA     5   65.8
+##  6    -4.31     1     NA         NA     6   65.2
+##  7    -4.31     1     NA         NA     7   65.3
 ##  8    -4.31     1     NA         NA     8   65.2
 ##  9    -4.31     1     NA         NA     9   65.4
-## 10    -4.31     1     NA         NA    10   65.5
+## 10    -4.31     1     NA         NA    10   65.7
 ## # … with 10,090 more rows
 ```
 why only 10,100 rows whereas previously we had 101,000? 
@@ -2368,7 +2402,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ```
 
 ---
-![](regression-2_files/figure-html/unnamed-chunk-68-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
 
 ---
 ## fitted values
@@ -2415,7 +2449,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-72-1.png)&lt;!-- --&gt;
 ]
 
 --- 
@@ -2441,16 +2475,16 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .prediction
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1        65.8
-##  2    -4.31     1     NA         NA     2        68.1
-##  3    -4.31     1     NA         NA     3        68.4
-##  4    -4.31     1     NA         NA     4        63.0
-##  5    -4.31     1     NA         NA     5        65.6
-##  6    -4.31     1     NA         NA     6        62.8
-##  7    -4.31     1     NA         NA     7        64.5
-##  8    -4.31     1     NA         NA     8        65.1
-##  9    -4.31     1     NA         NA     9        65.3
-## 10    -4.31     1     NA         NA    10        65.5
+##  1    -4.31     1     NA         NA     1        62.5
+##  2    -4.31     1     NA         NA     2        65.6
+##  3    -4.31     1     NA         NA     3        62.8
+##  4    -4.31     1     NA         NA     4        64.9
+##  5    -4.31     1     NA         NA     5        64.7
+##  6    -4.31     1     NA         NA     6        66.5
+##  7    -4.31     1     NA         NA     7        66.5
+##  8    -4.31     1     NA         NA     8        64.9
+##  9    -4.31     1     NA         NA     9        64.0
+## 10    -4.31     1     NA         NA    10        70.0
 ## # … with 100,990 more rows
 ```
 Where does 101,000 come from? 
@@ -2497,7 +2531,7 @@ We can make a distribution based on this later form of prediction.
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -2509,14 +2543,14 @@ Now lets assume each of these parameter values are true. What would we expect? B
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-77-1.png)&lt;!-- --&gt;
 ]
 
 ---
 ## Posterior predictive
 
 .pull-left[
-![](regression-2_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-78-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -2533,7 +2567,7 @@ Taking samples of those possible "datasets" and plugging them into the model to 
 ]
 
 .pull-right[
-![](regression-2_files/figure-html/unnamed-chunk-77-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2595,7 +2629,7 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
   scale_x_continuous(breaks = c(-2.5, 0, 2.5, 5), labels = labels) 
 ```
 
-![](regression-2_files/figure-html/unnamed-chunk-80-1.png)&lt;!-- --&gt;
+![](regression-2_files/figure-html/unnamed-chunk-82-1.png)&lt;!-- --&gt;
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

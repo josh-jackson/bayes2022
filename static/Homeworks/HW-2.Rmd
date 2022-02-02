@@ -1,0 +1,80 @@
+---
+title: "HW-2"
+output: html_document
+---
+
+Let us practice writing brms code. 
+
+1. Without running the code (as we don't have any real data), and thus crashing knitr, put eval = FALSE in the R header ie {r, eval = FALSE} at the top of your R chunk within a rmarkdown file). Please translate the corresponding models into brms code. 
+
+a. Y ~ Normal( $\mu$ , $\sigma$ )  
+
+$\mu$ ~ Normal(16,25)   
+$\sigma$  ~ Exponential(0,1) 
+
+
+b. Y ~ Normal( $\mu_i$ , $\sigma$ )
+
+$\mu_i$ = $\beta_0$ + $\beta_1$ $H_i$    
+
+$\beta_0$ ~ Normal(0, 5)   
+$\beta_1$ ~ Normal(0, 5)   
+$\sigma$  ~ Uniform(0,20) 
+
+
+c. Y ~ Normal( $\mu_i$ , $\sigma$ )
+
+$\mu_i$ = $\beta_1$ $C_j$, for j groups = 1,2    
+
+$\beta_1$ ~ Normal(0, 5)   
+$\sigma$  ~ Uniform(0,20) 
+
+
+
+
+2. For each model above, how many parameters are we estimating? 
+
+
+For questions 3 - 5 use the following dataset: https://raw.githubusercontent.com/josh-jackson/bayes/master/hw3.csv
+
+
+2. Run two prior predictive simulations using brms for the regression of school success on friendship quality using the priors below. Investigate both of the fits with pp_check. Which set of priors do you prefer?
+
+a. School Success ~ Normal( $\mu_i$ , $\sigma$ )  
+
+$\mu_i$ = $\beta_0$ + $\beta_1$ ( $\text{Friend}_i$ - ${\overline{\mbox{Friend}_i}}$ ) 
+
+$\beta_0$ ~ Normal(10, 2)   
+$\beta_1$ ~ Normal(10, 2)   
+$\sigma$  ~ HalfCauchy(0,2) 
+
+
+b. School Success ~ Normal( $\mu_i$ , $\sigma$ )
+
+$\mu_i$ = $\beta_0$ + $\beta_1$ ( $\text{Friend}_i$ - ${\overline{\mbox{Friend}_i}}$ )     
+
+$\beta_0$ ~ Normal(0, 5)   
+$\beta_1$ ~ Normal(0, 5)   
+$\sigma$  ~ HalfCauchy(0,5) 
+
+
+3. Run the model from #2, using the set of priors you prefer. Using the summary and plot function within brms interpret your findings.
+
+4. Using tidybayes a) visualize the posterior distribution using ggplot2, replicating the distributions found with the plot function from brms b) using tidybayes again, replicate the summary statistics that are provided by brms
+
+5. Provide descriptive (mean, CI) for the model's expected value of one standard deviation above and one standard deviation below the mean of Friend. I.e., what level of school success does the model predict for a person one standard deviation above and one standard deviation below the mean of Friendship quality.    
+
+6. Create fitted/expected values of your model to graph the regression line, along with uncertainty of the line (Confidence Band). Your choice on the level of uncertainty. Describe in words what this is visualizing. 
+
+7. Create predicted values of your model to graph the regression line along with uncertainty at the individual level. Describe what this figure represents and how it differs from the Figure you created in #6. 
+
+8. Using PP_check, examine the posterior predictive association. What does this distribution tell you about your model? How is this figure related to the calculations you ran in #7? 
+
+
+
+
+
+
+
+
+

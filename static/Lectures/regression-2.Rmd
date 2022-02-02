@@ -776,7 +776,31 @@ If we previous had 928 fitted values. We now have 928 participants * 1000 sample
 
 
 ---
-One reason fitted values are helpful is to showcase uncertainty. That is what our posterior is highlighting: that there is no ONE result, that there are many possible results. If we examine a predicted mean at a certain value across all of our samples we directly compute our uncertainty. 
+.pull-left[ 
+One reason fitted values are helpful is to showcase uncertainty. That is what our posterior is highlighting: that there is no ONE result, that there are many possible results. 
+
+```{r, eval = FALSE}
+
+ggplot(galton.data, aes(x = child, y = parent)) + 
+  geom_point() +
+  stat_smooth(method = "lm")
+```
+]
+
+.pull-right[
+
+```{r, echo = FALSE}
+
+ggplot(galton.data, aes(x = child, y = parent)) + 
+  geom_point() +
+  stat_smooth(method = "lm")
+```
+
+]
+
+
+---
+.pull-left[ If we examine a expected/predicted mean at a certain value across all of our samples we directly compute our uncertainty. In contrast to frequentist where we have to use an ugly equation, which also uses the SEE equation, which has big assumptions. 
 
 ```{r, eval = FALSE}
 mu_at_64 <- 
@@ -785,8 +809,15 @@ mu_at_64 <-
   mutate(mu_at_64 = b_Intercept + (b_parent_c * -4.3))
  mu_at_64
 ```
+]
+
+.pull-right[
+
+$$  \hat{Y}\pm t_{critical} * se_{residual}*\sqrt{\frac {1}{n}+\frac{(X-\bar{X})^2}{(n-1)s_{X}^2}}  $$
 
 
+
+]
 ---
 
 ```{r, echo = FALSE}
@@ -878,6 +909,9 @@ mu_at_64 %>%
   labs(fill = "Interval")
 ```
 ]
+
+
+
 
 
 ---
