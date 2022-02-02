@@ -530,7 +530,7 @@ With samples we can visualize, create credible intervals, HDIs, etc.
 ##   name  value .lower .upper .width .point .interval
 ##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
 ## 1 mu    68.1   67.9   68.2    0.95 mode   hdi      
-## 2 sigma  2.53   2.41   2.63   0.95 mode   hdi
+## 2 sigma  2.53   2.40   2.63   0.95 mode   hdi
 ```
 
 
@@ -2369,15 +2369,15 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ##    parent_c  .row .chain .iteration .draw .epred
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
 ##  1    -4.31     1     NA         NA     1   65.3
-##  2    -4.31     1     NA         NA     2   65.6
-##  3    -4.31     1     NA         NA     3   65.0
-##  4    -4.31     1     NA         NA     4   65.5
-##  5    -4.31     1     NA         NA     5   65.8
-##  6    -4.31     1     NA         NA     6   65.2
-##  7    -4.31     1     NA         NA     7   65.3
-##  8    -4.31     1     NA         NA     8   65.2
-##  9    -4.31     1     NA         NA     9   65.4
-## 10    -4.31     1     NA         NA    10   65.7
+##  2    -4.31     1     NA         NA     2   65.4
+##  3    -4.31     1     NA         NA     3   65.2
+##  4    -4.31     1     NA         NA     4   65.1
+##  5    -4.31     1     NA         NA     5   65.0
+##  6    -4.31     1     NA         NA     6   65.3
+##  7    -4.31     1     NA         NA     7   65.5
+##  8    -4.31     1     NA         NA     8   65.4
+##  9    -4.31     1     NA         NA     9   65.2
+## 10    -4.31     1     NA         NA    10   65.1
 ## # … with 10,090 more rows
 ```
 why only 10,100 rows whereas previously we had 101,000? 
@@ -2475,16 +2475,16 @@ data_grid(parent_c = seq_range(parent_c, n = 101)) %&gt;%
 ## # Groups:   parent_c, .row [101]
 ##    parent_c  .row .chain .iteration .draw .prediction
 ##       &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;
-##  1    -4.31     1     NA         NA     1        62.5
-##  2    -4.31     1     NA         NA     2        65.6
-##  3    -4.31     1     NA         NA     3        62.8
-##  4    -4.31     1     NA         NA     4        64.9
-##  5    -4.31     1     NA         NA     5        64.7
-##  6    -4.31     1     NA         NA     6        66.5
-##  7    -4.31     1     NA         NA     7        66.5
-##  8    -4.31     1     NA         NA     8        64.9
-##  9    -4.31     1     NA         NA     9        64.0
-## 10    -4.31     1     NA         NA    10        70.0
+##  1    -4.31     1     NA         NA     1        69.6
+##  2    -4.31     1     NA         NA     2        65.5
+##  3    -4.31     1     NA         NA     3        64.9
+##  4    -4.31     1     NA         NA     4        62.6
+##  5    -4.31     1     NA         NA     5        67.1
+##  6    -4.31     1     NA         NA     6        64.6
+##  7    -4.31     1     NA         NA     7        68.3
+##  8    -4.31     1     NA         NA     8        65.2
+##  9    -4.31     1     NA         NA     9        65.1
+## 10    -4.31     1     NA         NA    10        62.5
 ## # … with 100,990 more rows
 ```
 Where does 101,000 come from? 

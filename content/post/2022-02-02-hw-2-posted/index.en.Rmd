@@ -1,0 +1,20 @@
+---
+title: 'Hw #2 Posted'
+author: Package Build
+date: '2022-02-02'
+slug: hw-2-posted
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-02-02T11:28:18-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+Due 2/14
