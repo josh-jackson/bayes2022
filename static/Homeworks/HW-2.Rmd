@@ -10,7 +10,7 @@ Let us practice writing brms code.
 a. Y ~ Normal( $\mu$ , $\sigma$ )  
 
 $\mu$ ~ Normal(16,25)   
-$\sigma$  ~ Exponential(0,1) 
+$\sigma$  ~ Exponential(1) 
 
 
 b. Y ~ Normal( $\mu_i$ , $\sigma$ )
