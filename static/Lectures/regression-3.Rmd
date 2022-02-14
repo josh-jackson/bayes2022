@@ -116,6 +116,7 @@ h.1p <-
 
 ```
 
+
 ---
 
 .pull-left[
@@ -871,7 +872,7 @@ summary(h.4)
 ### fixing nu
 Instead of estimating nu we could also fix it to be low, thereby ensuring that we have fat tails. The previous approach allowed us to have skinnier tails if the data suggested skinnier tails. 
 
-```{r, eval = FALSE}
+```{r}
 
 h.5 <- 
   brm(family = student,
@@ -1256,6 +1257,6 @@ pp_check(h.8)
 
 
 
-
+ 
 
 

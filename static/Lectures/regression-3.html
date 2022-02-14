@@ -297,6 +297,7 @@ h.1p &lt;-
       file = "h.1p")
 ```
 
+
 ---
 
 .pull-left[
@@ -361,22 +362,11 @@ data_grid(happy_c = seq_range(happy_c, n = 101)) %&gt;%
 
 ---
 
-
-```
-## 
-## Attaching package: 'modelr'
-```
-
-```
-## The following object is masked from 'package:broom':
-## 
-##     bootstrap
-```
-
 ![](regression-3_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
 
 
 ---
+What happens if we try skinnier priors?
 
 
 ```r
@@ -412,6 +402,7 @@ h.2p &lt;-
 ]
 
 ---
+### Too conservative 
 .pull-left[
 ![](regression-3_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
 ]
@@ -441,6 +432,7 @@ h.1 &lt;-
 ---
 ### view priors
 
+A helpful function to let you know how brms is coding the priors. This will be useful when we need to manually specifiy different priors that are similar in some way (eg two regression coefficients but speceficied by coef). Will become quite important for MLM models later. 
 
 ```r
 prior_summary(h.1)
@@ -522,7 +514,9 @@ plot(h.1)
 ---
 ### what are chains? 
 
-Chains are the different sampling processes occurring simultaneously. The default is 4 chains, with 1000 samples from each chain, resulting in 40,000 samples of the posterior. 
+Chains are the different sampling processes occurring simultaneously. Think of the same algorithm run at the same time as N others. The default is 4 chains, with 1000 samples from each chain, resulting in 40,000 samples of the posterior. 
+
+However we do not use all 40k, as a certain number are discarded as they are used to help us "tune" our algo. Referred to as warmup samples. 
 
 Each chain is independent of other chains so as to ensure that the procedure can replicate 
 
@@ -635,10 +629,11 @@ ggplot(aes(y = .variable, x = .value)) +
 
 So far the model is the same as frequentist. The major difference is in the posterior, but even then we can use what we know about sampling to get estimates, fitted values, CIs, etc. 
 
-How can we evaluate our model like we normally do? R2 is most common and we have an equivalent. However, we will have additional tricks up our sleeve as the semester progresses in temrs of model comparison (eg waic, loo -- similar to AIC/BIC, likelihood ratio tests etc).
+How can we evaluate our model like we normally do? R2 is most common and we have an equivalent. However, we will have additional tricks up our sleeve as the semester progresses in terms of model comparison (eg waic, loo -- similar to AIC/BIC, likelihood ratio tests etc). Also PP checks. 
 
 
 ---
+Ever sample implies a different set of regression coefficients. Every regression coefficient has an R2 associated with it. 
 
 ```r
 head(bayes_R2(h.1, summary = F)) # use = FALSE to get samples of each R2
@@ -654,10 +649,12 @@ head(bayes_R2(h.1, summary = F)) # use = FALSE to get samples of each R2
 ## [6,] 0.03608203
 ```
 
-
+Typically R2 is the variance of the predicted values divided by total variance. But for Bayes we have 1) many predicted values (1 for each sample) and 2) we want to incorporate uncertainty in the estimates
 
 ---
 ## Bayesian R2
+
+This is a summary of our 1000 R2 values. Like other parameters it has a distribution. 
 
 
 ```r
@@ -668,18 +665,18 @@ bayes_R2(h.1, summary = T) # use = true to get a summary
 ##      Estimate  Est.Error        Q2.5      Q97.5
 ## R2 0.03503015 0.02384865 0.002083316 0.09120802
 ```
-Typically it is the variance of the predicted values divided by total variance. 
 
-But for Bayes we have 1) many predicted values (1 for each sample) and 2) we want to incorporate uncertainty in the estimates
 
 
 ---
 
 ## Bayesian R2
 
-(Predicted) explained variance over (predicted) explained variance + unexplained variance. But what is explained variance? What is unexplained variance? In frequentist land it was specific to our sample. But we know our sample estimates are subject to sampling variability.
+R2 = (Predicted) explained variance over (predicted) explained variance + unexplained variance. 
 
-We use: posterior predictive distribution &amp; sigma
+But what is explained variance? What is unexplained variance? In frequentist land it was specific to our sample. But we know our sample estimates are subject to sampling variability.
+
+We use: posterior predictive distribution &amp; sigma. This incorporates are uncertainty about our estimate. 
 
 
 ---
@@ -698,9 +695,9 @@ pp_check(h.1)
 ## Variable coding? 
 
 Of course anytime we use group variables we need to assign them numeric values. How does that work in Bayesian land? Mostly the same but 
-1. we need to be careful about our priors. 
-2. need to work with the prior to give us what we want
-3. There is an addition coding option that is often helpful  
+1. we need to be careful about our priors  
+2. We will manipulate the posterior to get what we want  
+3. there is an addition coding option that is often helpful    
 
 ---
 ## Categorical data
@@ -927,7 +924,7 @@ h.3 &lt;-
 We suppress the intercept by putting in a 0. This "no intercept" model is a general strategy for working with categorical data within Bayes. 
 
 ---
-Note the ridiculous R2. Formula doesn't work without an intercept 
+Note the ridiculous R2. Formula doesn't work without an intercept. Changes the F too.  
 
 ```r
 test2 &lt;- lm(health ~ 0 + mood.group.d, data = week3)
@@ -995,20 +992,21 @@ h.3 %&gt;%
   stat_halfeye() 
 ```
 
-![](regression-3_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
-
 ]
 
 
 .pull-right[
 
+Posterior from the dummy coded model. 
 ![](regression-3_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
 ]
 
 ---
 Index variables
 
-In addition to getting everything you want from a normal dummy treatment of variables, an additional benefit is fewer priors! Think about a prior for 4 group variable typical way where you have to have a new dummy for each of them. That dummy would be a new parameter where you would have to do a new prior on. Here there is one prior for all categories AND they are on the mean of the category rather than the difference.  
+In addition to getting everything you want from a normal dummy treatment of variables, an additional benefit is fewer priors! 
+
+Think about a prior for 4 group variable where you have to have a new dummy for each of them. Each dummy would be a new parameter where you  have to add a prior. With index coding there is one prior for all groups AND they are on the mean of the category rather than the difference -- which should make it easier.  
 
 
 ---
@@ -1034,7 +1032,8 @@ hyp.1
 ## for two-sided hypotheses, the value tested against lies outside the 95%-CI.
 ## Posterior probabilities of point hypotheses assume equal prior probabilities.
 ```
-Equivalent* to our dummy coded regression coefficient (*within sampling error)
+Equivalent to our dummy coded regression coefficient (within sampling error)
+
 ---
 
 
@@ -1091,6 +1090,7 @@ plot(hyp.1)
 
 .pull-right[
 
+Plot of the difference btw groups
 ![](regression-3_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
 
 
@@ -1118,7 +1118,7 @@ hyp.1
 ```
 
 ---
-There are other packages that we will use to further explore our groups. Two of note: 
+There are other packages that we will use to  explore our groups. Two of note: 
 1. the {easystats} suite, specifically {bayestestR}
 2. {emmeans}
 
@@ -1126,20 +1126,6 @@ There are other packages that we will use to further explore our groups. Two of 
 
 ```r
 library(easystats)
-```
-
-```
-## # Attaching packages: easystats 0.4.3 (red = needs update)
-## ✖ insight     0.14.5.1     ✖ datawizard  0.2.1.9001
-## ✔ bayestestR  0.11.5.1     ✔ performance 0.8.0.1   
-## ✖ parameters  0.15.0.1     ✖ effectsize  0.5.0.10  
-## ✖ modelbased  0.7.0.1      ✔ correlation 0.7.1.1   
-## ✔ see         0.7.0.1      ✖ report      0.4.0.1   
-## 
-## Restart the R-Session and update packages in red with 'easystats::easystats_update()'.
-```
-
-```r
 describe_posterior(h.3)
 ```
 
@@ -1151,9 +1137,44 @@ describe_posterior(h.3)
 ## mood.group.dcontrol |   7.97 | [7.19, 8.60] | 100% | [-0.28, 0.28] |        0% | 0.998 | 826.00
 ## mood.group.dtx      |   8.76 | [8.29, 9.22] | 100% | [-0.28, 0.28] |        0% | 1.001 | 978.00
 ```
+This package will be used later in the semester when we introduce more NHST-alternative based metrics. 
+
+---
+While hypothesis is very flexible you may already have familiarity with a different package: emmeans. And if you don't and are figuring out which one to learn, I'd suggest emmeans as it works with frequentist models too. 
+
+
+```r
+library(emmeans)
+```
+
+```
+## 
+## Attaching package: 'emmeans'
+```
+
+```
+## The following object is masked from 'package:GGally':
+## 
+##     pigs
+```
+
+```r
+h.3.em &lt;- emmeans(h.3, "mood.group.d")
+pairs(h.3.em)
+```
+
+```
+##  contrast     estimate lower.HPD upper.HPD
+##  control - tx   -0.788     -1.56    0.0793
+## 
+## Point estimate displayed: median 
+## HPD interval probability: 0.95
+```
+
 
 
 ---
+
 ## posterior predictive checks
 
 *If a model is a good fit we should be able to use it to generate data that resemble the data we observed.*
@@ -1176,7 +1197,7 @@ pp_check(h.3)
 ## Using 10 posterior draws for ppc type 'dens_overlay' by default.
 ```
 
-![](regression-3_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
+![](regression-3_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1191,7 +1212,7 @@ pp_check(h.3,"violin_grouped", group = "mood.group.d")
 ## Using all posterior draws for ppc type 'violin_grouped' by default.
 ```
 
-![](regression-3_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
+![](regression-3_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1199,7 +1220,9 @@ pp_check(h.3,"violin_grouped", group = "mood.group.d")
 
 Now we have the basics down we can extend the model, tweaking different components of it. We have already seen what happens if we tweak the priors a little. Thus far they have been mostly inconsequential. 
 
-What if we tweak the likelihood? 
+What if we tweak the likelihood and model? 
+1. Robust regression
+2. Heterogeneous variances
 
 ---
 ## Robust regression
@@ -1241,33 +1264,12 @@ prior(gamma(2,.1), class = nu) %&gt;%
 
 
 .pull-rihght[
-![](regression-3_files/figure-html/unnamed-chunk-60-1.png)&lt;!-- --&gt;
+![](regression-3_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
 ]
 
 ---
 
-
-```r
-prior(student_t(2,0,1)) %&gt;% 
-  parse_dist(prior) %&gt;% 
-  ggplot(aes(y=class, dist =.dist, args=.args)) +
-  stat_dist_halfeye()+
-  labs(title="Priors")
-```
-
-![](regression-3_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
-
-```r
-expand.grid(
-  df = c(1,3,5,10,30),
-  scale = c(1)) %&gt;%
-  ggplot(aes(y = 0, dist = "student_t", arg1 = df, arg2 = 0, arg3 = scale, color = ordered(df))) +
-  stat_dist_slab(p_limits = c(.01, .99), fill = NA) +
-  scale_y_continuous(breaks = NULL) +
-  facet_grid( ~ scale)+ xlim(-5,5)
-```
-
-![](regression-3_files/figure-html/unnamed-chunk-61-2.png)&lt;!-- --&gt;
+![](regression-3_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
 
 
 
@@ -1289,6 +1291,35 @@ h.4 &lt;-
 
 
 ---
+
+```r
+summary(h.4)
+```
+
+```
+##  Family: student 
+##   Links: mu = identity; sigma = identity; nu = identity 
+## Formula: health ~ 1 + mood.group.d 
+##    Data: week3 (Number of observations: 200) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept          8.00      0.34     7.32     8.65 1.00     4164     2964
+## mood.group.dtx     0.77      0.43    -0.06     1.64 1.00     4119     3139
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     2.72      0.15     2.44     3.03 1.00     4133     2829
+## nu       29.54     15.14     9.68    67.52 1.00     3821     2766
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
 ### fixing nu
 Instead of estimating nu we could also fix it to be low, thereby ensuring that we have fat tails. The previous approach allowed us to have skinnier tails if the data suggested skinnier tails. 
 
@@ -1297,16 +1328,53 @@ Instead of estimating nu we could also fix it to be low, thereby ensuring that w
 h.5 &lt;- 
   brm(family = student,
       bf(health ~ 1 + mood.group.d, nu = 4),
-      prior =   prior(normal(0, 10), class = Intercept),
+      prior = c(prior(normal(0, 10), class = Intercept),
                 prior(normal(0, 10), class = b),
                 prior(cauchy(0, 1),  class = sigma)),
                 file = "h.5.rds",
                 data = week3)
 ```
 
+---
+
+```r
+summary(h.5)
+```
+
+```
+##  Family: student 
+##   Links: mu = identity; sigma = identity; nu = identity 
+## Formula: health ~ 1 + mood.group.d 
+##          nu = 4
+##    Data: week3 (Number of observations: 200) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept          8.08      0.38     7.32     8.81 1.00     3590     2618
+## mood.group.dtx     0.74      0.44    -0.11     1.60 1.00     4023     3183
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     2.38      0.15     2.11     2.69 1.00     3422     2920
+## nu        4.00      0.00     4.00     4.00   NA       NA       NA
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
 
 ---
 ## Welches t-test?
+
+One assumption that often gets relaxed in ANOVA and other group models is the assumption that there are equal variances. Welches t-test does not assume groups to have equal variances. 
+
+We could run a model that is both 
+
+
+---
 
 .pull-left[
 Robust and unequal variances
@@ -1338,6 +1406,19 @@ Health ~ Normal( `\(\mu_i\)` , `\(\sigma_i\)` )
 `\(\gamma_1\)` ~ Normal(0, 3) 
 ]
 
+
+---
+Index variable for robust and unequal variances
+
+Health ~ T( `\(\nu\)` , `\(\mu_i\)` , `\(\sigma_i\)` )  
+
+`\(\mu_i\)` =  `\(\beta_1\)` `\(Group_i\)`    
+`\(\sigma_i\)` = `\(\gamma_1\)` `\(Group_i\)` 
+
+`\(\nu\)` ~     Gamma(2,.1)  
+`\(\beta_1\)` ~ Normal(0, 10)   
+`\(\gamma_1\)` ~ Normal(0, 3)  
+]
 
 ---
 
@@ -1399,7 +1480,7 @@ summary(h.6)
 plot(h.6)
 ```
 
-![](regression-3_files/figure-html/unnamed-chunk-66-1.png)&lt;!-- --&gt;
+![](regression-3_files/figure-html/unnamed-chunk-69-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1454,6 +1535,26 @@ summary(h.7)
 ## scale reduction factor on split chains (at convergence, Rhat = 1).
 ```
 
+---
+
+
+```r
+t.test(health ~ mood.group.d, week3)
+```
+
+```
+## 
+## 	Welch Two Sample t-test
+## 
+## data:  health by mood.group.d
+## t = -1.8534, df = 130.71, p-value = 0.06609
+## alternative hypothesis: true difference in means between group control and group tx is not equal to 0
+## 95 percent confidence interval:
+##  -1.61602545  0.05268927
+## sample estimates:
+## mean in group control      mean in group tx 
+##              7.987258              8.768926
+```
 
 ---
 The sigmas are modeled through a log-link (to make them positive). Convert them back to the scale by exponential.
@@ -1501,11 +1602,2344 @@ post.h7 %&gt;%
   stat_halfeye()
 ```
 
-![](regression-3_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
+![](regression-3_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+
+---
+## ANOVA models
+
+This easily extends past the t-test into multi-category models
+
+
+```r
+MR &lt;-read_csv("https://raw.githubusercontent.com/josh-jackson/bayes/master/hw3.csv")
+MR &lt;- MR %&gt;% 
+  mutate(SS_c = `schoool success` - mean(`schoool success`),
+         FQ_c = `friendship quality` - mean(`friendship quality`),
+         iv = `intervention group`,
+         iv = factor(iv))
+MR
+```
+
+```
+## # A tibble: 118 × 9
+##       ID `friendship quality` happiness `schoool success`   SES `intervention g…
+##    &lt;dbl&gt;                &lt;dbl&gt;     &lt;dbl&gt;             &lt;dbl&gt; &lt;dbl&gt;            &lt;dbl&gt;
+##  1     1                10.2       3.20              6.16 2.23                 1
+##  2     2                 5.59      7.01              8.91 3.16                 1
+##  3     3                 6.58      6.17             10.5  0.950                1
+##  4     4                 8.95      8.70             11.5  1.73                 1
+##  5     5                 7.60      5.27              5.55 2.29                 1
+##  6     6                 8.16      5.12              7.51 3.44                 1
+##  7     7                 9.08      6.85              8.56 2.44                 1
+##  8     8                 3.41      1.77              4.1  2.11                 1
+##  9     9                 8.66      3.75              5.39 2.19                 1
+## 10    10                 4.85      5.45             13.9  1.24                 1
+## # … with 108 more rows, and 3 more variables: SS_c &lt;dbl&gt;, FQ_c &lt;dbl&gt;, iv &lt;fct&gt;
+```
+
+---
+## More than 2 groups
+
+happiness ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
+
+`\(\mu_i\)` = `\(\alpha_{\text{IV}[i]}\)`    
+
+`\(\alpha_j\)`  ~ Normal(0, 5) , for j = 1,2,3   
+`\(\sigma\)`  ~ Exponential(1) 
+
+
+---
+Note that we have one prior for all our groups
+
+```r
+a.1 &lt;- 
+  brm(family = gaussian,
+      happiness ~ 0 + iv,
+      prior = c(prior(normal(5, 2), class = b),
+                prior(exponential(1), class = sigma)),
+      iter = 2000, warmup = 1000, chains = 2, cores = 2,
+      data = MR,
+      sample_prior = T,
+      file = "a.1")
+```
+
+---
+
+
+```r
+prior.a.1&lt;- prior_draws(a.1)
+prior.a.1
+```
+
+```
+##               b       sigma
+## 1     3.0628662 1.776367386
+## 2     3.6675624 0.219099050
+## 3     8.6364563 2.836566502
+## 4     5.6045249 1.415012937
+## 5     3.8356882 0.085570996
+## 6     7.0281110 0.178244655
+## 7     4.6591129 1.412909101
+## 8     5.1722509 1.249812255
+## 9     5.3167403 1.683237882
+## 10    0.3777572 0.033233428
+## 11    5.6754942 0.583041187
+## 12    5.8830972 1.790204421
+## 13    5.5322968 0.406417651
+## 14    4.3202884 2.208694390
+## 15    4.1641581 0.403901250
+## 16    4.6645938 0.753272540
+## 17    7.9119229 4.696112310
+## 18    9.7642207 0.894035022
+## 19    6.0825500 2.487791634
+## 20    4.9403744 0.161043280
+## 21    3.1408912 0.221873111
+## 22    5.9800699 1.162452601
+## 23    1.4009888 0.980675015
+## 24    6.3382245 0.808292559
+## 25    2.9850224 0.068363994
+## 26    2.7729749 0.333891480
+## 27    5.8724868 1.590480404
+## 28    2.5853757 1.051014347
+## 29    7.5543998 0.826244364
+## 30    2.1297474 0.075179004
+## 31    6.8268696 0.190914347
+## 32   11.3573759 5.649801290
+## 33    8.0650645 0.324596400
+## 34    4.2100950 3.392307551
+## 35    5.2650246 0.730965734
+## 36    2.5690932 0.076963111
+## 37    6.3705757 0.487896897
+## 38    6.1807126 0.518841834
+## 39    4.6502503 2.931675804
+## 40    5.1614734 1.691306746
+## 41    6.5368692 0.260188998
+## 42    6.9998122 0.205499943
+## 43    6.6559172 0.879124364
+## 44    1.4517716 1.130960536
+## 45    7.3141568 0.325525511
+## 46    1.8466589 0.430797128
+## 47    4.0285695 0.326014552
+## 48    4.3499141 0.498010425
+## 49    5.2831219 0.227634448
+## 50    9.3089615 1.817825954
+## 51    2.5738687 1.194693435
+## 52    4.5039675 0.236101789
+## 53    6.4775129 0.123744457
+## 54    6.3899578 0.573172850
+## 55    5.0672761 0.104072785
+## 56    5.4811222 0.722298803
+## 57    5.4963685 1.070045363
+## 58    5.3053377 3.103557293
+## 59    3.7734053 0.837945707
+## 60    2.3145200 0.132462340
+## 61    6.7837815 0.896733985
+## 62    6.1042662 1.079657067
+## 63    6.5246190 0.903050886
+## 64    7.4788891 0.663998042
+## 65    5.3737601 0.363739384
+## 66    6.0715248 1.853893633
+## 67    6.2061902 0.243053844
+## 68    5.7826577 0.829669907
+## 69    6.5024405 0.055579002
+## 70    5.4016011 0.449110892
+## 71    7.7756897 1.557747483
+## 72    2.4514728 1.065516374
+## 73    9.1116382 1.649277263
+## 74    4.8690748 0.079423249
+## 75    8.6463420 1.070245098
+## 76    1.9544778 2.549155106
+## 77    3.9862508 3.160640305
+## 78    2.5587145 0.977096098
+## 79    6.2810318 0.578670449
+## 80    5.1245378 1.523944980
+## 81    2.0512602 0.115264793
+## 82    6.7411496 0.816806683
+## 83    6.1820586 0.804627226
+## 84    8.4035254 0.910561367
+## 85    8.7933330 0.164695332
+## 86    6.7545981 1.356954201
+## 87    4.7573544 1.490977210
+## 88    2.1047030 0.274801581
+## 89    4.4660618 0.139357761
+## 90    4.2026323 0.003683994
+## 91    7.7037696 1.221797098
+## 92    8.9970645 1.639118382
+## 93    8.3435897 0.380331486
+## 94    5.8004731 1.798744761
+## 95    4.4369539 2.514714775
+## 96    1.5518970 0.187044357
+## 97    1.2788774 0.551614653
+## 98    5.0053323 0.527792319
+## 99    8.0623420 0.161015694
+## 100   4.1085380 0.091720087
+## 101   5.8521744 0.273304486
+## 102   7.6440467 2.180018847
+## 103   4.9027779 0.927102770
+## 104   2.1876446 0.605118102
+## 105   7.5259530 0.214816165
+## 106   6.0395498 0.638030931
+## 107   3.2128451 0.755145766
+## 108   3.4168508 0.415845031
+## 109   5.1157920 0.147961069
+## 110   3.2385205 0.042652608
+## 111   7.8295797 1.494112070
+## 112   4.9363283 0.003438725
+## 113   5.2142510 0.072247542
+## 114   5.4247806 0.442631343
+## 115   2.3023233 0.398164833
+## 116   7.1853396 1.097416204
+## 117   4.5120576 0.157819221
+## 118   5.0153037 2.182136514
+## 119   4.3795858 0.735922058
+## 120   6.9334349 0.058123678
+## 121   3.7559014 0.327729280
+## 122   4.5826463 0.216753653
+## 123   4.1791634 1.194383481
+## 124   3.2734029 0.036304597
+## 125   3.0874519 1.823644759
+## 126   6.2370249 0.675523475
+## 127   5.5438746 0.179126674
+## 128   5.6393881 0.317046550
+## 129   2.3527153 0.988863449
+## 130   6.2375635 1.175288071
+## 131   4.6420898 0.503230567
+## 132   6.0362239 0.497405719
+## 133   4.4585989 0.882912551
+## 134   4.8834191 0.655826936
+## 135   6.2810401 0.260609935
+## 136   6.4385941 0.798534126
+## 137   4.1042240 0.218823303
+## 138   7.1260011 0.707233015
+## 139   6.2285531 0.817188304
+## 140   7.6289304 1.439362584
+## 141   7.7733454 1.920875957
+## 142   8.1078672 0.858164135
+## 143   6.2538511 0.014236813
+## 144   5.9422378 0.050992071
+## 145   4.2745207 1.322168102
+## 146   0.8142537 0.515133394
+## 147   2.6465300 0.328495572
+## 148   2.5011612 0.431249602
+## 149   3.3941274 2.393769787
+## 150   7.2291921 1.185665975
+## 151   2.4267109 0.080548431
+## 152   5.4147183 0.135574173
+## 153   7.9612653 1.215698539
+## 154   9.6794884 0.598634308
+## 155   6.4085005 1.535417836
+## 156   6.1149951 1.318098744
+## 157   9.0159042 1.068565531
+## 158   7.6989239 1.681216663
+## 159   8.4180832 0.567885376
+## 160   2.6934353 0.149380998
+## 161   6.3599923 0.240619048
+## 162   2.6440455 3.268764108
+## 163   4.0539630 0.387564255
+## 164   0.8376155 0.153334379
+## 165   3.9648876 2.501159228
+## 166   8.7044776 1.093087482
+## 167   7.8809765 0.031268120
+## 168   5.4017468 1.035404005
+## 169   5.6326192 1.034099244
+## 170   9.6055271 0.613369288
+## 171   4.5776757 2.817777939
+## 172   4.9538567 1.121976548
+## 173   4.8505816 0.959410479
+## 174   8.7024906 1.704489588
+## 175   6.6536290 2.441115655
+## 176   5.0373643 0.559524411
+## 177   3.4094826 1.869143222
+## 178   2.1433889 2.344483917
+## 179   7.3456826 0.211923897
+## 180   4.8256066 0.137607614
+## 181   5.6429612 1.161195035
+## 182   2.9114113 0.962344876
+## 183   2.5810190 0.889812967
+## 184   5.8599608 2.047061603
+## 185   4.0987338 0.444789191
+## 186   6.3114379 1.224278304
+## 187   2.0849870 0.308133501
+## 188   7.5053475 0.134133476
+## 189   6.0467402 0.415605401
+## 190   3.5672875 2.035132114
+## 191   4.0170854 0.553220746
+## 192   4.1291456 1.699871996
+## 193   4.0999626 3.527443580
+## 194   2.3168438 0.200917527
+## 195   1.2475857 1.087034301
+## 196   3.7847894 0.057337725
+## 197   7.7064991 0.539047840
+## 198   0.6801174 1.062733124
+## 199   4.0168119 1.749581831
+## 200   7.8559653 0.282703985
+## 201   5.9066758 0.986238200
+## 202   3.4118413 0.600757568
+## 203   5.4272629 1.068130657
+## 204   3.9051292 0.623982383
+## 205   6.3023891 1.010283560
+## 206   1.8648395 0.494959284
+## 207   5.4129223 0.877488942
+## 208   2.0522780 1.233168736
+## 209   8.4902167 0.355272627
+## 210   4.7917175 0.470900034
+## 211   3.3105280 0.413018688
+## 212   6.6343885 0.379957481
+## 213   6.9704964 1.202963208
+## 214   5.3934037 1.356820501
+## 215   4.3359572 0.131393277
+## 216   4.2490471 0.549824800
+## 217   5.7176303 2.934337127
+## 218   4.5826516 1.602250952
+## 219   6.8097968 0.874032585
+## 220  10.4251615 0.158360533
+## 221   4.3186542 0.959762218
+## 222   6.6362876 0.558511127
+## 223   4.0509344 0.502173170
+## 224   6.9932989 2.667335761
+## 225   1.7266498 0.115889577
+## 226   5.1557561 0.962422532
+## 227   4.3914877 3.215412921
+## 228   3.2686106 1.057783505
+## 229   1.5114240 0.101387371
+## 230   6.7652669 0.955177024
+## 231   5.1476754 0.222174787
+## 232   8.9196647 0.193759890
+## 233   6.6631085 1.868675538
+## 234   1.5748065 2.420473860
+## 235   2.4975407 0.490882458
+## 236   5.8171472 1.600276856
+## 237   5.3300422 1.512651869
+## 238   6.3641002 1.150870228
+## 239   5.9812004 0.548482588
+## 240   1.3963292 0.107174508
+## 241   4.7855624 0.517937929
+## 242   4.4833506 0.150515771
+## 243   4.3698125 0.255392665
+## 244   4.6565985 0.116173858
+## 245   4.5606306 0.422528878
+## 246   3.1442860 0.184166617
+## 247   7.8361747 1.161277127
+## 248   4.7209376 0.779226060
+## 249   5.1629188 1.473659389
+## 250   2.4994434 0.179477226
+## 251   4.5074393 0.120419370
+## 252   5.8011420 1.511331271
+## 253   6.7424405 1.390692183
+## 254   8.6452279 0.281599399
+## 255   3.8518048 0.058702885
+## 256   5.2638475 3.114330971
+## 257   3.4990574 0.959638212
+## 258   2.6544279 0.133884255
+## 259   7.2509243 1.178793204
+## 260   5.6360136 3.250225725
+## 261   4.2762436 0.410028281
+## 262   6.1912329 1.536563126
+## 263   7.3774672 2.814574500
+## 264   7.6018453 3.056757110
+## 265   4.7726356 3.092955646
+## 266   5.9343073 0.030563211
+## 267   2.5677928 2.133364423
+## 268   3.1699591 1.854064769
+## 269   4.2584274 0.104625197
+## 270   4.3088048 0.850694788
+## 271   7.1012386 0.065359402
+## 272   5.8239729 0.592285887
+## 273   3.7414747 1.356577273
+## 274   6.9028213 0.817277352
+## 275   5.8120533 0.319430369
+## 276   3.1314731 2.374322659
+## 277   2.5619928 0.409547033
+## 278   4.3724540 0.627723738
+## 279   6.0156183 1.183358798
+## 280   2.4112337 0.499691393
+## 281   5.7865383 0.711247610
+## 282   4.3923366 0.609425197
+## 283   5.6866992 0.886499592
+## 284   7.7441418 5.536133304
+## 285   5.0044660 0.169572885
+## 286   2.4190378 0.688159777
+## 287   4.2423084 3.158722297
+## 288   2.7248011 2.642719300
+## 289   9.0102670 0.044910790
+## 290   3.6383270 2.151671284
+## 291   3.8640372 1.214655618
+## 292   3.4330725 1.736878876
+## 293   5.0374692 0.432015030
+## 294   3.1315410 1.611311580
+## 295   2.5944885 0.502124191
+## 296   9.4615436 0.150526576
+## 297   7.6439303 0.406879170
+## 298   5.1824170 0.887851251
+## 299   5.5410811 0.141151719
+## 300   5.7977757 0.493399213
+## 301   7.4549935 2.284474402
+## 302   7.0115586 0.516720938
+## 303   4.0145497 1.936223286
+## 304   5.5042018 0.354489887
+## 305   3.4294229 2.106168762
+## 306  -0.6596731 0.881059702
+## 307   5.2844235 0.995827563
+## 308   3.4646665 0.021742348
+## 309   4.8010016 3.531107116
+## 310   3.7884775 0.031023761
+## 311   6.0060160 0.274652446
+## 312   8.5116922 0.962702869
+## 313   7.7397832 1.308520781
+## 314   2.6383675 0.064067156
+## 315   5.3975609 0.008624205
+## 316   6.9120353 1.347856751
+## 317   3.7797660 0.940448221
+## 318   6.5705353 0.565719639
+## 319   4.0147428 0.772810923
+## 320   5.6487735 0.783904429
+## 321   2.9154292 1.233629208
+## 322   4.0300483 0.663876389
+## 323   6.0309620 0.619251645
+## 324   6.7790264 1.570389840
+## 325   2.9812993 0.047951121
+## 326   6.1005379 0.371818538
+## 327   5.8014969 1.366055681
+## 328   2.3199619 0.844960198
+## 329   6.3243634 1.736947647
+## 330   3.8446421 0.030690595
+## 331   6.8741799 0.608054359
+## 332   0.4882361 0.229864095
+## 333   5.6765052 2.986217035
+## 334   3.5520514 1.125653185
+## 335   3.5432739 1.120695593
+## 336   7.9537055 0.115147300
+## 337   2.9133168 4.655674822
+## 338   5.3753324 1.864860090
+## 339   2.9989422 0.441474978
+## 340   7.0783752 4.126452675
+## 341   4.9061194 4.340563471
+## 342   7.3723236 0.717681160
+## 343   5.6101151 0.251430477
+## 344   4.5350205 1.193708106
+## 345   7.9576783 0.468784872
+## 346   8.6851262 0.471296680
+## 347   5.2578926 1.189804454
+## 348   3.3033223 0.895059188
+## 349   5.6065962 2.514964103
+## 350   7.5071871 0.542628824
+## 351   3.7545720 0.168647182
+## 352   6.4272960 1.502899040
+## 353   6.0102143 0.821483220
+## 354   6.4328562 0.744982849
+## 355   7.3021158 0.269481221
+## 356   2.0234100 1.087968499
+## 357   3.8577587 0.260144676
+## 358   6.4416530 0.883213154
+## 359   3.2072621 1.200030216
+## 360   4.2552411 1.496846878
+## 361   1.8578454 0.505079157
+## 362   2.7705464 2.407731774
+## 363   7.3588761 0.201948348
+## 364   5.4737958 3.920760577
+## 365   4.6847057 0.455698168
+## 366   4.4177975 0.650873112
+## 367   5.1942421 0.342991649
+## 368   4.5142978 0.448652891
+## 369   1.1277782 1.362612743
+## 370   2.3947329 1.075684457
+## 371   5.8752120 0.867455665
+## 372   2.7202543 0.157676737
+## 373   1.7258753 0.566565783
+## 374   6.0584700 2.655239812
+## 375   7.0447605 4.223060795
+## 376   3.9841783 0.743340929
+## 377   3.3792302 0.024522415
+## 378   9.2993463 3.123522323
+## 379   3.8676524 1.297329149
+## 380   5.9396780 0.192874455
+## 381   4.1227204 1.746848476
+## 382   6.5777340 1.069375948
+## 383   6.0119729 1.675617955
+## 384   4.3674276 0.148729522
+## 385   3.1523754 0.099502262
+## 386   7.0989776 1.469833929
+## 387   4.9021516 1.013342483
+## 388   7.1216255 0.377299074
+## 389   8.3723201 0.041570581
+## 390   6.6776309 0.307708371
+## 391   0.6767291 0.070826999
+## 392   6.3521982 0.073723271
+## 393   5.8359976 1.092669315
+## 394   5.5743778 2.568517634
+## 395   6.3108872 1.236094240
+## 396   3.3373588 0.386668005
+## 397   1.8999851 0.174768997
+## 398   6.8913250 2.694351824
+## 399   5.6965824 0.421163790
+## 400   5.4546400 0.885959999
+## 401   6.5204727 0.647946649
+## 402   7.3389498 0.039050509
+## 403   1.9785523 1.628257751
+## 404   3.6962201 1.251727700
+## 405   3.7603067 0.658362252
+## 406   6.1974570 0.291259138
+## 407   6.4016777 0.785896858
+## 408   5.4134008 0.885391136
+## 409   5.0845119 0.079294599
+## 410   4.1357230 0.069401136
+## 411   5.3375266 0.064573643
+## 412   3.1985720 0.847944875
+## 413   3.7379132 0.236883338
+## 414   2.3091652 2.024293956
+## 415   0.9749491 0.487003974
+## 416   5.6839846 0.179589471
+## 417   4.9731555 0.028328538
+## 418   3.8443757 0.536705260
+## 419   2.9126727 0.852028250
+## 420   6.3558191 0.577787060
+## 421   5.7081670 0.203819842
+## 422   4.9316613 1.795511571
+## 423   7.7480394 1.547089821
+## 424   4.7251606 1.155149131
+## 425   6.2567065 0.812182670
+## 426   5.3339506 0.600203280
+## 427   3.9806010 0.626392207
+## 428   3.0129101 0.507738967
+## 429   4.0943640 0.265885633
+## 430   7.3282002 0.636640292
+## 431   5.8783624 0.497953148
+## 432   7.3324750 0.271345703
+## 433   5.5262953 0.420765301
+## 434   5.3405739 0.306724824
+## 435   7.1796322 0.007156077
+## 436   7.7228697 2.112292321
+## 437   4.8548181 0.120104637
+## 438   3.3191156 0.074412584
+## 439   3.1156426 0.183795313
+## 440   5.4484141 0.488029217
+## 441   2.7920609 0.277030334
+## 442   3.8837808 1.584006031
+## 443   6.0850861 1.006234233
+## 444   3.8756254 0.677954762
+## 445   3.2700171 1.052989602
+## 446   7.1146791 1.426448857
+## 447   8.1613552 0.440059346
+## 448   5.9454355 0.233541351
+## 449   7.3760242 0.848644521
+## 450   6.6240891 0.523962725
+## 451   6.1961835 2.598852527
+## 452   7.2817703 0.633480414
+## 453   1.8959269 0.705416962
+## 454   1.0668339 4.873088467
+## 455   8.3722038 1.784979078
+## 456   3.2986915 1.841618839
+## 457   2.5929684 0.643680571
+## 458   7.1562574 0.315712770
+## 459   4.1907203 2.207736040
+## 460   8.0640601 2.568473912
+## 461   6.9695159 0.916983136
+## 462   8.3146636 2.709191562
+## 463   6.5282163 0.889164823
+## 464   7.8576021 2.562400849
+## 465   3.2269839 0.001438062
+## 466   4.9825320 2.578808042
+## 467   5.6246817 0.242881081
+## 468   5.8411691 0.204460368
+## 469   6.5683442 3.143385348
+## 470   4.1008017 0.753497491
+## 471   4.6392596 0.038316146
+## 472   1.8861983 0.677217080
+## 473   7.6955398 0.465187654
+## 474   6.5312386 0.376541070
+## 475   1.4714843 2.487057946
+## 476   8.3042334 0.073667449
+## 477   0.3236068 1.294611026
+## 478   6.9149693 0.106328436
+## 479   5.2592014 0.083230725
+## 480   3.4880058 0.426376569
+## 481   2.0726932 0.594752004
+## 482   3.5246254 2.472319831
+## 483   6.7467146 2.288944869
+## 484   0.9865532 1.177345473
+## 485   5.6600387 0.857947722
+## 486   5.1017186 3.335313764
+## 487   3.7258766 0.835392648
+## 488   5.2069834 0.034361518
+## 489   3.6939033 0.056558493
+## 490   4.3924857 1.865758509
+## 491   3.3320547 4.471681832
+## 492   4.5504073 3.489407136
+## 493   6.9158720 1.905544778
+## 494   5.5047539 1.578718181
+## 495   4.3100481 1.825813517
+## 496   7.4431103 0.028570649
+## 497   8.3633337 1.178443422
+## 498   2.2362102 0.083444318
+## 499   7.0599203 0.728416030
+## 500   6.1197637 0.070542766
+## 501   5.8801426 0.109244116
+## 502   4.3134864 5.366013028
+## 503   4.9257743 1.483697789
+## 504   5.0825813 0.004360612
+## 505   6.4553693 0.426001290
+## 506   6.4008885 0.367833031
+## 507   5.9511837 0.702805956
+## 508   6.2348528 0.287378587
+## 509   2.4367000 0.346297426
+## 510   3.5890044 1.403061074
+## 511   3.4677900 0.138629861
+## 512   1.9377200 0.303332697
+## 513   7.6152856 0.223071253
+## 514   8.1221741 0.167374790
+## 515   6.4840207 0.482436256
+## 516   5.9618186 0.097513358
+## 517   3.1840392 1.211491747
+## 518   9.5657964 3.470833522
+## 519   3.6736120 0.098929158
+## 520   3.0269886 4.357937207
+## 521   5.2830996 0.377113060
+## 522   9.0513044 1.532604885
+## 523   3.6119440 0.198487338
+## 524   7.6596579 0.726518652
+## 525   5.4872556 0.631285190
+## 526   1.4645554 0.040810004
+## 527   1.1987582 0.276332326
+## 528   6.3171383 0.036445769
+## 529   1.3715236 0.379740976
+## 530   5.5622043 1.715938856
+## 531   5.0921455 0.975781232
+## 532   6.5588128 0.201815887
+## 533   6.8277672 0.306372636
+## 534   4.4905727 1.750547614
+## 535   6.5359050 1.022868025
+## 536   4.3070423 0.193936208
+## 537   4.1891171 3.701437306
+## 538   6.5628915 0.118226830
+## 539   4.9990016 0.086514875
+## 540   6.5204342 2.536460435
+## 541   7.6941602 0.271963517
+## 542  10.3493869 0.962517983
+## 543   3.9141498 2.915184386
+## 544   3.7936329 1.903155629
+## 545   2.7498886 0.101588997
+## 546   4.7205826 3.702562774
+## 547   3.9823573 2.335952968
+## 548   9.0912255 0.379181699
+## 549   1.7345031 0.724143724
+## 550   5.3971277 0.557518951
+## 551   3.5038992 0.282784390
+## 552   9.5110453 1.922150119
+## 553   4.0508094 0.081662141
+## 554   2.1606403 0.946112413
+## 555   6.8786066 2.163120719
+## 556   4.8158692 0.107030509
+## 557   3.1436682 1.981006784
+## 558   5.4586874 2.564346221
+## 559   3.5254843 2.013125753
+## 560   5.8410207 0.532041341
+## 561   6.8023591 0.400570498
+## 562   6.0758928 1.383018486
+## 563   8.1401513 1.625999947
+## 564   3.8378307 0.704204485
+## 565   1.4709638 0.157019705
+## 566   5.1049720 1.242781984
+## 567   4.6840269 0.801303036
+## 568   7.1707825 1.249840596
+## 569   5.7018832 0.162039627
+## 570   3.7970750 0.379123651
+## 571   5.4712835 0.012391290
+## 572   0.8906962 1.090199436
+## 573   4.5028199 1.625979767
+## 574   6.9632166 0.016332356
+## 575   4.7505156 0.248049713
+## 576   4.3864519 0.491579244
+## 577   5.4024740 2.086539123
+## 578   3.7239125 0.449721251
+## 579   3.0014177 1.663371289
+## 580   2.9772517 0.181500973
+## 581   1.7625168 0.585447287
+## 582   4.6836175 1.545462963
+## 583   2.7389785 0.451379508
+## 584   6.8174331 2.166783267
+## 585   5.1133895 0.418756994
+## 586   9.3594242 1.459233164
+## 587   2.3424222 2.245937342
+## 588   5.9508271 0.798644633
+## 589   2.0265365 2.397710029
+## 590   6.0682289 0.608968329
+## 591   4.0029959 5.754959793
+## 592   5.5960287 0.824067690
+## 593   9.2022201 0.808281785
+## 594   5.6081924 0.940691590
+## 595   3.9182805 1.567034540
+## 596   4.4805539 0.786164061
+## 597   7.5884847 0.316367261
+## 598   4.2101137 0.011352298
+## 599   3.3582116 0.488430141
+## 600   4.0515212 0.802084092
+## 601   5.1225735 0.340570985
+## 602   4.1335681 0.024220122
+## 603   5.0459686 0.933142844
+## 604   5.3138211 0.243798337
+## 605   2.6124776 0.470451659
+## 606   2.6013729 0.163807698
+## 607   3.3862469 1.425451791
+## 608   7.9632505 1.404444887
+## 609   7.1209346 1.119536273
+## 610   4.5517568 0.912563375
+## 611   3.8769463 0.292020625
+## 612   6.6826130 0.343262392
+## 613   0.6206396 0.821441573
+## 614   3.6793029 0.017287304
+## 615   7.0155047 0.945669532
+## 616   5.0605382 0.454209419
+## 617   6.3372836 0.233149884
+## 618   3.4501469 0.227020214
+## 619   7.7069613 6.861702502
+## 620   1.9378518 0.076470434
+## 621   3.0631484 1.103772302
+## 622   4.4392608 0.055935073
+## 623   2.6662300 1.209422052
+## 624   1.7134594 1.386923970
+## 625   1.0088533 0.194711761
+## 626   2.9090482 0.043231061
+## 627   4.0033005 0.426585402
+## 628   2.9855424 1.325869402
+## 629   6.8320750 1.653043909
+## 630   7.8874419 0.228480386
+## 631   5.5392734 0.207851895
+## 632   0.4706233 0.478758733
+## 633   5.8070900 0.629312686
+## 634   5.6334699 0.215887259
+## 635   4.3766046 0.068300613
+## 636   1.4356087 1.181806975
+## 637   4.2813795 0.422127480
+## 638   5.6646177 2.065380527
+## 639   3.7355455 2.761659432
+## 640   5.1291630 2.470750284
+## 641   5.7773413 1.846499952
+## 642   3.7430463 0.351764378
+## 643   4.4065032 0.059416425
+## 644   4.6926718 1.401375222
+## 645   2.1443778 3.643546334
+## 646   6.9173566 0.818658889
+## 647   2.6554172 0.027214769
+## 648   3.8596351 0.022928389
+## 649   6.7566204 1.680302985
+## 650   2.4155687 0.308292811
+## 651   8.4943096 1.094427699
+## 652   5.5868837 0.052014408
+## 653   3.3817270 0.510917810
+## 654   4.0262281 0.013271455
+## 655   3.9854571 1.260931445
+## 656   7.0063166 3.162241677
+## 657   5.6131711 1.108810967
+## 658   4.1033346 1.847624952
+## 659   6.0440201 0.235238689
+## 660   2.7912605 1.208908245
+## 661   7.5145682 0.013696312
+## 662   6.9252575 1.006680239
+## 663   6.8555525 0.420408366
+## 664   1.6795445 0.209699628
+## 665   4.0972517 0.657193902
+## 666   4.2050266 0.156275954
+## 667   4.0736867 2.751735423
+## 668   5.1297603 0.387131639
+## 669   5.8658720 0.420108856
+## 670   3.6433696 1.189083747
+## 671   5.2023846 1.219118686
+## 672   5.5600935 0.094503596
+## 673   5.3546422 0.096273409
+## 674   7.6564236 0.121809919
+## 675   3.6710479 0.296940440
+## 676   8.7182284 0.871646162
+## 677   4.9771896 0.091356832
+## 678   7.2627673 0.808487137
+## 679   1.8532511 0.904891278
+## 680   7.8663946 0.320790844
+## 681   5.7512023 0.039261173
+## 682   5.0885978 0.293160695
+## 683   5.5083578 1.600827580
+## 684   2.5655603 0.542952332
+## 685   5.4309588 2.231484581
+## 686   5.6258770 1.010104509
+## 687   5.7310499 0.048680422
+## 688   7.2043785 2.974679200
+## 689   3.6733444 1.742376040
+## 690   2.4797041 0.167259956
+## 691   8.8719959 1.361482165
+## 692   4.4310685 0.034799325
+## 693   5.1093032 1.734162294
+## 694   3.7564838 5.164925861
+## 695   5.0466513 0.454052613
+## 696   8.5531244 0.323556701
+## 697   3.3552495 1.025749409
+## 698   7.3723566 2.075054924
+## 699   6.7617716 0.283881059
+## 700   3.4654767 0.930977529
+## 701   6.8915070 0.684428918
+## 702   4.5591703 0.130567716
+## 703   6.9321459 1.606577204
+## 704   3.4861322 1.141996626
+## 705   4.3462338 0.238398027
+## 706   3.6641744 2.080065221
+## 707   6.2280160 1.173378364
+## 708   3.2582733 1.848509257
+## 709   6.3162829 0.763950222
+## 710   6.8515317 1.148009215
+## 711   5.8951539 0.046108830
+## 712   4.0631883 0.150538400
+## 713   6.9727692 0.613923982
+## 714   8.6262795 0.019984949
+## 715   5.3013019 0.861830741
+## 716   7.2664709 0.449122307
+## 717   3.8050110 0.821970456
+## 718   6.7347663 0.564881885
+## 719   2.5831569 0.791416482
+## 720   7.2922967 1.163692657
+## 721   2.6467711 0.053070035
+## 722   4.6930902 0.910402303
+## 723   4.8196774 2.105508763
+## 724   5.7210987 1.737251961
+## 725   8.0200824 1.326196997
+## 726   7.5886248 2.002044641
+## 727   5.4297534 0.079547627
+## 728   4.8195576 0.410077587
+## 729   0.3113319 4.864530161
+## 730   7.6319839 1.347083346
+## 731   6.1721017 0.733677672
+## 732   6.4235268 1.485325645
+## 733   7.8334749 5.574253131
+## 734   3.5426151 1.009365457
+## 735   7.8201102 0.054357358
+## 736   5.8297174 0.839458004
+## 737   6.5860425 0.114433840
+## 738   6.5951224 0.366459012
+## 739   4.1653133 1.440256187
+## 740   7.7800600 0.022210700
+## 741   4.2423716 0.148026808
+## 742   8.1747455 2.800371932
+## 743   1.6829398 1.444542002
+## 744   4.0103176 0.652702059
+## 745   5.9761880 3.436847243
+## 746   3.4205186 1.142998083
+## 747   8.3569407 1.372965567
+## 748   2.0760528 0.562289183
+## 749   4.8544597 0.639780052
+## 750   4.0414419 1.463656606
+## 751   3.6800099 0.079100428
+## 752   6.3278737 1.268369967
+## 753   5.5654089 0.642744920
+## 754   5.9316090 1.727155316
+## 755   1.7852543 1.598319842
+## 756   3.0450202 0.812202010
+## 757   5.3909303 0.097394816
+## 758   4.5090291 0.939749275
+## 759   3.8111885 0.877015851
+## 760   4.0093805 0.234136341
+## 761   4.2392704 1.038367459
+## 762   2.8840423 0.279857972
+## 763   7.0594497 1.294341376
+## 764   6.5392018 0.429524797
+## 765   6.3166441 0.142915872
+## 766   6.0399465 0.012376767
+## 767   3.4030126 0.227700725
+## 768   7.6189373 2.058414102
+## 769   8.2295950 0.466939345
+## 770   6.0111023 0.716022066
+## 771   5.5015641 0.290635944
+## 772   8.4531605 0.102560627
+## 773   3.2958574 0.875568411
+## 774   3.6244118 2.189138713
+## 775   3.0283111 0.735242029
+## 776   5.8128295 0.299637395
+## 777   5.5765186 1.852760321
+## 778   3.0354619 0.070297837
+## 779   1.3292737 0.004965614
+## 780   3.6534093 0.788784610
+## 781   1.0278837 2.675055247
+## 782   3.6544187 0.048264990
+## 783   2.6586738 0.068491034
+## 784   8.5994070 5.278433128
+## 785   4.7554760 1.163251012
+## 786   8.4403697 0.367861366
+## 787   7.3897381 0.519557537
+## 788   2.7951891 1.886949184
+## 789   3.2535685 0.129285796
+## 790   7.7349200 0.079587889
+## 791   7.4865426 1.804803898
+## 792   3.0201341 1.801862196
+## 793   4.3893324 1.194244685
+## 794   2.6320350 0.302707992
+## 795   5.5238722 0.484362367
+## 796   1.0144678 1.807888761
+## 797   6.1195687 2.086440707
+## 798   5.0872564 0.147436782
+## 799   0.5493766 0.094762934
+## 800   4.4421422 0.066968486
+## 801   4.0525475 1.416195157
+## 802   7.4949084 1.724610852
+## 803   5.0973059 0.072052049
+## 804   3.2152776 0.140160060
+## 805   4.5529734 2.264462972
+## 806   4.3396595 0.258814985
+## 807   2.9132989 0.906819753
+## 808   8.0913539 1.116160218
+## 809   5.8957764 0.100968721
+## 810   2.2706890 0.311860363
+## 811   7.6202118 1.760691785
+## 812   6.3981218 1.386266261
+## 813   5.8685059 1.120010856
+## 814   6.6216861 0.437704443
+## 815   4.7145705 1.037608919
+## 816   6.1051694 1.231840899
+## 817   7.4753121 0.061556984
+## 818   8.7326333 0.404528612
+## 819   5.1707468 2.448591318
+## 820   7.9836971 0.807816416
+## 821   4.3254763 0.232202371
+## 822   4.3067024 0.135802379
+## 823   6.5872474 0.038186576
+## 824   6.0067493 0.614852870
+## 825   5.9832995 0.486634550
+## 826   5.3070509 2.229489268
+## 827   8.9104661 0.738676173
+## 828   2.9176198 0.437649857
+## 829   2.0301692 0.245761338
+## 830   5.7392382 0.495192915
+## 831   7.6819841 2.600149192
+## 832   9.0930306 2.575242316
+## 833   6.1463118 0.931282546
+## 834   6.4065028 0.758915068
+## 835   7.2202129 0.688737185
+## 836  10.7311218 1.057528146
+## 837   6.6455903 0.114387211
+## 838   5.0115902 0.086305428
+## 839   6.5957921 1.372109532
+## 840   9.6730374 0.928018488
+## 841   4.6950288 1.187767552
+## 842   7.1128685 1.170141757
+## 843   4.9717137 0.675291061
+## 844   5.7066563 0.831783779
+## 845   3.7400735 1.089964953
+## 846   2.2057671 2.075064680
+## 847   4.2612147 3.535190214
+## 848   7.5645610 1.149813550
+## 849   5.6801239 1.196010253
+## 850   5.8026841 0.080971629
+## 851   2.3415184 0.768255201
+## 852   9.2320596 5.304001615
+## 853   5.2223121 0.149123999
+## 854   3.6572365 0.773945108
+## 855   3.6370715 0.825901922
+## 856   4.5166016 0.057897908
+## 857   2.8101997 0.898180026
+## 858   1.9469113 0.075765874
+## 859   9.3653597 2.581410995
+## 860   3.1622998 0.714287161
+## 861   3.6368115 0.299776072
+## 862   5.8955690 2.067342988
+## 863   4.3707870 3.294757578
+## 864   3.6621072 2.645419354
+## 865   5.4063561 1.487853318
+## 866   4.4145272 0.887834675
+## 867   0.2374103 1.784549466
+## 868   7.2020892 0.308192349
+## 869   2.7390203 1.345537165
+## 870   4.7776353 0.517221164
+## 871   5.9791445 0.590105043
+## 872   4.3537885 1.756231847
+## 873   3.9923086 1.446353701
+## 874   7.0657450 0.972603663
+## 875   3.2302195 1.597132379
+## 876   1.4086263 1.036201320
+## 877   5.8676964 0.312952466
+## 878   6.5702910 0.028116576
+## 879   4.0816300 1.337078096
+## 880   4.6467342 0.611880353
+## 881   5.5616511 0.468912591
+## 882   4.4699698 0.689088013
+## 883   7.4615162 0.067012427
+## 884   5.9915766 1.001892913
+## 885   3.6238495 0.571078777
+## 886   4.6454002 0.025459213
+## 887   3.1563418 0.053875792
+## 888   3.2453863 0.407891696
+## 889   4.0092865 0.175613260
+## 890   5.8439645 0.437806756
+## 891   5.8974587 0.062786879
+## 892   4.3196101 0.658166303
+## 893   4.2420447 1.466298751
+## 894   4.7102951 0.427327266
+## 895   3.9042384 0.412202900
+## 896   6.3005324 1.119931979
+## 897   8.5572182 0.679595213
+## 898   3.9531201 1.095474774
+## 899   5.0799860 1.195068860
+## 900   3.7707216 0.150575533
+## 901   5.5039845 0.989239005
+## 902   6.0681786 1.454891539
+## 903   1.7642578 1.995746944
+## 904   5.7007021 1.126901029
+## 905   5.3591973 0.276156101
+## 906   8.2495378 1.765724864
+## 907   5.4692860 0.600519630
+## 908   5.1556366 0.319509284
+## 909   7.1413294 1.803414511
+## 910   5.2940577 0.035869351
+## 911   8.2923953 2.482808992
+## 912   5.8199706 0.503638980
+## 913   7.0019824 2.153735332
+## 914   3.9056177 0.004380085
+## 915   7.6955951 2.078487769
+## 916   4.3340003 0.142486557
+## 917   7.9268009 3.093094106
+## 918   4.5662948 0.057087767
+## 919   4.4455742 3.645638517
+## 920   4.2611031 0.104447621
+## 921   5.1846302 0.239900688
+## 922   8.8288543 1.284733311
+## 923   5.2306794 3.201160406
+## 924   2.8404914 0.855237522
+## 925   1.8668930 2.721209475
+## 926   2.5073459 1.346374360
+## 927   4.8294248 0.346457544
+## 928   2.8540952 0.485570057
+## 929   7.2944889 0.864336010
+## 930   4.9379754 0.215075884
+## 931   6.5692852 1.502532803
+## 932   1.9028393 1.283518464
+## 933   6.5820120 0.880573170
+## 934   8.3885487 1.178849666
+## 935   7.3567503 0.352611798
+## 936   6.1521494 0.074036370
+## 937   7.8601293 1.918254637
+## 938   5.5954204 0.319906703
+## 939   9.1828174 0.040947871
+## 940   7.6335246 2.849916339
+## 941   1.7243140 0.780607412
+## 942   3.6806940 2.627226323
+## 943   0.4727892 0.645236101
+## 944   2.0547916 0.562453502
+## 945   3.6130243 0.399224548
+## 946   5.8652563 0.373328352
+## 947  10.5605196 1.093827878
+## 948   2.8049448 0.645869239
+## 949   8.1965875 0.307431328
+## 950   8.1238840 0.424381186
+## 951   7.1034692 0.255194585
+## 952  10.5883764 2.576672903
+## 953   5.5875917 0.006836540
+## 954   8.7992282 0.766862735
+## 955   7.6095528 2.870786979
+## 956   3.7864975 0.364155292
+## 957   6.6356705 0.223847551
+## 958   4.4067540 0.115290680
+## 959   4.9157665 0.090004311
+## 960   7.9667102 5.374504722
+## 961   1.8187911 0.807903441
+## 962   7.0981777 1.030222375
+## 963   5.1674886 0.771368004
+## 964   7.1514520 1.015517309
+## 965   4.9162767 0.063768326
+## 966   3.4956394 0.351486981
+## 967   4.1671787 0.278676109
+## 968   5.6709267 0.169607848
+## 969   7.0769806 0.007148703
+## 970   8.1648561 1.211691806
+## 971   8.7867844 3.994673559
+## 972   6.8532702 0.387589428
+## 973   7.2263095 0.539291448
+## 974   5.8815272 0.012458282
+## 975   6.8368306 0.608565640
+## 976   6.5473412 0.923946103
+## 977   4.8260041 0.295024777
+## 978   4.6828654 0.087396552
+## 979   4.3506569 0.407955911
+## 980   0.0584153 2.046097861
+## 981   5.7444887 1.373521213
+## 982   7.3616104 0.248203720
+## 983   2.6724047 0.492433559
+## 984   4.6340477 1.213751038
+## 985   8.6240177 0.815865468
+## 986   8.1122309 0.231286920
+## 987   4.0495758 0.257438259
+## 988   7.5767387 0.622869039
+## 989   3.0456034 0.391476230
+## 990   4.5131554 0.990071839
+## 991   6.6934907 1.451435797
+## 992   6.5626996 0.288969574
+## 993   2.3309318 1.169332046
+## 994   6.0015889 0.209201632
+## 995   5.8405278 0.340503315
+## 996   1.6074378 0.229673991
+## 997   0.3529084 0.682684258
+## 998   7.2621680 0.659173908
+## 999   2.4611047 0.382608993
+## 1000  7.2116909 1.809017964
+## 1001  0.7253899 1.631396930
+## 1002  7.5467834 0.438576724
+## 1003  3.6645699 0.241159416
+## 1004  6.4704294 0.384177714
+## 1005  0.3643815 0.593556669
+## 1006  6.9956336 0.787102540
+## 1007  3.8876833 0.166932818
+## 1008  4.6618501 0.036119257
+## 1009  4.4899308 0.481760708
+## 1010  5.8583476 1.339869636
+## 1011  0.4203268 0.860652191
+## 1012  3.6671730 0.540520243
+## 1013  0.6223946 1.520422677
+## 1014  6.3637704 1.796513338
+## 1015  4.5782611 1.825838873
+## 1016  3.7505651 0.052627550
+## 1017  6.7561555 0.653685697
+## 1018  5.3265539 0.036160351
+## 1019  3.5520062 0.204344139
+## 1020  4.7499796 0.611321333
+## 1021  2.6738071 0.415690290
+## 1022  8.3987112 0.339356043
+## 1023  3.9851970 0.588744682
+## 1024  6.4119991 3.544927786
+## 1025  4.7014798 0.812317011
+## 1026  2.9789626 1.042577832
+## 1027  3.1145485 0.750855924
+## 1028  5.8690692 0.389609605
+## 1029  7.1657978 0.484322742
+## 1030  5.4980913 0.146273584
+## 1031  5.0926185 1.028634766
+## 1032  5.3701030 0.581264232
+## 1033 -0.2263364 0.360178341
+## 1034  7.4005359 1.444196178
+## 1035  4.7399493 0.481955174
+## 1036  6.9725017 0.329756381
+## 1037  5.4247895 1.450015043
+## 1038  1.7873342 0.918465589
+## 1039  4.5053527 1.251316064
+## 1040  5.0125376 0.056876582
+## 1041  4.1083609 0.179735526
+## 1042  7.5219236 2.242463185
+## 1043  3.3678110 1.638010375
+## 1044  7.0525187 0.607546503
+## 1045  4.8250454 0.522271547
+## 1046  2.6971431 2.350052244
+## 1047  4.2828520 1.087759087
+## 1048  8.5836433 0.500711323
+## 1049  3.4194791 0.385035865
+## 1050  4.3236886 0.125954710
+## 1051  4.2496504 2.175186666
+## 1052  3.6372235 0.922405190
+## 1053  6.2062738 1.650251529
+## 1054  5.3282894 1.348947047
+## 1055  4.9163483 0.772258305
+## 1056  3.6583757 3.249574242
+## 1057  6.1250359 0.339864541
+## 1058  3.9069308 2.490675010
+## 1059  4.2505137 2.474518212
+## 1060  7.5078175 0.064411033
+## 1061  0.1790584 1.213426954
+## 1062  7.6603393 0.122009396
+## 1063  7.8398310 0.062915943
+## 1064  2.9668007 0.301094736
+## 1065  1.5115285 2.877717762
+## 1066  3.5884004 0.447480069
+## 1067  3.8807796 0.584248119
+## 1068  4.6269300 1.670448233
+## 1069  4.7069000 0.333750100
+## 1070  2.1966448 1.295690281
+## 1071  3.0486001 0.675349899
+## 1072  4.8060346 0.663396536
+## 1073  6.3434495 0.813478698
+## 1074  6.9164785 0.409572809
+## 1075  5.5658454 0.897738485
+## 1076  6.4401342 0.755302996
+## 1077  5.6733177 1.364801903
+## 1078  4.2869700 0.106969754
+## 1079  5.9254697 0.092265272
+## 1080  4.5574836 2.338423447
+## 1081  3.6324414 1.702441606
+## 1082  5.7819867 0.839335238
+## 1083  6.4983906 1.008822416
+## 1084  6.1751259 1.051056246
+## 1085  3.8843384 0.218427311
+## 1086  6.6749656 1.647723946
+## 1087  5.6047589 0.953543857
+## 1088  3.4601506 1.956311153
+## 1089  5.5004545 1.652684106
+## 1090  8.1687395 1.544071017
+## 1091  4.5810334 0.082813585
+## 1092  0.5484582 1.130982434
+## 1093  2.6369123 0.363967891
+## 1094  5.0582866 0.175681250
+## 1095  5.5668124 0.345143862
+## 1096  8.7347806 1.211148306
+## 1097  4.7297024 0.485159096
+## 1098  4.4609742 2.513130018
+## 1099  3.9469932 0.574630502
+## 1100  4.5888656 0.052226520
+## 1101  6.7550125 1.252504455
+## 1102  3.2208259 0.070953869
+## 1103  5.3912112 1.581252395
+## 1104  4.1009131 0.246399847
+## 1105  5.5738698 1.186802971
+## 1106  2.9011586 0.466468074
+## 1107  8.1470287 0.691701484
+## 1108  7.1070941 3.151327205
+## 1109 -0.3000780 0.204274379
+## 1110  3.6868523 0.721352333
+## 1111  2.6163282 0.722944608
+## 1112  3.5121045 0.295552748
+## 1113  5.0732767 0.245411285
+## 1114  3.8903822 0.585574948
+## 1115  5.0782312 3.056247006
+## 1116  7.0293080 1.225932255
+## 1117  3.3552832 1.803660918
+## 1118  7.4558255 1.449472403
+## 1119  3.6029979 0.494613138
+## 1120  4.5300494 0.490120889
+## 1121  4.2167070 1.032296823
+## 1122  5.0504916 0.104766001
+## 1123  7.1622136 3.085953153
+## 1124 10.6550910 0.493899550
+## 1125  6.1506162 0.927860593
+## 1126  5.3112834 1.300783183
+## 1127  4.6680960 2.422724075
+## 1128  7.9165678 0.916639809
+## 1129  6.0710422 0.596277925
+## 1130  5.2171207 0.137694227
+## 1131  3.7096120 2.179283445
+## 1132  5.8037462 2.499601981
+## 1133  2.4347641 2.511917514
+## 1134  4.6211979 1.261468528
+## 1135  3.0845961 0.152644110
+## 1136  9.2406019 0.409108601
+## 1137  3.9247228 0.984636173
+## 1138  5.6559689 3.216478435
+## 1139  4.2563327 1.895901722
+## 1140  5.1811381 0.549745327
+## 1141  6.4857152 1.156640857
+## 1142  8.4372360 1.047524964
+## 1143  3.0114391 0.272716516
+## 1144  3.1173589 0.261556783
+## 1145  2.0560575 1.067290620
+## 1146  2.7967645 1.202941068
+## 1147  5.8608214 2.789359312
+## 1148  5.1251339 0.773153302
+## 1149  6.1078862 0.454363880
+## 1150  4.0159927 1.652978523
+## 1151  5.4549339 0.920851294
+## 1152  5.5292133 2.700404202
+## 1153  4.8118509 0.710885094
+## 1154  5.3599040 0.454320054
+## 1155  4.4756593 2.136711472
+## 1156  6.0415276 2.101579378
+## 1157  8.1788697 0.295257840
+## 1158  4.6513326 0.413208202
+## 1159  5.6674723 0.338078666
+## 1160  4.9512577 0.269389003
+## 1161  3.9400617 0.523929137
+## 1162  4.6390523 0.410911547
+## 1163  3.7291166 0.667168863
+## 1164  5.2429258 0.195596679
+## 1165  6.1894972 0.200255987
+## 1166  1.0659773 0.128482632
+## 1167  5.3358696 1.799221365
+## 1168  4.6672206 0.655186975
+## 1169  6.1714680 1.088943462
+## 1170  4.1269353 0.033124103
+## 1171  1.9757698 1.620718285
+## 1172  4.3847649 0.279480412
+## 1173  5.5925023 1.046573032
+## 1174  3.2224160 0.287750339
+## 1175  4.9641206 0.363426239
+## 1176  4.4115549 0.443566338
+## 1177  0.7558437 1.227470886
+## 1178  5.7928400 0.259947746
+## 1179  4.6865261 4.189781558
+## 1180  9.4672016 0.651147805
+## 1181  1.2917772 0.912124683
+## 1182  5.9139054 0.636997286
+## 1183  4.9040674 1.029896256
+## 1184  6.2476688 1.981556030
+## 1185  3.5911329 1.034682217
+## 1186  3.7295321 0.172217684
+## 1187  6.1763651 0.947576291
+## 1188  1.5616043 1.000384036
+## 1189  4.2743756 0.087516412
+## 1190  5.5700324 0.260838412
+## 1191  2.2223857 0.403131591
+## 1192  3.9814345 1.290921447
+## 1193  1.3042506 0.153100883
+## 1194  3.4512255 0.418269545
+## 1195 -0.3888231 0.889155297
+## 1196  5.6489669 0.266589690
+## 1197  6.8496034 0.715311727
+## 1198  4.4204376 1.416947574
+## 1199  4.5862797 0.056778187
+## 1200  5.1374243 1.648103388
+## 1201  5.6258100 1.922677697
+## 1202  3.5981512 0.300503736
+## 1203  5.1268172 1.749384344
+## 1204  6.1554234 1.542641806
+## 1205  4.1684337 0.569918726
+## 1206  5.1189187 0.987720184
+## 1207  5.4086648 2.102769700
+## 1208  4.2139655 0.146899057
+## 1209  5.2359238 1.368975123
+## 1210  5.8848521 0.662586744
+## 1211  5.1371439 0.703113329
+## 1212  8.1579584 0.973728100
+## 1213  6.1431436 0.531330813
+## 1214  3.5930728 1.242644189
+## 1215  7.3953064 0.046729516
+## 1216  4.5733869 0.734865023
+## 1217  7.2743684 1.386624702
+## 1218  3.0536840 0.265660061
+## 1219  3.8669015 1.085216760
+## 1220  5.1195746 0.082850483
+## 1221  6.1685776 0.068760039
+## 1222  4.1581293 0.628832128
+## 1223  6.8861159 0.622664859
+## 1224  3.8410925 1.008724702
+## 1225  5.0082987 1.298455252
+## 1226  4.1926021 1.816654562
+## 1227  5.6021209 0.944003339
+## 1228  8.3451905 1.154312704
+## 1229  7.7376548 1.509111625
+## 1230  2.7305262 0.815401192
+## 1231  5.9115134 1.025779871
+## 1232  3.1125255 0.152795413
+## 1233  1.9112062 0.402282564
+## 1234  5.9664423 2.757830512
+## 1235  1.6563941 1.347162792
+## 1236  9.3524943 2.248526341
+## 1237  2.2891633 2.842126404
+## 1238  6.5227063 0.746846800
+## 1239  5.4338033 0.397273481
+## 1240  2.8646326 0.925276077
+## 1241  1.4739552 0.903964642
+## 1242  5.9035758 0.064782978
+## 1243  6.9917294 0.211722650
+## 1244  4.9240455 1.203635544
+## 1245  3.7037827 0.571712275
+## 1246  7.0096871 0.009519684
+## 1247  4.9554830 0.651441717
+## 1248  4.3414958 0.677194817
+## 1249  4.9673696 0.946822992
+## 1250  6.5418126 0.545437490
+## 1251  2.9861176 2.924170028
+## 1252  4.5000507 0.080188875
+## 1253  5.1496823 0.537408604
+## 1254  5.4302559 0.588880869
+## 1255  5.0407067 0.020216845
+## 1256  5.2249354 0.587355670
+## 1257  2.3075542 0.474177076
+## 1258  2.5766888 0.561202940
+## 1259  4.6092530 0.782992883
+## 1260  4.5015812 0.925950775
+## 1261  4.8226898 0.589763652
+## 1262  5.7843878 0.994389094
+## 1263  4.6387645 1.355529543
+## 1264  1.4510014 2.320694844
+## 1265  5.8248918 1.115495760
+## 1266  1.7292087 0.267571629
+## 1267  6.2030341 0.130015689
+## 1268  4.2033041 0.266547564
+## 1269  1.5551951 0.337457370
+## 1270  7.1039954 3.013270378
+## 1271  5.0340672 0.514150450
+## 1272  5.6573158 4.857884313
+## 1273  7.8947174 0.171436791
+## 1274  3.2553998 0.102033344
+## 1275  6.1482956 0.246309393
+## 1276  2.2965390 1.034555424
+## 1277  4.9893802 0.852761585
+## 1278  3.9113940 4.795673110
+## 1279  6.6163704 0.837628110
+## 1280  7.3287581 1.095726927
+## 1281  6.3789920 0.118503941
+## 1282  6.6831772 2.915939675
+## 1283  5.7555411 1.626126693
+## 1284  5.0181466 0.095029487
+## 1285  6.7166430 0.027415723
+## 1286  8.2874371 0.194888016
+## 1287  5.6140147 0.607858783
+## 1288  8.1667955 4.112735872
+## 1289  7.8931739 0.068034772
+## 1290  8.3561878 2.654270437
+## 1291  6.6683394 0.447965172
+## 1292  1.7487633 2.463470540
+## 1293  3.2322709 0.021316248
+## 1294  3.4883803 0.124129051
+## 1295  4.9309325 0.251737073
+## 1296  1.6708376 0.697437009
+## 1297  6.6259625 1.500923854
+## 1298  5.2640230 1.728013576
+## 1299  3.8458321 2.106137392
+## 1300  4.0203572 0.196136359
+## 1301  4.0572950 2.934536827
+## 1302  7.2629868 3.411519728
+## 1303  3.3875122 0.185942970
+## 1304  4.4318707 0.995558450
+## 1305  4.7571136 0.554377802
+## 1306  5.3470548 0.489954065
+## 1307  4.7173599 0.896256158
+## 1308  5.1262929 0.259672757
+## 1309  5.0929398 0.822651088
+## 1310  5.0979466 2.627271662
+## 1311  3.0508167 0.186956496
+## 1312  4.7947044 1.479474454
+## 1313  5.5686893 1.626047006
+## 1314  0.8135484 0.725630036
+## 1315  6.1332123 0.442903001
+## 1316  5.0909573 0.906517045
+## 1317  0.5801707 0.108031710
+## 1318  4.3731328 0.126582589
+## 1319  4.4150098 0.454757400
+## 1320  1.8156654 0.188108484
+## 1321  5.4621337 0.734499297
+## 1322  6.0991461 0.125129008
+## 1323  2.5824298 0.782926520
+## 1324  1.7275207 0.783045557
+## 1325  4.5932081 0.201206201
+## 1326  1.8487622 1.591432291
+## 1327  5.1809778 0.487448357
+## 1328  4.4995884 2.823460817
+## 1329  7.2337084 0.176181614
+## 1330  3.2141281 1.868463568
+## 1331  3.8890761 1.657242838
+## 1332  6.5689729 0.353781323
+## 1333  2.6995138 1.743832334
+## 1334  3.7077814 0.232126760
+## 1335  8.9249721 3.344064975
+## 1336  5.8803431 0.394770425
+## 1337  6.0074048 2.366144255
+## 1338 -0.6867468 0.131312070
+## 1339  2.3926472 1.800265867
+## 1340  6.4774553 1.860131731
+## 1341  5.3304676 1.066704311
+## 1342  4.7874326 1.495960475
+## 1343  7.2183757 1.334574238
+## 1344  4.4870210 5.157616798
+## 1345  3.2663004 1.910388136
+## 1346  7.0256636 0.189473302
+## 1347  7.6802105 0.785699962
+## 1348  4.8599335 0.728652442
+## 1349  5.3641495 0.165193914
+## 1350  5.2303563 0.197129039
+## 1351  5.0121844 1.449191649
+## 1352  6.2355060 1.155792139
+## 1353  4.3197677 1.017131914
+## 1354  5.0137621 0.113397224
+## 1355  3.3108805 1.201324320
+## 1356  5.7223404 0.026031995
+## 1357  6.4282489 3.319390093
+## 1358  5.4361969 1.189843725
+## 1359  6.0198443 0.029476961
+## 1360  2.0645168 1.621652274
+## 1361  7.3610777 0.168277697
+## 1362  3.7806115 0.403923453
+## 1363  5.2222614 0.053924317
+## 1364  5.4184093 0.183691143
+## 1365  7.6207837 1.199898200
+## 1366  6.0302045 0.812419453
+## 1367  3.0350734 1.374686716
+## 1368  6.5746788 2.028567403
+## 1369  6.8140965 0.250210857
+## 1370  3.4474853 0.537472492
+## 1371  5.4981101 0.831216868
+## 1372  6.8549925 0.075320844
+## 1373  3.9905664 0.385965277
+## 1374  4.9088974 1.488801140
+## 1375  2.7777748 0.274219898
+## 1376  5.7070087 1.117402597
+## 1377  2.5264201 0.015140498
+## 1378  2.6957047 0.187109022
+## 1379  5.5468551 1.000704228
+## 1380  7.3970702 2.207596329
+## 1381  8.5041828 0.952014770
+## 1382  4.3230666 0.431744633
+## 1383  7.8522154 0.007089375
+## 1384  6.4637180 0.257201166
+## 1385  2.2318496 0.379501076
+## 1386  2.2870298 0.527830637
+## 1387  7.2727622 0.589410016
+## 1388  4.9398990 0.111383574
+## 1389  9.1478188 0.623366113
+## 1390  3.6293952 0.186162290
+## 1391  2.6797592 0.520695552
+## 1392  4.2292108 0.036923047
+## 1393  0.9700573 1.113362984
+## 1394  3.6220305 0.890182573
+## 1395  2.3923033 2.973214313
+## 1396  4.4298172 0.657735455
+## 1397  6.2192376 0.607244119
+## 1398  5.1480522 0.901736186
+## 1399  4.1466799 0.135952011
+## 1400  5.3373116 0.122768178
+## 1401  6.2433768 1.707412662
+## 1402  8.6127455 0.934930011
+## 1403  4.3605579 1.266744305
+## 1404  5.1828836 0.626895241
+## 1405  8.2176684 0.600317580
+## 1406  3.9981419 1.311164954
+## 1407  4.2876700 1.392986351
+## 1408  6.4347288 1.467171396
+## 1409  5.1151369 0.348222127
+## 1410  7.4731065 0.115914381
+## 1411  7.2696982 0.473917992
+## 1412  6.8834738 4.164542692
+## 1413  5.3503051 0.075600114
+## 1414  2.5838513 2.275582495
+## 1415  3.0628783 0.039056798
+## 1416  1.8883822 0.091309455
+## 1417  3.6432114 0.835935898
+## 1418  2.6200059 0.070545241
+## 1419  3.0224098 1.255839309
+## 1420  7.1521577 1.614687253
+## 1421  7.7860106 1.526381872
+## 1422  4.5761140 0.218094930
+## 1423  6.1794583 0.699426079
+## 1424  4.9067841 0.125349264
+## 1425  6.4933900 0.461042064
+## 1426  3.5005332 0.782033591
+## 1427  4.4438524 0.427810975
+## 1428  8.3183680 0.178587596
+## 1429  3.2763556 0.031965138
+## 1430  4.3132769 1.892294380
+## 1431  0.5817568 0.536810020
+## 1432  6.1303707 1.059923736
+## 1433  2.0872084 0.132125063
+## 1434  3.7055700 1.113499621
+## 1435  1.6320637 1.724714500
+## 1436  3.5260654 0.956139023
+## 1437  4.1896229 0.614101294
+## 1438  5.4572302 0.157237806
+## 1439  6.8571843 0.917729800
+## 1440  6.8658422 4.120193370
+## 1441  8.6604683 0.121122933
+## 1442  7.3944967 0.406090181
+## 1443  3.9512950 0.116207360
+## 1444  3.0879832 1.455270971
+## 1445  6.6307300 0.262342515
+## 1446  0.8151054 0.944471503
+## 1447 -0.3427191 0.540952517
+## 1448  6.8280503 0.644994118
+## 1449  6.3410220 1.244712948
+## 1450  5.3644802 0.190902010
+## 1451  3.7453274 0.565954372
+## 1452  1.2544283 0.854882271
+## 1453  6.7067353 0.072209000
+## 1454  8.1240529 1.459973617
+## 1455  1.7384370 0.905543216
+## 1456  3.2568122 1.007523526
+## 1457  5.4755481 0.871988733
+## 1458  6.8625532 0.333122053
+## 1459  5.6412238 0.740500509
+## 1460  7.8819524 0.330208971
+## 1461  4.2597174 0.229282363
+## 1462  3.5923725 3.583402381
+## 1463  6.6377913 1.671238137
+## 1464  7.9868026 2.123570911
+## 1465  7.1565954 0.853675704
+## 1466  3.8899803 0.103428464
+## 1467  6.7345682 0.323886716
+## 1468  3.1865257 0.086633683
+## 1469  5.2468193 0.826333216
+## 1470  5.7811404 1.246902025
+## 1471  6.0296879 1.282901285
+## 1472  4.8741860 0.025306470
+## 1473  8.7115586 1.020422805
+## 1474  8.3818993 0.386764627
+## 1475  5.7466767 0.775537057
+## 1476  2.5449298 0.194631328
+## 1477  7.6451841 1.186746712
+## 1478  5.7973104 0.690670474
+## 1479  3.9581981 1.052265512
+## 1480  4.3724795 0.108294170
+## 1481  6.2024093 0.512078413
+## 1482  3.1542978 0.458460489
+## 1483  1.7719960 1.131016847
+## 1484  5.1998367 0.885988676
+## 1485  3.4199080 0.970395164
+## 1486  4.5350519 0.905451323
+## 1487 10.5830722 0.200924303
+## 1488  2.9110111 0.387634488
+## 1489  7.0930271 0.167431844
+## 1490  3.1943545 0.849105059
+## 1491  6.9964263 0.026310980
+## 1492  7.5114180 2.665977255
+## 1493  3.6027576 0.141813373
+## 1494  3.9756367 1.000806771
+## 1495  5.7040026 1.074305366
+## 1496  7.6216518 0.452897506
+## 1497  4.8573608 0.139612175
+## 1498  8.4186082 1.611702189
+## 1499  5.6598011 0.327046222
+## 1500  2.3762027 1.279668256
+## 1501  2.5096992 0.779163192
+## 1502  5.8567517 1.072874514
+## 1503  5.6872870 2.664973811
+## 1504  4.0656400 0.214637298
+## 1505  3.7237401 1.791648875
+## 1506  4.9875533 0.204943426
+## 1507  7.6276959 0.492497417
+## 1508  0.7168405 0.363418496
+## 1509  5.3800501 0.502146470
+## 1510  4.0843425 0.528303003
+## 1511  3.4434839 0.873836102
+## 1512  4.0756296 0.453037125
+## 1513  5.1359818 0.631188080
+## 1514  3.8187490 1.824309176
+## 1515  4.7695962 0.460250413
+## 1516  6.3423744 0.357730072
+## 1517  1.0020394 0.366585539
+## 1518 -0.1961186 1.589166257
+## 1519  6.5520845 0.609882455
+## 1520  4.3690556 0.476407281
+## 1521  5.1471763 0.165287885
+## 1522  2.9465690 1.163029383
+## 1523  4.8190998 1.097321914
+## 1524  5.9389537 0.916458669
+## 1525  4.8280072 0.224666689
+## 1526  2.7778611 0.211234829
+## 1527  4.7138437 0.876371265
+## 1528  2.9653636 1.225777648
+## 1529  2.1522902 0.697750036
+## 1530  6.5372535 0.230854610
+## 1531  5.2649101 1.252696030
+## 1532  5.2241339 0.782017346
+## 1533  6.4390538 3.938294215
+## 1534 10.4424113 0.811492567
+## 1535  4.5772031 0.233888330
+## 1536  5.3563693 1.534589478
+## 1537  5.1456147 0.294560279
+## 1538  9.2445561 2.331871272
+## 1539  5.4811241 0.858858638
+## 1540  2.7499188 0.694368861
+## 1541  5.9101770 3.562357731
+## 1542  2.1042428 2.518368930
+## 1543  5.6988141 0.556311764
+## 1544  6.3689806 0.261533598
+## 1545  3.7506768 1.294245850
+## 1546  6.6692885 1.311509735
+## 1547  2.6547535 0.194629921
+## 1548  3.0213124 0.364078067
+## 1549  3.1066020 0.599489845
+## 1550  2.4392609 0.346296154
+## 1551  5.7579378 0.412701760
+## 1552  6.2535938 2.720163422
+## 1553  6.2909218 0.311726938
+## 1554  5.6992535 0.332860993
+## 1555  5.9551855 1.824826511
+## 1556  5.6090375 0.939550619
+## 1557  4.7538258 1.494501031
+## 1558  4.4876154 0.032392359
+## 1559  6.8331610 0.173169366
+## 1560  6.9716110 2.439411329
+## 1561  4.9292323 0.053817416
+## 1562  5.6722370 2.038794962
+## 1563  4.2821863 0.934050458
+## 1564  2.5096109 1.688373951
+## 1565  4.9443220 0.917663204
+## 1566  6.0809239 3.586902447
+## 1567  8.3615244 0.633192773
+## 1568  1.4616739 0.285771166
+## 1569  3.1564306 0.260098599
+## 1570  6.1785708 0.857409044
+## 1571  7.8331645 0.857885848
+## 1572  3.5034902 1.385926095
+## 1573  5.7461565 0.065737110
+## 1574  7.8386322 0.228924245
+## 1575  2.7523068 0.444490526
+## 1576  4.7972634 0.285307909
+## 1577  2.9401307 1.129041905
+## 1578  4.0724939 0.415417005
+## 1579  5.0472326 0.394274991
+## 1580  7.4403938 0.366116342
+## 1581  9.4423491 1.199782009
+## 1582  3.1979899 0.538528726
+## 1583  5.7931343 0.479589006
+## 1584  7.3634502 0.277130466
+## 1585  5.2749719 1.116120179
+## 1586  5.5210797 1.429448843
+## 1587  4.7967427 0.266302160
+## 1588  4.8430113 0.789262236
+## 1589  4.5733622 0.426627488
+## 1590  6.2133986 1.571395583
+## 1591  6.8671936 0.542102835
+## 1592  2.3534608 2.193907733
+## 1593  3.9931463 0.132597630
+## 1594  7.3686014 0.066375068
+## 1595  4.0771820 0.152914630
+## 1596  4.2251705 0.979619911
+## 1597  6.5497860 0.450462727
+## 1598  5.5280461 0.866976991
+## 1599  2.5789087 0.328623200
+## 1600  6.0820526 1.917375768
+## 1601  3.6821018 0.859479848
+## 1602  2.2755796 1.680694403
+## 1603  7.5031264 4.676905262
+## 1604  2.0560078 0.781534953
+## 1605  6.3249019 0.519222184
+## 1606  5.2811676 0.618964937
+## 1607  5.1548140 1.313919411
+## 1608  4.1388365 0.060717780
+## 1609  4.0028572 0.963817315
+## 1610  3.1672132 0.223229738
+## 1611  4.8943349 1.476279382
+## 1612  6.7529436 0.543989585
+## 1613  6.2489197 1.478563326
+## 1614  3.7747865 2.008416708
+## 1615  5.5144153 0.520948475
+## 1616  4.7849168 3.716945007
+## 1617  1.5959587 1.507322074
+## 1618  7.0596229 1.072855419
+## 1619  6.1535220 0.763521210
+## 1620  4.9561528 2.343844570
+## 1621  6.7673759 2.292852564
+## 1622  4.5073224 0.063530677
+## 1623  2.6460403 0.655969733
+## 1624  6.7779410 0.765397005
+## 1625  7.2901683 1.500083191
+## 1626  5.5035642 0.111077275
+## 1627  4.5111909 0.280435464
+## 1628  7.4675131 1.829909062
+## 1629  6.0203223 0.566439353
+## 1630  5.3854590 1.056610981
+## 1631  6.0081993 1.883706934
+## 1632  6.7159441 0.248776656
+## 1633  5.8211216 1.137337811
+## 1634  2.8494157 1.500512015
+## 1635  5.2930083 0.141613733
+## 1636  3.7945341 0.312949441
+## 1637  9.9034034 1.730856598
+## 1638  3.4028759 0.317089012
+## 1639  4.7787478 2.394444434
+## 1640  2.7168325 0.368699056
+## 1641  8.2352565 0.192527018
+## 1642  3.8620257 0.187594559
+## 1643  4.4515470 0.158865582
+## 1644  2.6798520 0.688742994
+## 1645  4.7599316 1.011949965
+## 1646  6.1641219 0.990643707
+## 1647  5.6267112 0.343272008
+## 1648  3.2890421 0.362040163
+## 1649  4.4988629 1.163999271
+## 1650  4.4207769 2.689533705
+## 1651  2.9683590 0.280486466
+## 1652  5.6651574 1.335075526
+## 1653  6.2074641 0.282915448
+## 1654  1.2464588 1.397509321
+## 1655  5.2558225 0.685616280
+## 1656  7.4539790 0.809062821
+## 1657  4.9157651 2.151429398
+## 1658  6.3445075 2.344239715
+## 1659  4.2333106 2.030295395
+## 1660  6.1042404 0.037141835
+## 1661  5.7546143 0.771905942
+## 1662  4.3639928 0.187389867
+## 1663  2.6734915 0.481658051
+## 1664  4.6930409 1.515923219
+## 1665  6.4607567 0.400230959
+## 1666  3.5821574 0.510428952
+## 1667  7.6427065 2.090575631
+## 1668  0.0901473 0.631091863
+## 1669  5.9979265 0.280251326
+## 1670  5.5907178 0.288935821
+## 1671  3.8489381 4.555262825
+## 1672  7.1441944 0.625296835
+## 1673  3.7592436 0.517391734
+## 1674  4.2670985 2.720473652
+## 1675  9.8692239 1.089705937
+## 1676  4.4174408 0.730132006
+## 1677  3.2068872 0.056376942
+## 1678 10.8917319 0.220709114
+## 1679  6.6645711 0.642118824
+## 1680  4.0604179 1.218515457
+## 1681  4.3409904 0.285213976
+## 1682  1.0095300 0.739508837
+## 1683  6.0540413 0.399774634
+## 1684  9.2720068 0.835755053
+## 1685  4.8296825 0.803221865
+## 1686  8.5715455 2.217124979
+## 1687  7.3717336 0.764608639
+## 1688  5.9652523 0.271697490
+## 1689  5.8133496 0.577488729
+## 1690  4.0265622 0.705593984
+## 1691  2.4557089 0.187934934
+## 1692  3.7859818 3.875308151
+## 1693  4.9269851 1.199349633
+## 1694  1.1348641 0.053070148
+## 1695  8.7727383 0.110110404
+## 1696  4.6636617 1.024778964
+## 1697  4.6843193 0.005953365
+## 1698  3.3180909 0.182145085
+## 1699  2.7505452 0.274407505
+## 1700  0.9955970 0.360442360
+## 1701  8.4678134 0.849025875
+## 1702  5.1087795 0.162746368
+## 1703  8.0086275 0.720780489
+## 1704 10.2139727 1.292637165
+## 1705  3.0940865 0.608703916
+## 1706  6.7120874 3.059817901
+## 1707  8.2586872 0.575175864
+## 1708  5.0147553 1.025069856
+## 1709  6.6285228 0.515087111
+## 1710  6.4456136 1.099325042
+## 1711  3.7414642 0.102208134
+## 1712  3.8913205 1.255938532
+## 1713  6.2060379 2.973181568
+## 1714  4.3236964 0.735854907
+## 1715  7.7653374 0.317634304
+## 1716  7.3986840 2.101470906
+## 1717  8.1969363 1.164576713
+## 1718  8.3434407 0.799201991
+## 1719  5.2529049 0.401075753
+## 1720  5.2491146 2.044569601
+## 1721  8.8668274 2.674338869
+## 1722  6.0536793 0.231479301
+## 1723  6.8625464 0.598855543
+## 1724  5.2785026 1.480102262
+## 1725  3.8333564 1.805030681
+## 1726  5.7273616 0.693006055
+## 1727  5.7310782 0.711338417
+## 1728  8.8022755 2.116867124
+## 1729  3.7086233 1.989096756
+## 1730  5.3093172 0.468476868
+## 1731  4.1104195 0.004442910
+## 1732  5.1585106 0.394459441
+## 1733  7.0068531 0.063958325
+## 1734  4.4960063 1.153532268
+## 1735  4.3741779 0.515678772
+## 1736  6.8590139 0.782100081
+## 1737  1.8274505 2.315984212
+## 1738  3.3551728 3.723114117
+## 1739  5.0181814 0.469450592
+## 1740  5.5974676 0.581010802
+## 1741  5.2333557 0.031172368
+## 1742  3.3146950 1.009945988
+## 1743  2.5436612 0.198688717
+## 1744  5.4552315 0.461986853
+## 1745  0.7896991 0.478460619
+## 1746  2.1339841 0.051041488
+## 1747  6.7162931 1.779834390
+## 1748  7.6208005 2.668430023
+## 1749  5.1177644 0.015992031
+## 1750  4.7029164 0.592436517
+## 1751  4.6208577 1.119706966
+## 1752  8.3562227 1.321707432
+## 1753  3.3204895 2.217947772
+## 1754  1.7040685 0.773621919
+## 1755  2.3147083 0.297878888
+## 1756  4.4084626 0.360928320
+## 1757  4.2363933 1.199272435
+## 1758  5.4620792 0.057848769
+## 1759  8.8219789 0.111583064
+## 1760  2.3041462 1.369113262
+## 1761  2.1355868 3.826396977
+## 1762  4.4345829 1.113808111
+## 1763  4.1074329 0.612965311
+## 1764  0.8934828 0.358051487
+## 1765  5.5306786 0.181221038
+## 1766  2.5890235 0.103193887
+## 1767  5.6494273 1.987603430
+## 1768  4.9564441 1.840895264
+## 1769  5.0498581 1.709750093
+## 1770  3.7650210 2.375805428
+## 1771  5.5812609 0.493318242
+## 1772  5.1451560 0.141907570
+## 1773  5.6793943 0.132918839
+## 1774  4.4841704 0.567624130
+## 1775  5.1426915 1.073920454
+## 1776  4.9661895 1.013788562
+## 1777  7.1019816 0.497534601
+## 1778  7.5323492 1.344698223
+## 1779  5.7210578 2.727212685
+## 1780  2.9453636 0.399550326
+## 1781  6.2363793 0.418902559
+## 1782  9.5202742 0.573437405
+## 1783  4.9994454 0.859782787
+## 1784  5.0314298 0.141299527
+## 1785  8.2987049 1.636718268
+## 1786  4.6480389 1.446603754
+## 1787  3.2614267 0.094537269
+## 1788  6.6026071 0.772767162
+## 1789  5.0684119 0.515742956
+## 1790  6.9007006 0.473762557
+## 1791  4.2782439 1.810276398
+## 1792  8.4209068 0.246880896
+## 1793  3.8309685 0.038516484
+## 1794  4.0649032 1.889638705
+## 1795  4.6717115 0.129470878
+## 1796  5.3630961 1.531426368
+## 1797  6.2230390 0.891964690
+## 1798  7.0591271 0.339258770
+## 1799  6.5035592 1.391398255
+## 1800  4.4579970 0.112151192
+## 1801 -1.3457038 0.239906821
+## 1802  2.1402604 0.214504518
+## 1803  3.5540816 2.431968299
+## 1804  1.7318685 0.385471849
+## 1805  4.4704154 1.377940737
+## 1806  6.7217154 0.502200582
+## 1807  8.0233896 0.958476414
+## 1808  4.4399104 0.900371016
+## 1809  4.5062540 1.151633331
+## 1810  3.5769577 0.294564974
+## 1811  6.3233155 0.713674309
+## 1812  5.0505163 0.620525804
+## 1813  5.8253674 0.242694818
+## 1814  3.4844990 1.373301253
+## 1815  3.4070352 0.631455432
+## 1816  8.9157680 0.460428960
+## 1817  3.7459777 0.074339431
+## 1818  3.5303845 1.377393298
+## 1819  4.1389856 1.233928471
+## 1820  2.5313747 2.571213951
+## 1821  4.6805511 1.184731495
+## 1822  3.9899844 1.298027878
+## 1823  1.7957360 0.572856854
+## 1824  9.8794516 0.025868092
+## 1825  5.6846763 3.906709187
+## 1826  2.7908740 0.053988490
+## 1827  2.6285364 0.313111332
+## 1828  2.4965906 0.628002784
+## 1829  3.3232048 2.076677464
+## 1830  3.6528695 1.464383240
+## 1831  6.4435859 1.085284618
+## 1832  2.1699973 0.072947255
+## 1833  6.2886482 0.828178176
+## 1834  6.8229553 0.368840025
+## 1835  4.7799007 0.846383831
+## 1836  4.2423191 1.269276665
+## 1837  5.7822673 0.481079920
+## 1838  4.3156687 0.506981658
+## 1839  5.4870646 1.886665942
+## 1840  4.7368664 0.812909492
+## 1841  7.4990877 0.058975098
+## 1842  8.0970198 1.846090073
+## 1843  4.5752485 0.187096358
+## 1844  5.5204552 0.480475018
+## 1845  5.8609229 0.183267051
+## 1846  5.0016801 0.247404119
+## 1847  6.3122123 2.434063849
+## 1848  3.3971279 0.994355451
+## 1849  2.0458593 1.921583525
+## 1850  7.1948054 0.175177229
+## 1851  0.8445694 1.049576189
+## 1852  6.0588486 0.448101388
+## 1853  6.9262552 0.212822770
+## 1854  5.4875383 0.345088945
+## 1855  4.4526721 1.207060586
+## 1856  4.9849790 0.493480609
+## 1857  8.3654708 0.177177732
+## 1858  5.0100009 1.982796768
+## 1859  4.8750043 0.061335244
+## 1860  5.3456253 0.164641299
+## 1861  6.0542660 0.737164236
+## 1862  3.8788639 1.904835912
+## 1863  3.6868540 0.190766001
+## 1864  3.9294808 4.617174286
+## 1865  5.4293446 0.019864523
+## 1866  2.5325185 2.503663837
+## 1867  1.9898431 1.233724175
+## 1868  5.0374298 1.069477458
+## 1869  6.5248228 4.727152245
+## 1870  7.1917155 0.348504876
+## 1871  0.7865840 0.318698334
+## 1872  7.1492080 1.120830397
+## 1873  7.7562847 0.747705778
+## 1874  4.7229467 1.137856879
+## 1875  4.6794158 0.933425232
+## 1876  4.1172830 3.594152853
+## 1877  3.9850079 0.152516919
+## 1878  4.9130354 4.281323405
+## 1879  3.4848775 0.607464763
+## 1880  3.0956452 1.379536622
+## 1881  2.2884640 0.730003235
+## 1882  5.2098350 2.740496130
+## 1883  4.7817541 0.085447021
+## 1884  7.6582913 0.401289245
+## 1885  5.5038614 1.561642412
+## 1886  6.8848532 0.122674526
+## 1887  5.4059526 0.003214271
+## 1888  5.2443415 0.944612403
+## 1889  6.4783152 0.727218042
+## 1890  6.3869647 0.256692569
+## 1891  7.3778785 1.455198979
+## 1892  5.4816165 0.140290399
+## 1893  2.5406185 0.045344650
+## 1894  4.2037391 0.096316816
+## 1895  6.3266072 0.508018637
+## 1896  5.8349731 0.241946726
+## 1897  4.4194037 0.703621638
+## 1898  7.8260835 1.602398478
+## 1899  7.3120876 1.182181758
+## 1900  6.8981817 1.015143407
+## 1901  3.5695507 1.094607309
+## 1902  3.2306709 0.485984784
+## 1903  2.3974574 0.260219881
+## 1904  2.3388321 1.117920023
+## 1905  5.2751768 1.014099905
+## 1906  3.7199121 0.074539902
+## 1907  8.1507149 1.070510766
+## 1908  3.8367614 0.174437402
+## 1909  6.1409323 2.123362996
+## 1910  4.8404032 0.530859762
+## 1911  7.3751461 0.176734805
+## 1912  7.6192929 0.236866867
+## 1913  3.0867651 1.227628139
+## 1914  3.8146078 0.174495316
+## 1915  3.9650326 1.399038431
+## 1916 -0.7121146 0.027386491
+## 1917  2.6076676 0.866373657
+## 1918  6.1159534 0.991865295
+## 1919  7.5554848 0.938445929
+## 1920  4.3415758 2.464419060
+## 1921  5.3672534 1.301063881
+## 1922  7.5020599 0.396067102
+## 1923  6.7865798 1.201022317
+## 1924  3.6327027 2.234592659
+## 1925  7.9319313 0.439730886
+## 1926  3.2222386 0.012610077
+## 1927  3.3231891 0.604435103
+## 1928  6.9822938 0.546210968
+## 1929  5.0524070 0.491542567
+## 1930  6.3110752 0.240254914
+## 1931  3.3549424 0.160540849
+## 1932  5.3054995 0.188784472
+## 1933  7.3791391 0.183084431
+## 1934  4.4136080 0.665015628
+## 1935  6.3328267 0.647044838
+## 1936  6.0698181 3.851197076
+## 1937  5.6014573 0.420538830
+## 1938  5.9444032 1.489356562
+## 1939  5.8738613 0.647794499
+## 1940  7.6165756 2.019010800
+## 1941  4.4393341 0.014707337
+## 1942  8.1950180 0.701114783
+## 1943  2.6825522 0.850156929
+## 1944  3.8812299 0.060526829
+## 1945  5.9472293 1.974847339
+## 1946  5.8642299 2.608630538
+## 1947  3.6452971 2.014369778
+## 1948  4.1563897 0.745721391
+## 1949  5.8810609 6.162666902
+## 1950  7.8748978 3.212083197
+## 1951  4.5556479 1.460603171
+## 1952  8.4610202 0.235361921
+## 1953  5.0204187 1.604422299
+## 1954  5.5537229 0.046570053
+## 1955  3.4560526 0.041912831
+## 1956  0.5604045 1.914010374
+## 1957  3.8142970 1.435244676
+## 1958  3.6165815 0.011987991
+## 1959  6.4624243 1.170701182
+## 1960  3.6508549 1.257775966
+## 1961  4.3106862 1.305255502
+## 1962  1.4864417 0.432906577
+## 1963  3.7641582 0.060864878
+## 1964  6.3740404 0.535464351
+## 1965  4.9241066 0.106864357
+## 1966  2.2897695 0.537232299
+## 1967  0.5191797 1.060047841
+## 1968  3.3335414 1.975700695
+## 1969  7.7133276 0.586535718
+## 1970  1.8087916 2.231409194
+## 1971  8.0972483 0.926762764
+## 1972  5.4696251 0.408670293
+## 1973  6.6440526 0.159375205
+## 1974  4.2367480 2.579207977
+## 1975  5.2442038 1.424351591
+## 1976  0.3075417 0.476872184
+## 1977  7.3716385 0.280164423
+## 1978  6.6375042 1.315739876
+## 1979  2.5452836 0.677245251
+## 1980  4.9062448 0.006025101
+## 1981  6.3690715 9.676113026
+## 1982  4.5810977 0.059776201
+## 1983  2.2265344 0.124749538
+## 1984  3.2076246 0.312275118
+## 1985  4.0141467 2.008794015
+## 1986  6.7028297 5.250859339
+## 1987  7.6694178 1.723418485
+## 1988  7.5326649 0.411356523
+## 1989  6.7737169 4.358981215
+## 1990  4.8823341 1.485825901
+## 1991  3.2878102 0.281511981
+## 1992  4.9075998 0.941940630
+## 1993  4.4094787 0.699738915
+## 1994  7.1473505 1.195521835
+## 1995  3.6513281 0.917257525
+## 1996  2.3074757 1.092253372
+## 1997  4.6847920 0.504688773
+## 1998  6.3659252 0.644175811
+## 1999  3.3909492 0.363796103
+## 2000  6.7398104 0.577708711
+```
+
+
+
+---
+## prior predictive visualization
+
+.pull-left[
+
+```r
+prior.a.1 %&gt;% 
+  ggplot(aes(x = b)) +
+  geom_density() +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.position = c(.84, .84))
+```
+]
+
+.pull-right[
+
+![](regression-3_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
+]
+
+---
+
+```r
+summary(a.1)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: happiness ~ 0 + iv 
+##    Data: MR (Number of observations: 118) 
+##   Draws: 2 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 2000
+## 
+## Population-Level Effects: 
+##     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## iv1     4.99      0.28     4.45     5.54 1.01     2303     1419
+## iv2     5.28      0.31     4.64     5.87 1.00     2500     1382
+## iv3     5.38      0.29     4.83     5.94 1.00     2293     1492
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     1.91      0.12     1.68     2.16 1.00     1965     1630
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+
+```r
+get_variables(a.1)
+```
+
+```
+##  [1] "b_iv1"         "b_iv2"         "b_iv3"         "sigma"        
+##  [5] "prior_b"       "prior_sigma"   "lp__"          "accept_stat__"
+##  [9] "stepsize__"    "treedepth__"   "n_leapfrog__"  "divergent__"  
+## [13] "energy__"
+```
+Notice that we have a parameter for each group mean
+
+---
+.pull-left[
+
+```r
+a.1 %&gt;% 
+ gather_draws(b_iv1, b_iv2,b_iv3) %&gt;% 
+  head()
+```
+
+```
+## # A tibble: 6 × 5
+## # Groups:   .variable [1]
+##   .chain .iteration .draw .variable .value
+##    &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
+## 1      1          1     1 b_iv1       5.11
+## 2      1          2     2 b_iv1       5.20
+## 3      1          3     3 b_iv1       4.71
+## 4      1          4     4 b_iv1       5.16
+## 5      1          5     5 b_iv1       5.16
+## 6      1          6     6 b_iv1       4.83
+```
+
+]
+
+.pull-right[
+
+```r
+a.1 %&gt;% 
+ spread_draws(b_iv1, b_iv2,b_iv3) %&gt;% 
+  head()
+```
+
+```
+## # A tibble: 6 × 6
+##   .chain .iteration .draw b_iv1 b_iv2 b_iv3
+##    &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1      1          1     1  5.11  5.18  6.16
+## 2      1          2     2  5.20  5.40  5.06
+## 3      1          3     3  4.71  5.59  5.21
+## 4      1          4     4  5.16  4.76  5.43
+## 5      1          5     5  5.16  5.15  5.64
+## 6      1          6     6  4.83  5.12  5.05
+```
+]
+
+
+
+---
+
+
+```r
+a.1 %&gt;% 
+ gather_draws(b_iv1, b_iv2,b_iv3) %&gt;% 
+    ggplot(aes(y = .variable, x = .value)) +
+  stat_halfeye()
+```
+
+![](regression-3_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
+
+---
+## Post hoc test
+
+Our posterior captures all information in the model. Thus any sort of additional information we may want (eg group comparison) we can get through manipulating our posterior! 
+
+
+
+```r
+post.a.1 &lt;- a.1 %&gt;% 
+  spread_draws(b_iv1, b_iv2,b_iv3,sigma) %&gt;% 
+  mutate(`D_1-2`  = `b_iv1` - `b_iv2`,
+         `D_1-3`  = `b_iv1` - `b_iv3`,
+         `D_2-3`  = `b_iv2` - `b_iv3`,
+         `E_1-2` = ((`D_1-2`) / `sigma`),
+         `E_1-3` = ((`D_1-3`) / `sigma`),
+          `E_2-3` = ((`D_2-3`) / `sigma`))
+```
+
+
+---
+
+```r
+post.a.1 
+```
+
+```
+## # A tibble: 2,000 × 13
+##    .chain .iteration .draw b_iv1 b_iv2 b_iv3 sigma `D_1-2` `D_1-3` `D_2-3`
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1      1          1     1  5.11  5.18  6.16  1.95 -0.0618 -1.04   -0.979 
+##  2      1          2     2  5.20  5.40  5.06  2.11 -0.204   0.133   0.337 
+##  3      1          3     3  4.71  5.59  5.21  1.85 -0.883  -0.498   0.386 
+##  4      1          4     4  5.16  4.76  5.43  1.91  0.399  -0.273  -0.673 
+##  5      1          5     5  5.16  5.15  5.64  1.93  0.0117 -0.477  -0.489 
+##  6      1          6     6  4.83  5.12  5.05  1.83 -0.287  -0.214   0.0726
+##  7      1          7     7  5.19  5.47  5.72  1.96 -0.279  -0.531  -0.252 
+##  8      1          8     8  4.81  5.12  5.04  1.81 -0.305  -0.233   0.0723
+##  9      1          9     9  4.65  4.58  5.49  1.81  0.0704 -0.836  -0.907 
+## 10      1         10    10  4.91  5.33  5.00  2.15 -0.421  -0.0925  0.328 
+## # … with 1,990 more rows, and 3 more variables: E_1-2 &lt;dbl&gt;, E_1-3 &lt;dbl&gt;,
+## #   E_2-3 &lt;dbl&gt;
+```
+
+---
+
+
+```r
+post.a.1 %&gt;% 
+ gather_draws(`D_1-2`, `D_1-3`,`D_2-3`) %&gt;% 
+    ggplot(aes(y = .variable, x = .value)) +
+  stat_halfeye()
+```
+
+![](regression-3_files/figure-html/unnamed-chunk-87-1.png)&lt;!-- --&gt;
+
+
+---
+
+```r
+post.a.1 %&gt;% 
+ gather_draws(`D_1-2`, `D_1-3`,`D_2-3`) %&gt;% 
+  mean_qi()
+```
+
+```
+## # A tibble: 3 × 7
+##   .variable  .value .lower .upper .width .point .interval
+##   &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 D_1-2     -0.289  -1.08   0.536   0.95 mean   qi       
+## 2 D_1-3     -0.382  -1.20   0.417   0.95 mean   qi       
+## 3 D_2-3     -0.0929 -0.945  0.730   0.95 mean   qi
+```
+
+---
+Hypothesis function makes post hoc comparisons easy! Just tell the function which model you want and put in the variable names (not the posterior labels, the variable names from the summary output)
+
+
+```r
+hypothesis(a.1, "iv1 =iv3")
+```
+
+```
+## Hypothesis Tests for class b:
+##        Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob
+## 1 (iv1)-(iv3) = 0    -0.38      0.41     -1.2     0.42       4.73      0.83
+##   Star
+## 1     
+## ---
+## 'CI': 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
+## '*': For one-sided hypotheses, the posterior probability exceeds 95%;
+## for two-sided hypotheses, the value tested against lies outside the 95%-CI.
+## Posterior probabilities of point hypotheses assume equal prior probabilities.
+```
+
+---
+
+
+
+```r
+library(emmeans)
+a.1.em &lt;- emmeans(a.1, "iv")
+pairs(a.1.em)
+```
+
+```
+##  contrast estimate lower.HPD upper.HPD
+##  1 - 2     -0.2830    -1.088     0.515
+##  1 - 3     -0.3902    -1.155     0.451
+##  2 - 3     -0.0952    -0.928     0.747
+## 
+## Point estimate displayed: median 
+## HPD interval probability: 0.95
+```
+
+---
+### A note on graphing ANOVA models
+
+What I see often presented are means (sometimes w/distributions) (and  sometimes with CIs around the mean) showing a star(s) or something to demonstrate the model found differences. 
+
+But this is descriptive information. Not your model that you spent time building. Moreover, it boils down the decision into a dichotomous conclusion in terms of whether there are or are not differences. 
+
+Thus, I believe modeling differences directly is more helpful/accurate. 
+
+---
+What do you want to see in your group comparison figures? 
+
+```r
+post.a.1 %&gt;% 
+ gather_draws(`D_1-2`, `D_1-3`,`D_2-3`) %&gt;% 
+    ggplot(aes(y = .variable, x = .value)) +
+  stat_dots() +xlab("difference btw groups")
+```
+
+![](regression-3_files/figure-html/unnamed-chunk-91-1.png)&lt;!-- --&gt;
+
 
 ---
 ## Robust metric variables
 
+Robust procedure does not need to be limited to categorical variables
 
 ```r
 h.8 &lt;- 
@@ -1561,258 +3995,18 @@ pp_check(h.8)
 ## Using 10 posterior draws for ppc type 'dens_overlay' by default.
 ```
 
-![](regression-3_files/figure-html/unnamed-chunk-73-1.png)&lt;!-- --&gt;
-
-
----
-
-
-```r
-summary(h.1)
-```
-
-```
-##  Family: gaussian 
-##   Links: mu = identity; sigma = identity 
-## Formula: health ~ 1 + happy_c 
-##    Data: week3 (Number of observations: 200) 
-##   Draws: 2 chains, each with iter = 1000; warmup = 500; thin = 1;
-##          total post-warmup draws = 1000
-## 
-## Population-Level Effects: 
-##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept     8.51      0.20     8.11     8.88 1.00      961      672
-## happy_c       0.33      0.13     0.08     0.59 1.00      968      670
-## 
-## Family Specific Parameters: 
-##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     2.81      0.14     2.56     3.09 1.00      827      722
-## 
-## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-## and Tail_ESS are effective sample size measures, and Rhat is the potential
-## scale reduction factor on split chains (at convergence, Rhat = 1).
-```
-
-
----
-## Correlation 
-multivariate model preview
-
-
-```r
-h.9 &lt;- 
-  brm(family = gaussian,
-      mvbind(health, happy) ~ 1 ,
-      prior = c(prior(normal(0, 10), class = Intercept),
-                prior(normal(0, 10), class = sigma, resp = health),
-                prior(normal(0, 10), class = sigma, resp = happy),
-                prior(lkj(1), class = rescor)),
-      data = week3,
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "h.9")
-```
-
----
-
-```r
-summary(h.9)
-```
-
-```
-##  Family: MV(gaussian, gaussian) 
-##   Links: mu = identity; sigma = identity
-##          mu = identity; sigma = identity 
-## Formula: health ~ 1 
-##          happy ~ 1 
-##    Data: week3 (Number of observations: 200) 
-##   Draws: 2 chains, each with iter = 1000; warmup = 500; thin = 1;
-##          total post-warmup draws = 1000
-## 
-## Population-Level Effects: 
-##                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## health_Intercept     8.51      0.20     8.11     8.88 1.00     1358      816
-## happy_Intercept      2.62      0.11     2.40     2.83 1.00     1297      774
-## 
-## Family Specific Parameters: 
-##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma_health     2.85      0.14     2.59     3.13 1.01     1251      699
-## sigma_happy      1.51      0.08     1.37     1.67 1.01     1035      658
-## 
-## Residual Correlations: 
-##                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
-## rescor(health,happy)     0.18      0.07     0.04     0.30 1.00     1063
-##                      Tail_ESS
-## rescor(health,happy)      798
-## 
-## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-## and Tail_ESS are effective sample size measures, and Rhat is the potential
-## scale reduction factor on split chains (at convergence, Rhat = 1).
-```
-
----
-
-
-
-```r
-library(psych)
-week3 %&gt;% 
-  select(health,happy) %&gt;% 
-  describe()
-```
-
-```
-##        vars   n mean   sd median trimmed  mad  min   max range  skew kurtosis
-## health    1 200 8.51 2.83   8.72    8.54 2.88 0.71 16.51 15.80 -0.08    -0.32
-## happy     2 200 2.62 1.50   2.73    2.65 1.96 0.04  5.00  4.95 -0.11    -1.25
-##          se
-## health 0.20
-## happy  0.11
-```
+![](regression-3_files/figure-html/unnamed-chunk-94-1.png)&lt;!-- --&gt;
 
 
 
 
 
-```r
-week3 %&gt;% 
-  select(health,happy) %&gt;% 
-  cor()
-```
-
-```
-##           health     happy
-## health 1.0000000 0.1787622
-## happy  0.1787622 1.0000000
-```
 
 
----
-
-```r
-plot(h.9)
-```
-
-![](regression-3_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
 
 
----
-## Robust correlations
 
-```r
-h.9a &lt;- 
-  brm(family = student,
-      mvbind(health, happy) ~ 1 ,
-      prior = c(prior(gamma(2, .1), class = nu),
-                prior(normal(0, 10), class = Intercept),
-                prior(normal(0, 10), class = sigma, resp = health),
-                prior(normal(0, 10), class = sigma, resp = happy),
-                prior(lkj(1), class = rescor)),
-      data = week3,
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "h.9a")
-```
-
-
----
-
-
-```
-##  Family: MV(student, student) 
-##   Links: mu = identity; sigma = identity; nu = identity
-##          mu = identity; sigma = identity; nu = identity 
-## Formula: health ~ 1 
-##          happy ~ 1 
-##    Data: week3 (Number of observations: 200) 
-##   Draws: 2 chains, each with iter = 1000; warmup = 500; thin = 1;
-##          total post-warmup draws = 1000
-## 
-## Population-Level Effects: 
-##                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## health_Intercept     8.52      0.20     8.16     8.91 1.00     1149      739
-## happy_Intercept      2.62      0.11     2.41     2.82 1.00     1350      786
-## 
-## Family Specific Parameters: 
-##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma_health     2.79      0.15     2.51     3.12 1.00     1175      767
-## sigma_happy      1.50      0.07     1.35     1.65 1.00     1607      788
-## nu              42.35     16.65    18.54    85.39 1.00      958      866
-## nu_health        1.00      0.00     1.00     1.00   NA       NA       NA
-## nu_happy         1.00      0.00     1.00     1.00   NA       NA       NA
-## 
-## Residual Correlations: 
-##                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
-## rescor(health,happy)     0.18      0.07     0.04     0.31 1.00     1259
-##                      Tail_ESS
-## rescor(health,happy)      693
-## 
-## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-## and Tail_ESS are effective sample size measures, and Rhat is the potential
-## scale reduction factor on split chains (at convergence, Rhat = 1).
-```
-
-
----
-
-
-```r
-bf_health &lt;- bf(health ~ 1)
-bf_happy &lt;- bf(happy ~ 1)
-
-
-h.9b &lt;- 
-  brm(family = student,
-      bf_health + bf_happy,
-      prior = c(prior(gamma(2, .1), class = nu),
-                prior(normal(0, 10), class = Intercept),
-                prior(normal(0, 10), class = sigma, resp = health),
-                prior(normal(0, 10), class = sigma, resp = happy),
-                prior(lkj(1), class = rescor)),
-      data = week3,
-      iter = 1000, warmup = 500, chains = 2, cores = 2, 
-      file = "h.9b")
-```
-
-
----
-
-
-```
-##  Family: MV(student, student) 
-##   Links: mu = identity; sigma = identity; nu = identity
-##          mu = identity; sigma = identity; nu = identity 
-## Formula: health ~ 1 
-##          happy ~ 1 
-##    Data: week3 (Number of observations: 200) 
-##   Draws: 2 chains, each with iter = 1000; warmup = 500; thin = 1;
-##          total post-warmup draws = 1000
-## 
-## Population-Level Effects: 
-##                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## health_Intercept     8.53      0.20     8.15     8.90 1.00     1511      771
-## happy_Intercept      2.62      0.10     2.42     2.82 1.00     1554      900
-## 
-## Family Specific Parameters: 
-##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma_health     2.80      0.15     2.54     3.10 1.01     1127      689
-## sigma_happy      1.50      0.08     1.36     1.68 1.01     1574      893
-## nu              42.06     16.05    18.36    77.33 1.00     1372      796
-## nu_health        1.00      0.00     1.00     1.00   NA       NA       NA
-## nu_happy         1.00      0.00     1.00     1.00   NA       NA       NA
-## 
-## Residual Correlations: 
-##                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
-## rescor(health,happy)     0.18      0.07     0.06     0.31 1.00     1444
-##                      Tail_ESS
-## rescor(health,happy)      773
-## 
-## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-## and Tail_ESS are effective sample size measures, and Rhat is the potential
-## scale reduction factor on split chains (at convergence, Rhat = 1).
-```
-
----
-
-![](regression-3_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;![](regression-3_files/figure-html/unnamed-chunk-84-2.png)&lt;!-- --&gt;
+ 
 
 
     </textarea>
