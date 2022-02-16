@@ -514,7 +514,7 @@ MR %>%
 236,000 rows comes from (N = 118 * 2000 post warmup samples). Different .epred (y-hat, expected/fitted value) for each person for each sample. 
 
 ---
-.pull-left[
+
 ```{r}
 MR %>% 
   data_grid(FQ_c = seq_range(FQ_c, n = 101), .model=MR)
@@ -678,7 +678,7 @@ prior.mr3
 
 
 ---
-## prior predictive visualization
+## prior distribution
 
 .pull-left[
 ```{r, eval = FALSE}
@@ -742,6 +742,8 @@ summary(mr.4)
 ```{r}
 get_variables(mr.4)
 ```
+
+---
 
 ```{r}
 mr.4 %>% 
@@ -849,8 +851,8 @@ mr.6 %>%
 
 ---
 
-
-```{r}
+.pull-left[
+```{r, eval = FALSE}
 mr.6 %>%
   spread_draws(b_a_iv1, b_a_iv2, b_a_iv3) %>%
   mutate(iv1 = b_a_iv1 + 5.213902) %>% 
@@ -861,12 +863,26 @@ mr.6 %>%
   stat_dotsinterval()
 
 ```
+]
 
 
 
+.pull-right[
+```{r, eval = FALSE}
+mr.6 %>%
+  spread_draws(b_a_iv1, b_a_iv2, b_a_iv3) %>%
+  mutate(iv1 = b_a_iv1 + 5.213902) %>% 
+  mutate(iv2 = b_a_iv2 + 5.213902) %>% 
+  mutate(iv3 = b_a_iv3 + 5.213902) %>% 
+  gather_draws(iv1, iv2, iv3) %>% 
+  ggplot(aes(y = .variable, x = .value)) +
+  stat_dotsinterval()
+
+```
+]
 
 ---
-Assumes that fitted values represent values from possible distributions. 
+Krushke' visualization of posterior predictions 
 ```{r}
 MR %>%
   data_grid(iv, .model = MR) %>%

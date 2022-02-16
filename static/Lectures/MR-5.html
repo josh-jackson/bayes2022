@@ -2433,7 +2433,7 @@ MR %&gt;%
 236,000 rows comes from (N = 118 * 2000 post warmup samples). Different .epred (y-hat, expected/fitted value) for each person for each sample. 
 
 ---
-.pull-left[
+
 
 ```r
 MR %&gt;% 
@@ -4653,7 +4653,7 @@ prior.mr3
 
 
 ---
-## prior predictive visualization
+## prior distribution
 
 .pull-left[
 
@@ -4766,6 +4766,8 @@ get_variables(mr.4)
 ##  [9] "stepsize__"    "treedepth__"   "n_leapfrog__"  "divergent__"  
 ## [13] "energy__"
 ```
+
+---
 
 
 ```r
@@ -4926,10 +4928,10 @@ MR %&gt;%
 
 ```
 ## # A tibble: 2 × 3
-##   iv2       mean     n
-##   &lt;fct&gt;    &lt;dbl&gt; &lt;int&gt;
-## 1 drug.a -0.0734    59
-## 2 drug.b  0.0734    59
+##   iv2      mean     n
+##   &lt;fct&gt;   &lt;dbl&gt; &lt;int&gt;
+## 1 drug.a -0.110    59
+## 2 drug.b  0.110    59
 ```
 
 ---
@@ -4960,7 +4962,7 @@ mr.6 %&gt;%
 
 ---
 
-
+.pull-left[
 
 ```r
 mr.6 %&gt;%
@@ -4972,14 +4974,26 @@ mr.6 %&gt;%
   ggplot(aes(y = .variable, x = .value)) +
   stat_dotsinterval()
 ```
-
-![](MR-5_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
-
+]
 
 
+
+.pull-right[
+
+```r
+mr.6 %&gt;%
+  spread_draws(b_a_iv1, b_a_iv2, b_a_iv3) %&gt;%
+  mutate(iv1 = b_a_iv1 + 5.213902) %&gt;% 
+  mutate(iv2 = b_a_iv2 + 5.213902) %&gt;% 
+  mutate(iv3 = b_a_iv3 + 5.213902) %&gt;% 
+  gather_draws(iv1, iv2, iv3) %&gt;% 
+  ggplot(aes(y = .variable, x = .value)) +
+  stat_dotsinterval()
+```
+]
 
 ---
-Assumes that fitted values represent values from possible distributions. 
+Krushke' visualization of posterior predictions 
 
 ```r
 MR %&gt;%
@@ -4992,7 +5006,7 @@ MR %&gt;%
   geom_point(aes(x = happy_c), data = MR, shape = 21, fill = "#9ECAE1", size = 2)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -5003,7 +5017,7 @@ MR %&gt;%
 pairs(mr.1)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -5019,7 +5033,7 @@ mr.6 %&gt;%
   stat_halfeye()
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -5394,7 +5408,7 @@ mr.9 %&gt;%
   facet_grid(~ iv2) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-70-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-71-1.png)&lt;!-- --&gt;
 
 ---
 ## MLM preview
@@ -5439,7 +5453,7 @@ mr.10 &lt;-
 ---
 ## MLM priors
 This new parameter represents the possible range of deviations from the average
-![](MR-5_files/figure-html/unnamed-chunk-72-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-73-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -5485,7 +5499,7 @@ summary(mr.10)
 ---
 ## Population intercept
 .pull-left[
-![](MR-5_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -5644,7 +5658,7 @@ mr.4 %&gt;%
   stat_dotsinterval()
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-82-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-83-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -5657,7 +5671,7 @@ mr.10 %&gt;%
   stat_dotsinterval() + xlim(-1,1)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-83-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -5745,7 +5759,7 @@ MR %&gt;%
 ## means you most likely want [add_]epred_draws(...).
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-86-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-87-1.png)&lt;!-- --&gt;
 
 ---
 ### adding an interaction
@@ -5843,7 +5857,7 @@ summary(mr.12)
 plot(mr.12)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-90-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-91-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -5879,7 +5893,7 @@ MR %&gt;%
   geom_point(data = MR) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-92-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-93-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -5970,7 +5984,7 @@ MR %&gt;%
   geom_point(data = MR) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-96-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-97-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -6035,10 +6049,10 @@ mr.12 %&gt;%
 ---
 ## Continuous interaction example
 
-![](MR-5_files/figure-html/unnamed-chunk-101-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-102-1.png)&lt;!-- --&gt;
 
 ---
-![](MR-5_files/figure-html/unnamed-chunk-102-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-103-1.png)&lt;!-- --&gt;
 
 
 
@@ -6126,7 +6140,7 @@ summary(mr.13)
 conditional_effects(mr.13, effects = "SS_c:FQ_c" )
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-106-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-107-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -6223,7 +6237,7 @@ data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %&g
 ## means you most likely want [add_]epred_draws(...).
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-111-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-112-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -6252,7 +6266,7 @@ facet_grid(cols = vars(FQ_c))
 ## means you most likely want [add_]epred_draws(...).
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-113-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-114-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -6362,14 +6376,6 @@ mr.14 &lt;-
       data = anova,
       sample_prior = T,
       file = "mr.14")
-```
-
-```
-## Compiling Stan program...
-```
-
-```
-## Start sampling
 ```
 
 ---
@@ -6557,7 +6563,7 @@ em.1
 emmip(mr.14, group ~ SupportLevel)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-125-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-126-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -6635,7 +6641,7 @@ mr.14 %&gt;%
 ## NOTE: Results may be misleading due to involvement in interactions
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-128-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-129-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -6648,7 +6654,7 @@ mr.14 %&gt;%
   stat_lineribbon(alpha = .4, .width = .99)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-129-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-130-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -6663,7 +6669,7 @@ mr.14 %&gt;%
   facet_grid(~ group) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-130-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-131-1.png)&lt;!-- --&gt;
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
