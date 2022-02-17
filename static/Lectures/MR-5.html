@@ -17,6 +17,11 @@
 
 
 
+&lt;style type="text/css"&gt;
+pre, code {white-space:pre !important; overflow-x:auto}
+&lt;/style&gt;
+
+
 
 &lt;style type="text/css"&gt;
 .remark-slide-content {
@@ -33,6 +38,9 @@
 &lt;/style&gt;
 
 
+
+
+
 ## This time
 Incorporate more than 1 predictor  
 Visualize marginal effects  
@@ -41,7 +49,7 @@ Categorical predictors with &gt;2 levels
 
 ---
 
-![](MR-5_files/figure-html/unnamed-chunk-1-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -2211,7 +2219,7 @@ prior.mr1 %&gt;%
 
 .pull-right[
 
-![](MR-5_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
 
 
 
@@ -2243,7 +2251,7 @@ mr.2 &lt;-
 ## Warning: 'prior_samples' is deprecated. Please use 'prior_draws' instead.
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -2323,7 +2331,7 @@ summary(mr.2)
 plot(mr.1)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2332,7 +2340,7 @@ plot(mr.1)
 conditional_effects(mr.1)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;![](MR-5_files/figure-html/unnamed-chunk-14-2.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;![](MR-5_files/figure-html/unnamed-chunk-15-2.png)&lt;!-- --&gt;
 
 ---
 ## Conditional plots 
@@ -2354,13 +2362,13 @@ MR %&gt;%
 
 .pull-right[
 
-![](MR-5_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
 
 ]
 
 ---
 FQ_c
-![](MR-5_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -2381,54 +2389,44 @@ get_variables(mr.1)
 
 
 ```r
-mr.1 %&gt;% 
-spread_draws(b_Intercept, b_SS_c, b_FQ_c, sigma)
+head(mr.1 %&gt;% 
+spread_draws(b_Intercept, b_SS_c, b_FQ_c, sigma))
 ```
 
 ```
-## # A tibble: 2,000 × 7
-##    .chain .iteration .draw b_Intercept b_SS_c b_FQ_c sigma
-##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
-##  1      1          1     1        5.36  0.369  0.331  1.58
-##  2      1          2     2        5.31  0.378  0.297  1.61
-##  3      1          3     3        5.28  0.353  0.279  1.53
-##  4      1          4     4        5.30  0.458  0.209  1.62
-##  5      1          5     5        5.20  0.331  0.236  1.38
-##  6      1          6     6        5.27  0.293  0.144  1.39
-##  7      1          7     7        5.20  0.334  0.147  1.49
-##  8      1          8     8        5.31  0.480  0.299  1.65
-##  9      1          9     9        5.27  0.469  0.300  1.56
-## 10      1         10    10        5.24  0.456  0.252  1.47
-## # … with 1,990 more rows
+## # A tibble: 6 × 7
+##   .chain .iteration .draw b_Intercept b_SS_c b_FQ_c sigma
+##    &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1      1          1     1        5.36  0.369  0.331  1.58
+## 2      1          2     2        5.31  0.378  0.297  1.61
+## 3      1          3     3        5.28  0.353  0.279  1.53
+## 4      1          4     4        5.30  0.458  0.209  1.62
+## 5      1          5     5        5.20  0.331  0.236  1.38
+## 6      1          6     6        5.27  0.293  0.144  1.39
 ```
 
 
 ---
 
 ```r
-MR %&gt;% 
- add_epred_draws(mr.1)
+head(MR %&gt;% 
+ add_epred_draws(mr.1))
 ```
 
 ```
-## # A tibble: 236,000 × 15
+## # A tibble: 6 × 15
 ## # Groups:   ID, friendship quality, happiness, schoool success, SES,
-## #   intervention group, SS_c, FQ_c, iv, iv.d, .row [118]
-##       ID `friendship quality` happiness `schoool success`   SES `intervention …`
-##    &lt;dbl&gt;                &lt;dbl&gt;     &lt;dbl&gt;             &lt;dbl&gt; &lt;dbl&gt;            &lt;dbl&gt;
-##  1     1                 10.2      3.20              6.16  2.23                1
-##  2     1                 10.2      3.20              6.16  2.23                1
-##  3     1                 10.2      3.20              6.16  2.23                1
-##  4     1                 10.2      3.20              6.16  2.23                1
-##  5     1                 10.2      3.20              6.16  2.23                1
-##  6     1                 10.2      3.20              6.16  2.23                1
-##  7     1                 10.2      3.20              6.16  2.23                1
-##  8     1                 10.2      3.20              6.16  2.23                1
-##  9     1                 10.2      3.20              6.16  2.23                1
-## 10     1                 10.2      3.20              6.16  2.23                1
-## # … with 235,990 more rows, and 9 more variables: SS_c &lt;dbl&gt;, FQ_c &lt;dbl&gt;,
-## #   iv &lt;dbl&gt;, iv.d &lt;fct&gt;, .row &lt;int&gt;, .chain &lt;int&gt;, .iteration &lt;int&gt;,
-## #   .draw &lt;int&gt;, .epred &lt;dbl&gt;
+## #   intervention group, SS_c, FQ_c, iv, iv.d, .row [1]
+##      ID `friendship qu…` happiness `schoool succe…`   SES `intervention …`  SS_c
+##   &lt;dbl&gt;            &lt;dbl&gt;     &lt;dbl&gt;            &lt;dbl&gt; &lt;dbl&gt;            &lt;dbl&gt; &lt;dbl&gt;
+## 1     1             10.2      3.20             6.16  2.23                1 -2.57
+## 2     1             10.2      3.20             6.16  2.23                1 -2.57
+## 3     1             10.2      3.20             6.16  2.23                1 -2.57
+## 4     1             10.2      3.20             6.16  2.23                1 -2.57
+## 5     1             10.2      3.20             6.16  2.23                1 -2.57
+## 6     1             10.2      3.20             6.16  2.23                1 -2.57
+## # … with 8 more variables: FQ_c &lt;dbl&gt;, iv &lt;dbl&gt;, iv.d &lt;fct&gt;, .row &lt;int&gt;,
+## #   .chain &lt;int&gt;, .iteration &lt;int&gt;, .draw &lt;int&gt;, .epred &lt;dbl&gt;
 ```
 236,000 rows comes from (N = 118 * 2000 post warmup samples). Different .epred (y-hat, expected/fitted value) for each person for each sample. 
 
@@ -4928,10 +4926,10 @@ MR %&gt;%
 
 ```
 ## # A tibble: 2 × 3
-##   iv2      mean     n
-##   &lt;fct&gt;   &lt;dbl&gt; &lt;int&gt;
-## 1 drug.a -0.110    59
-## 2 drug.b  0.110    59
+##   iv2        mean     n
+##   &lt;fct&gt;     &lt;dbl&gt; &lt;int&gt;
+## 1 drug.a  0.00240    59
+## 2 drug.b -0.00240    59
 ```
 
 ---
@@ -5019,7 +5017,6 @@ pairs(mr.1)
 
 ![](MR-5_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
 
-
 ---
 ## comparing levels ie contrasts
 
@@ -5033,8 +5030,10 @@ mr.6 %&gt;%
   stat_halfeye()
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 
+---
+
+![](MR-5_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -5111,8 +5110,6 @@ ref_grid(mr.6)
 
 Which means index variables necessitate post hoc "by hand"
 
-
-
 ---
 ##  metric plus categorical
 
@@ -5130,6 +5127,7 @@ mr.7 &lt;-
       data = MR,
       file = "mr.7")
 ```
+
 
 
 ---
@@ -5304,7 +5302,7 @@ get_variables(mr.9)
 
 
 ---
-.pull-left[
+
 
 ```r
 mr.8 %&gt;%
@@ -5322,9 +5320,9 @@ mr.8 %&gt;%
 ## 2 b_a_iv3 - b_a_iv1  0.457 -0.262  1.17    0.95 median qi       
 ## 3 b_a_iv3 - b_a_iv2  0.123 -0.648  0.910   0.95 median qi
 ```
-]
 
-.pull-right[
+---
+
 
 ```r
 library(emmeans)
@@ -5350,7 +5348,7 @@ emmeans(mr.9, specs = pairwise ~ iv)
 ## Point estimate displayed: median 
 ## HPD interval probability: 0.95
 ```
-]
+
 
 ---
 
@@ -5408,7 +5406,7 @@ mr.9 %&gt;%
   facet_grid(~ iv2) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-71-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-72-1.png)&lt;!-- --&gt;
 
 ---
 ## MLM preview
@@ -5451,9 +5449,9 @@ mr.10 &lt;-
 ```
 
 ---
-## MLM priors
-This new parameter represents the possible range of deviations from the average
-![](MR-5_files/figure-html/unnamed-chunk-73-1.png)&lt;!-- --&gt;
+### MLM priors
+SD represents the range of deviations of group means from the average
+![](MR-5_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -5461,12 +5459,6 @@ This new parameter represents the possible range of deviations from the average
 
 ```r
 summary(mr.10)
-```
-
-```
-## Warning: There were 20 divergent transitions after warmup. Increasing
-## adapt_delta above 0.8 may help. See http://mc-stan.org/misc/
-## warnings.html#divergent-transitions-after-warmup
 ```
 
 ```
@@ -5499,7 +5491,7 @@ summary(mr.10)
 ---
 ## Population intercept
 .pull-left[
-![](MR-5_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -5553,13 +5545,6 @@ mr.10 %&gt;%
 ```
 
 ```
-## Warning: `gather_()` was deprecated in tidyr 1.2.0.
-## Please use `gather()` instead.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
-```
-
-```
 ## # A tibble: 12,000 × 5
 ## # Groups:   group [3]
 ##    group    r_iv .chain .iteration .draw
@@ -5580,7 +5565,7 @@ mr.10 %&gt;%
 
 ---
 
-Same info as before in the ANOVA framnework (we just got fewer samples in mr.4)
+Same info as before in the ANOVA framework (we just got fewer samples in mr.4 and that model used index coding)
 
 ```r
 mr.4 %&gt;% 
@@ -5649,16 +5634,12 @@ mr.10 %&gt;%
 
 ```r
 mr.4 %&gt;% 
- spread_draws(b_iv1, b_iv2,b_iv3) %&gt;% 
-  mutate(b_1 = b_iv1-mean(b_iv1),
-         b_2 = b_iv2-mean(b_iv2),
-         b_3 = b_iv3-mean(b_iv3)) %&gt;% 
-  pivot_longer(b_1:b_3) %&gt;% 
-  ggplot(aes(y = name, x = value)) +
+ gather_draws(b_iv1, b_iv2,b_iv3) %&gt;% 
+  ggplot(aes(y = .variable, x = .value)) +
   stat_dotsinterval()
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-83-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -5671,17 +5652,22 @@ mr.10 %&gt;%
   stat_dotsinterval() + xlim(-1,1)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-85-1.png)&lt;!-- --&gt;
 
 ]
 
 ---
 ## shrinkage and partial pooling
 
-We get greater uncertainty and a greater push towards similar values across the groups. Why? (1) our regularizing (centered around zero) priors push mean to zero. (2) we are partially pooling values across groups, shrinking the mean to the group mean. 
+We get a) greater uncertainty and b) a greater push towards similar values across the groups. Why? 
+(1) our regularizing (centered around zero) priors push mean to zero.   (2) we are partially pooling values across groups, shrinking the mean to the group mean.   
 
-(3) Incorporating uncertainty in the random effects. The SD parameter describes how much uncertainty in the differences between the groups. We said that they could differ, but they didn't. The model is taking the potential that they differ and placing that into the model as uncertainty. Now there is larger dispersion within each of the posteriors for each group. This is because we said these differences "could happen"  
+---
+## shrinkage and partial pooling
 
+(3) Incorporating uncertainty in the random effects. The SD parameter describes how large the differences between the groups is expected. Could groups differ by a 20, 30? Normally we expressed that through a prior around the regression coefficient. Here it is through a SD parameter. 
+
+The model is taking the potential that they differ and placing that into the model as uncertainty. We said these differences "could happen" and the SD is only estimated with 3 groups, compared to a mean, so there is less evidence that .  
 
 ---
 ## Interactions
@@ -5745,21 +5731,13 @@ summary(mr.11)
 MR %&gt;%
   group_by(iv.d) %&gt;%
   data_grid(SS_c = seq_range(SS_c, n = 50), .model = MR) %&gt;%
-  add_fitted_draws(mr.11, n = 100) %&gt;%
+  add_epred_draws(mr.11, ndraws = 100) %&gt;%
   ggplot(aes(x = SS_c, y = happiness, color = iv.d)) +
-  geom_line(aes(y = .value, group = paste(iv.d, .draw)),alpha = .1) +
+  geom_line(aes(y = .epred, group = paste(iv.d, .draw)),alpha = .1) +
   geom_point(data = MR) 
 ```
 
-```
-## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
-## Use [add_]epred_draws() to get the expectation of the posterior predictive.
-## Use [add_]linpred_draws() to get the distribution of the linear predictor.
-## For example, you used [add_]fitted_draws(..., scale = "response"), which
-## means you most likely want [add_]epred_draws(...).
-```
-
-![](MR-5_files/figure-html/unnamed-chunk-87-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-88-1.png)&lt;!-- --&gt;
 
 ---
 ### adding an interaction
@@ -5857,7 +5835,7 @@ summary(mr.12)
 plot(mr.12)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-91-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-92-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -5893,10 +5871,11 @@ MR %&gt;%
   geom_point(data = MR) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-93-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-94-1.png)&lt;!-- --&gt;
 
 ---
 
+What if we fit it without index coding. "Normal"
 
 ```r
 get_prior(family = gaussian,
@@ -5984,7 +5963,7 @@ MR %&gt;%
   geom_point(data = MR) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-97-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-98-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -6049,10 +6028,10 @@ mr.12 %&gt;%
 ---
 ## Continuous interaction example
 
-![](MR-5_files/figure-html/unnamed-chunk-102-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-103-1.png)&lt;!-- --&gt;
 
 ---
-![](MR-5_files/figure-html/unnamed-chunk-103-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-104-1.png)&lt;!-- --&gt;
 
 
 
@@ -6140,7 +6119,7 @@ summary(mr.13)
 conditional_effects(mr.13, effects = "SS_c:FQ_c" )
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-107-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-108-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -6219,25 +6198,16 @@ data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %&g
 ```r
 MR %&gt;% 
 data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %&gt;%
-  add_fitted_draws(mr.13) %&gt;% 
-  ggplot(aes(x = SS_c, y = happiness, group = FQ_c %&gt;% factor()))+
-  stat_lineribbon(aes(y = .value, color = FQ_c %&gt;% factor(), alpha = .05 ), show.legend = FALSE) +
+  add_epred_draws(mr.13) %&gt;% 
+  ggplot(aes(x = SS_c, y = happiness, group = FQ_c %&gt;% as.character()))+
+  stat_lineribbon(aes(y = .epred, color = FQ_c %&gt;% as.character(), alpha = .05, fill = FQ_c ), .width = c(0.95),  show.legend = FALSE) +
   geom_point(data = MR) 
 ```
 ]
 
 .pull-right[
 
-
-```
-## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
-## Use [add_]epred_draws() to get the expectation of the posterior predictive.
-## Use [add_]linpred_draws() to get the distribution of the linear predictor.
-## For example, you used [add_]fitted_draws(..., scale = "response"), which
-## means you most likely want [add_]epred_draws(...).
-```
-
-![](MR-5_files/figure-html/unnamed-chunk-112-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-113-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -6248,25 +6218,16 @@ data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %&g
 ```r
 MR %&gt;% 
 data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %&gt;%
-  add_fitted_draws(mr.13, n = 50)  %&gt;%
+  add_epred_draws(mr.13, ndraws = 50)  %&gt;%
   ggplot(aes(x = SS_c, y = happiness, group = interaction(SS_c, FQ_c), color = FQ_c %&gt;%  as.character())) +
-  geom_line(aes(y = .value, group = paste(FQ_c, .draw), alpha = .5),show.legend = FALSE) +  
+  geom_line(aes(y = .epred, group = paste(FQ_c, .draw), alpha = .5),show.legend = FALSE) +  
 facet_grid(cols = vars(FQ_c))
 ```
 ]
 
 
 .pull-right[
-
-```
-## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
-## Use [add_]epred_draws() to get the expectation of the posterior predictive.
-## Use [add_]linpred_draws() to get the distribution of the linear predictor.
-## For example, you used [add_]fitted_draws(..., scale = "response"), which
-## means you most likely want [add_]epred_draws(...).
-```
-
-![](MR-5_files/figure-html/unnamed-chunk-114-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-115-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -6275,29 +6236,15 @@ facet_grid(cols = vars(FQ_c))
 
 When we have multiple categorical independent variables (and maybe some metric/continuous variables). 
 
-Note that there are no SS derivations, no Fs -- because we don't use that type of estimation! 
+Note that there are no SS derivations, no Fs -- because we don't use that type of estimation! But the logic is the same!
 
-These are just linear models, so what are we doing different? 
+These are still linear models, so what are we doing different? 
 
 ---
 
 
 ```r
 anova &lt;-read_csv("https://raw.githubusercontent.com/josh-jackson/bayes/master/anova.csv")
-```
-
-```
-## Rows: 118 Columns: 5
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: ","
-## chr (1): group
-## dbl (4): id, Anxiety, Stress, Support
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-```
-
-```r
 anova$SupportLevel&lt;-cut(anova$Support, breaks = c(0,5,10,18), labels = c("low","med","high"))
 anova &lt;- anova %&gt;% 
   mutate(group = as.factor(group))
@@ -6563,7 +6510,7 @@ em.1
 emmip(mr.14, group ~ SupportLevel)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-126-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-127-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -6626,6 +6573,35 @@ pairs(em.1)
 ```
 
 ---
+But what if you want to graph? 
+
+
+```r
+mr.14 %&gt;%
+  emmeans( ~ SupportLevel) %&gt;%
+  contrast(method = "pairwise") %&gt;%
+  gather_emmeans_draws() 
+```
+
+```
+## # A tibble: 6,000 × 5
+## # Groups:   contrast [3]
+##    contrast  .chain .iteration .draw .value
+##    &lt;chr&gt;      &lt;int&gt;      &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
+##  1 low - med     NA         NA     1 -0.594
+##  2 low - med     NA         NA     2 -0.567
+##  3 low - med     NA         NA     3  0.501
+##  4 low - med     NA         NA     4  0.426
+##  5 low - med     NA         NA     5  0.947
+##  6 low - med     NA         NA     6 -0.907
+##  7 low - med     NA         NA     7  1.25 
+##  8 low - med     NA         NA     8  2.18 
+##  9 low - med     NA         NA     9 -0.979
+## 10 low - med     NA         NA    10 -1.55 
+## # … with 5,990 more rows
+```
+
+---
 
 
 ```r
@@ -6637,11 +6613,8 @@ mr.14 %&gt;%
   stat_halfeye()
 ```
 
-```
-## NOTE: Results may be misleading due to involvement in interactions
-```
+![](MR-5_files/figure-html/unnamed-chunk-131-1.png)&lt;!-- --&gt;
 
-![](MR-5_files/figure-html/unnamed-chunk-129-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -6654,7 +6627,7 @@ mr.14 %&gt;%
   stat_lineribbon(alpha = .4, .width = .99)
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-130-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-132-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -6669,7 +6642,22 @@ mr.14 %&gt;%
   facet_grid(~ group) 
 ```
 
-![](MR-5_files/figure-html/unnamed-chunk-131-1.png)&lt;!-- --&gt;
+![](MR-5_files/figure-html/unnamed-chunk-133-1.png)&lt;!-- --&gt;
+
+
+
+```r
+mr.14 %&gt;%
+  emmeans( ~ SupportLevel | group) %&gt;%
+  gather_emmeans_draws() %&gt;%
+   ggplot(aes(x = SupportLevel, y = .value, fill = group, color=group)) +
+  geom_line(aes(group = .draw), alpha = .005) +
+  stat_pointinterval() +
+  facet_grid(~ group) +
+  geom_point(data = anova, aes(y = Anxiety))
+```
+
+![](MR-5_files/figure-html/unnamed-chunk-134-1.png)&lt;!-- --&gt;
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

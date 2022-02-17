@@ -25,10 +25,18 @@ mono_light(
   code_font_google   = google_font("Droid Mono"),
 )
 
+
+
+
 library(tidyverse)
 library(broom)
 ```
 
+
+
+```{css, echo=FALSE}
+pre, code {white-space:pre !important; overflow-x:auto}
+```
 
 
 
@@ -45,6 +53,9 @@ library(broom)
   font-size: 65% !important;
 }
 </style>
+
+
+
 
 
 ## This time
@@ -501,15 +512,15 @@ get_variables(mr.1)
 
 
 ```{r}
-mr.1 %>% 
-spread_draws(b_Intercept, b_SS_c, b_FQ_c, sigma)
+head(mr.1 %>% 
+spread_draws(b_Intercept, b_SS_c, b_FQ_c, sigma))
 ```
 
 
 ---
-```{r}
-MR %>% 
- add_epred_draws(mr.1)
+```{r, options(width=150)}
+head(MR %>% 
+ add_epred_draws(mr.1))
 ```
 236,000 rows comes from (N = 118 * 2000 post warmup samples). Different .epred (y-hat, expected/fitted value) for each person for each sample. 
 
@@ -902,12 +913,11 @@ MR %>%
 pairs(mr.1)
 ```
 
-
 ---
 ## comparing levels ie contrasts
 
 We could do this "by hand" or... 
-```{r}
+```{r, eval = FALSE}
 mr.6 %>%
   gather_draws(b_a_iv1, b_a_iv2, b_a_iv3) %>%
   compare_levels(.value, by = .variable) %>%
@@ -915,6 +925,16 @@ mr.6 %>%
   stat_halfeye()
 ```
 
+
+---
+
+```{r, echo = FALSE}
+mr.6 %>%
+  gather_draws(b_a_iv1, b_a_iv2, b_a_iv3) %>%
+  compare_levels(.value, by = .variable) %>%
+  ggplot(aes(y = .variable, x = .value)) +
+  stat_halfeye()
+```
 
 ---
 
@@ -953,8 +973,6 @@ ref_grid(mr.6)
 
 Which means index variables necessitate post hoc "by hand"
 
-
-
 ---
 ##  metric plus categorical
 ```{r}
@@ -971,6 +989,7 @@ mr.7 <-
       data = MR,
       file = "mr.7")
 ```
+
 
 
 ---
@@ -1042,7 +1061,7 @@ get_variables(mr.9)
 
 
 ---
-.pull-left[
+
 ```{r}
 mr.8 %>%
   gather_draws(b_a_iv1, b_a_iv2, b_a_iv3) %>%
@@ -1050,15 +1069,15 @@ mr.8 %>%
   group_by(.variable) %>%  
   median_qi(.value)
 ```
-]
 
-.pull-right[
+---
+
 ```{r}
 library(emmeans)
 emmeans(mr.9, specs = pairwise ~ iv)
 
 ```
-]
+
 
 ---
 ```{r}
@@ -1122,8 +1141,8 @@ mr.10 <-
 ```
 
 ---
-## MLM priors
-This new parameter represents the possible range of deviations from the average
+### MLM priors
+SD represents the range of deviations of group means from the average
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
 prior.mr10 <- c(prior(normal(0, 2), class = Intercept),
                 prior(normal(0, 2), class = sd),
@@ -1139,7 +1158,7 @@ prior.mr10 %>%
 ---
 
 
-```{r}
+```{r, warning=FALSE}
 summary(mr.10)
 ```
 
@@ -1154,7 +1173,7 @@ MR %>%
   mutate(group_mean = mean(happy_c)) %>% 
   ungroup() %>% 
   mutate(iv = fct_reorder(iv, group_mean)) %>% 
-  ggplot(aes(x = happy_c, y = iv, fill = group_mean)) +
+  ggplot(aes(x = happy_c, y = iv, fill = factor(group_mean))) +
   geom_density_ridges(scale = 3/2, size = .2) 
 ```
 ]
@@ -1186,7 +1205,7 @@ mr.10 %>%
 
 ---
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 mr.10 %>%
   spread_draws(r_iv[group,])
 ```
@@ -1194,7 +1213,7 @@ mr.10 %>%
 
 ---
 
-Same info as before in the ANOVA framnework (we just got fewer samples in mr.4)
+Same info as before in the ANOVA framework (we just got fewer samples in mr.4 and that model used index coding)
 ```{r}
 mr.4 %>% 
  gather_draws(b_iv1, b_iv2,b_iv3)
@@ -1224,12 +1243,8 @@ mr.10 %>%
 .pull-left[
 ```{r}
 mr.4 %>% 
- spread_draws(b_iv1, b_iv2,b_iv3) %>% 
-  mutate(b_1 = b_iv1-mean(b_iv1),
-         b_2 = b_iv2-mean(b_iv2),
-         b_3 = b_iv3-mean(b_iv3)) %>% 
-  pivot_longer(b_1:b_3) %>% 
-  ggplot(aes(y = name, x = value)) +
+ gather_draws(b_iv1, b_iv2,b_iv3) %>% 
+  ggplot(aes(y = .variable, x = .value)) +
   stat_dotsinterval()
   
 ```
@@ -1249,10 +1264,15 @@ mr.10 %>%
 ---
 ## shrinkage and partial pooling
 
-We get greater uncertainty and a greater push towards similar values across the groups. Why? (1) our regularizing (centered around zero) priors push mean to zero. (2) we are partially pooling values across groups, shrinking the mean to the group mean. 
+We get a) greater uncertainty and b) a greater push towards similar values across the groups. Why? 
+(1) our regularizing (centered around zero) priors push mean to zero.   (2) we are partially pooling values across groups, shrinking the mean to the group mean.   
 
-(3) Incorporating uncertainty in the random effects. The SD parameter describes how much uncertainty in the differences between the groups. We said that they could differ, but they didn't. The model is taking the potential that they differ and placing that into the model as uncertainty. Now there is larger dispersion within each of the posteriors for each group. This is because we said these differences "could happen"  
+---
+## shrinkage and partial pooling
 
+(3) Incorporating uncertainty in the random effects. The SD parameter describes how large the differences between the groups is expected. Could groups differ by a 20, 30? Normally we expressed that through a prior around the regression coefficient. Here it is through a SD parameter. 
+
+The model is taking the potential that they differ and placing that into the model as uncertainty. We said these differences "could happen" and the SD is only estimated with 3 groups, compared to a mean, so there is less evidence that .  
 
 ---
 ## Interactions
@@ -1291,9 +1311,9 @@ summary(mr.11)
 MR %>%
   group_by(iv.d) %>%
   data_grid(SS_c = seq_range(SS_c, n = 50), .model = MR) %>%
-  add_fitted_draws(mr.11, n = 100) %>%
+  add_epred_draws(mr.11, ndraws = 100) %>%
   ggplot(aes(x = SS_c, y = happiness, color = iv.d)) +
-  geom_line(aes(y = .value, group = paste(iv.d, .draw)),alpha = .1) +
+  geom_line(aes(y = .epred, group = paste(iv.d, .draw)),alpha = .1) +
   geom_point(data = MR) 
 ```
 
@@ -1365,6 +1385,7 @@ MR %>%
 
 ---
 
+What if we fit it without index coding. "Normal"
 ```{r}
 get_prior(family = gaussian,
       happiness ~ iv.d * SS_c,
@@ -1541,9 +1562,9 @@ data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
 ```{r, eval = FALSE}
 MR %>% 
 data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
-  add_fitted_draws(mr.13) %>% 
-  ggplot(aes(x = SS_c, y = happiness, group = FQ_c %>% factor()))+
-  stat_lineribbon(aes(y = .value, color = FQ_c %>% factor(), alpha = .05 ), show.legend = FALSE) +
+  add_epred_draws(mr.13) %>% 
+  ggplot(aes(x = SS_c, y = happiness, group = FQ_c %>% as.character()))+
+  stat_lineribbon(aes(y = .epred, color = FQ_c %>% as.character(), alpha = .05, fill = FQ_c ), .width = c(0.95),  show.legend = FALSE) +
   geom_point(data = MR) 
 
 ```
@@ -1554,9 +1575,9 @@ data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
 ```{r, echo = FALSE}
 MR %>% 
 data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
-  add_fitted_draws(mr.13) %>% 
+  add_epred_draws(mr.13) %>% 
   ggplot(aes(x = SS_c, y = happiness, group = FQ_c %>% as.character()))+
-  stat_lineribbon(aes(y = .value, color = FQ_c %>% as.character(), alpha = .05 ), show.legend = FALSE) +
+  stat_lineribbon(aes(y = .epred, color = FQ_c %>% as.character(), alpha = .05, fill = FQ_c ), .width = c(0.95),  show.legend = FALSE) +
   geom_point(data = MR) 
 ```
 
@@ -1568,9 +1589,9 @@ data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
 ```{r, eval = FALSE}
 MR %>% 
 data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
-  add_fitted_draws(mr.13, n = 50)  %>%
+  add_epred_draws(mr.13, ndraws = 50)  %>%
   ggplot(aes(x = SS_c, y = happiness, group = interaction(SS_c, FQ_c), color = FQ_c %>%  as.character())) +
-  geom_line(aes(y = .value, group = paste(FQ_c, .draw), alpha = .5),show.legend = FALSE) +  
+  geom_line(aes(y = .epred, group = paste(FQ_c, .draw), alpha = .5),show.legend = FALSE) +  
 facet_grid(cols = vars(FQ_c))
 ```
 ]
@@ -1580,9 +1601,9 @@ facet_grid(cols = vars(FQ_c))
 ```{r, echo = FALSE}
 MR %>% 
 data_grid(SS_c = seq_range(SS_c, n = 20), FQ_c = c(-2.5,0,2.5), .model = MR) %>%
-  add_fitted_draws(mr.13, n = 50)  %>%
+  add_epred_draws(mr.13, ndraws = 50)  %>%
   ggplot(aes(x = SS_c, y = happiness, group = interaction(SS_c, FQ_c), color = FQ_c %>%  as.character())) +
-  geom_line(aes(y = .value, group = paste(FQ_c, .draw), alpha = .5),show.legend = FALSE) +  
+  geom_line(aes(y = .epred, group = paste(FQ_c, .draw), alpha = .5),show.legend = FALSE) +  
 facet_grid(cols = vars(FQ_c))
 ```
 ]
@@ -1593,13 +1614,13 @@ facet_grid(cols = vars(FQ_c))
 
 When we have multiple categorical independent variables (and maybe some metric/continuous variables). 
 
-Note that there are no SS derivations, no Fs -- because we don't use that type of estimation! 
+Note that there are no SS derivations, no Fs -- because we don't use that type of estimation! But the logic is the same!
 
-These are just linear models, so what are we doing different? 
+These are still linear models, so what are we doing different? 
 
 ---
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 anova <-read_csv("https://raw.githubusercontent.com/josh-jackson/bayes/master/anova.csv")
 anova$SupportLevel<-cut(anova$Support, breaks = c(0,5,10,18), labels = c("low","med","high"))
 anova <- anova %>% 
@@ -1749,8 +1770,18 @@ pairs(em.1)
 ```
 
 ---
+But what if you want to graph? 
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
+mr.14 %>%
+  emmeans( ~ SupportLevel) %>%
+  contrast(method = "pairwise") %>%
+  gather_emmeans_draws() 
+```
+
+---
+
+```{r, warning = FALSE, message = FALSE}
 mr.14 %>%
   emmeans( ~ SupportLevel) %>%
   contrast(method = "pairwise") %>%
@@ -1758,6 +1789,7 @@ mr.14 %>%
    ggplot(aes(x = .value, y = contrast)) +
   stat_halfeye()
 ```
+
 
 ---
 
@@ -1780,5 +1812,17 @@ mr.14 %>%
   geom_line(aes(group = .draw), alpha = .005) +
   stat_pointinterval() +
   facet_grid(~ group) 
+```
+
+
+```{r}
+mr.14 %>%
+  emmeans( ~ SupportLevel | group) %>%
+  gather_emmeans_draws() %>%
+   ggplot(aes(x = SupportLevel, y = .value, fill = group, color=group)) +
+  geom_line(aes(group = .draw), alpha = .005) +
+  stat_pointinterval() +
+  facet_grid(~ group) +
+  geom_point(data = anova, aes(y = Anxiety))
 ```
 
