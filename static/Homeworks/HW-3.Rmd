@@ -1,0 +1,62 @@
+---
+title: "HW-5"
+output: html_document
+---
+
+Data for homework: 
+
+https://raw.githubusercontent.com/josh-jackson/bayes/master/hw3.csv
+Note, some of the variable names were not written with coding in mind. (Curse you unnamed researchers!). This is good practice to change them into usable names (along with other calculations you would like to do). 
+
+1.  When using the modelr::data_grid function, describe what is happening with the following code (ie what values are being returned, why is there a certain number of rows?). Pay close attention to any categorical variables (or variables that should be categorical) and how they are treated:
+
+```{r, echo = FALSE}
+library(tidyverse)
+```
+
+
+a. 
+```{r, eval = FALSE}
+hw3 %>% 
+  data_grid(SES)
+```
+
+b.
+```{r, eval = FALSE}
+hw3 %>% 
+  data_grid(SES, `friendship quality`)
+```
+
+c. 
+```{r, eval = FALSE}
+hw3 %>% 
+  data_grid(SES, .model = hw3)
+```
+
+d. 
+```{r, eval = FALSE}
+hw3 %>% 
+  data_grid(SES = seq_range(SES, n = 25), .model = hw3)
+```
+e. 
+```{r, eval = FALSE}
+hw3 %>% 
+  data_grid(SES, `friendship quality` = 5, `intervention group`, .model = hw3)
+```
+
+2.  Run a multiple regression where School Success is regressed on SES and friendship quality. Using your model object, attempt to take each of the  data grids above and pipe into the `add_epred_draws` function? Why do some fail? Why do some work? What is specifically needed? 
+
+3. Plot the expected/fitted values for the association between SS and school success with ggplot, highlighting the .95 and .99 credible regions. Also include raw data points. Interpret this figure. 
+
+4. Pretend you ran a different regression where school success is regressed on SES, friendship quality and new dichotomous variable called stat (which has two levels, one coded frequentist the other Bayes -- with the idea that those who know bayes has higher school success). Set up the data_grid function to provide you with values so you can plot a regression line of school success and friendship quality, at average levels of SES, and for those who know Bayes.    
+
+5. Now run a regression where school success is regressed on the interaction between happiness and the intervention group factor variable. 
+
+a. Run post hoc comparisons on the group variables. Your choice on how you carry this procedure out. Interpret any analyses. 
+
+b. Focusing on the group variable, create a plot that shows differences between the groups, controlling for happiness. It is up to you if you want to plot the distribution of the differences (ie the posterior of a the distribution estimates) or the group means separately (ie to see the means of each group after controlling for happiness). The latter is more traditionally done (your standard box or violin plots of means) so I'd suggest at least being comfortable creating such a plot.   
+
+c. Focusing on the metric variable, create a plot that shows the association between school success and happiness for each of the different groups (ie a different regression line for each group). Include raw data points in the plot.  
+
+6. Create a posterior predictive distribution "by hand" that mimics what pp_check does for the model in #5. Interpret the resulting figure and compare with the pp_check function. 
+
