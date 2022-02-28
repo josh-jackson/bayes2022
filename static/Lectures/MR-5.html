@@ -4926,10 +4926,10 @@ MR %&gt;%
 
 ```
 ## # A tibble: 2 × 3
-##   iv2        mean     n
-##   &lt;fct&gt;     &lt;dbl&gt; &lt;int&gt;
-## 1 drug.a  0.00240    59
-## 2 drug.b -0.00240    59
+##   iv2      mean     n
+##   &lt;fct&gt;   &lt;dbl&gt; &lt;int&gt;
+## 1 drug.a  0.108    59
+## 2 drug.b -0.108    59
 ```
 
 ---
@@ -4977,17 +4977,7 @@ mr.6 %&gt;%
 
 
 .pull-right[
-
-```r
-mr.6 %&gt;%
-  spread_draws(b_a_iv1, b_a_iv2, b_a_iv3) %&gt;%
-  mutate(iv1 = b_a_iv1 + 5.213902) %&gt;% 
-  mutate(iv2 = b_a_iv2 + 5.213902) %&gt;% 
-  mutate(iv3 = b_a_iv3 + 5.213902) %&gt;% 
-  gather_draws(iv1, iv2, iv3) %&gt;% 
-  ggplot(aes(y = .variable, x = .value)) +
-  stat_dotsinterval()
-```
+![](MR-5_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
 ]
 
 ---

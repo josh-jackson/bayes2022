@@ -879,7 +879,7 @@ mr.6 %>%
 
 
 .pull-right[
-```{r, eval = FALSE}
+```{r, echo = FALSE}
 mr.6 %>%
   spread_draws(b_a_iv1, b_a_iv2, b_a_iv3) %>%
   mutate(iv1 = b_a_iv1 + 5.213902) %>% 
