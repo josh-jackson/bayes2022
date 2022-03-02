@@ -802,11 +802,16 @@ Is our BF going to increase or decrease?
 prior2 <- distribution_normal(10000, mean = 0, sd = 5)
 posterior2 <- distribution_normal(10000, mean = 1, sd = 0.7)
 bf_plot2<- bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
+```
+
+---
+```{r}
 plot(bf_plot2)
 ```
 
 
 ---
+
 ```{r}
 bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
 ```
@@ -1016,7 +1021,7 @@ info.3 <-
 
 ---
 via {bayestestR}
-```{r, eval = FALSE}
+```{r}
 
 comparison <- bayesfactor_models(info.3, denominator = info.2)
 comparison

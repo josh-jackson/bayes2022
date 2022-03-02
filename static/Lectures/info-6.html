@@ -1013,8 +1013,8 @@ describe_posterior(mr.13, test = "all")
 ## ------------------------------------------------------------------------------------------------------------------------------------------------------
 ## (Intercept) |   5.03 | [ 4.72,  5.32] |  &lt; .001 |   100% |   &lt; .001 | 1.00 | [-0.19, 0.19] |        0% |           Rejected | 1.001 | 2243.00 | &gt; 1000
 ## SS_c        |   0.33 | [ 0.22,  0.43] |  &lt; .001 |   100% |   0.002  | 1.00 | [-0.19, 0.19] |        0% |           Rejected | 0.999 | 1993.00 | &gt; 1000
-## FQ_c        |   0.21 | [ 0.07,  0.34] |  0.012  | 99.95% |   0.367  | 0.63 | [-0.19, 0.19] |    36.45% |          Undecided | 1.000 | 1970.00 |   3.22
-## SS_c:FQ_c   |  -0.04 | [-0.07, -0.01] |  &lt; .001 |   100% |   &gt; .999 | 0.00 | [-0.19, 0.19] |      100% |           Accepted | 1.000 | 2182.00 |  0.864
+## FQ_c        |   0.21 | [ 0.07,  0.34] |  0.012  | 99.95% |   0.367  | 0.63 | [-0.19, 0.19] |    36.45% |          Undecided | 1.000 | 1970.00 |   3.35
+## SS_c:FQ_c   |  -0.04 | [-0.07, -0.01] |  &lt; .001 |   100% |   &gt; .999 | 0.00 | [-0.19, 0.19] |      100% |           Accepted | 1.000 | 2182.00 |  0.903
 ```
 
 
@@ -1108,14 +1108,17 @@ bf_plot2&lt;- bayesfactor_parameters(posterior2, prior2, direction = "two-sided"
 ## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
 ```
 
+---
+
 ```r
 plot(bf_plot2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
 
 
 ---
+
 
 ```r
 bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
@@ -1213,9 +1216,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 2.82e+29
-## SS_c        | 1.29e+05
-## FQ_c        |    14.83
+## (Intercept) | 1.95e+29
+## SS_c        | 1.41e+05
+## FQ_c        |    15.39
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1227,7 +1230,7 @@ bf.result
 plot(bf.result)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1250,9 +1253,9 @@ bf.result2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 9.08e+28
-## SS_c        | 1.14e+03
-## FQ_c        |     1.60
+## (Intercept) | 7.18e+28
+## SS_c        | 1.16e+03
+## FQ_c        |     1.39
 ## 
 ## * Evidence Against The Null: [-0.189, 0.189]
 ```
@@ -1268,7 +1271,7 @@ The Bayes factor represents the degree by which the distribution mass of the pos
 plot(bf.result2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1299,7 +1302,7 @@ hypothesis(mr.2, "FQ_c = 0")
 plot(hypothesis(mr.2, "FQ_c = 0"))
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1416,9 +1419,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 1.10e+26
-## SS_c        | 1.62e+06
-## FQ_c        |     5.56
+## (Intercept) | 7.06e+25
+## SS_c        | 1.56e+06
+## FQ_c        |     6.03
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1449,9 +1452,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 8.73e+29
-## SS_c        | 7.95e+04
-## FQ_c        |    15.24
+## (Intercept) | 9.22e+29
+## SS_c        | 7.45e+04
+## FQ_c        |    15.79
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1488,7 +1491,29 @@ via {bayestestR}
 
 ```r
 comparison &lt;- bayesfactor_models(info.3, denominator = info.2)
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Computation of Bayes factors: estimating marginal likelihood, please wait...
+```
+
+```r
 comparison
+```
+
+```
+## Bayes Factors for Model Comparison
+## 
+##     Model             BF
+## [1] 1 + SS_c * FQ_c 2.44
+## 
+## * Against Denominator: [2] 1 + SS_c + FQ_c
+## *   Bayes Factor Type: marginal likelihoods (bridgesampling)
 ```
 
 
