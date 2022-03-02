@@ -280,7 +280,7 @@ If nothing is known about a distribution (except measurement), then the distribu
 ---
 ## Information entropy
 
-Information entropy, H(p), tells us how hard it is to make an accurate prediction. 
+Information entropy, H(p), tells us how hard it is to make an accurate prediction. For non uniform distributions we must sum up the all the log probabilities
 
 H(p) = `\(-\sum p_ilog(p_i)\)`
 
@@ -303,9 +303,9 @@ D(q) = -2 `\(\sum_i\)` `\(\log\)` (q_i)
 
 Deviance is a model of relative fit, but with a constant specific to the model. Log likelihoods thus only differ by a constant. Comparing two models with LRT should yield similar scores as comparing two deviances.  
 
-But Bayesians don't like NHST, so they sometimes leave off the -2, which simplifies the deviance equation but then does not allow a chi-square difference test to be completed
+But Bayesians don't like NHST, so they sometimes leave off the -2, which simplifies the deviance equation but then does not allow a chi-square difference test to be completed. 
 
-D(q) = `\(\sum_i\)` `\(\log\)` (q_i),
+D(q) = `\(\sum_i\)` `\(\log\)` (q_i) = lppd
 
 Further, with Bayes we need to use the entire posterior to define deviance! If not, we are throwing away information. Often referred to Log Pointwise Predictive Density (lpd or lppd)
 
@@ -313,7 +313,9 @@ Further, with Bayes we need to use the entire posterior to define deviance! If n
 ## Two options that use information
 
 1. Cross validation
-2. Information indexes
+2. Information model fit indexes
+
+These are theoretically the same, but in practice seen as very different. That is, cross validation is equivalent to model fit like aic/bic
 
 ---
 ## Cross validation
@@ -328,9 +330,9 @@ But leaving out data is not necessary ideal, so we split them into folds.
 ---
 ## LOO &amp; PSIS-LOO
 
-Leaving out 1 observation per fold results in Leave One Out cross validation. 
+Leaving out 1 observation per fold is called  Leave One Out (LOO) cross validation. 
 
-Great in theory, but computationally difficult. Pareto Smoothed Importance Sampling (PSIS). Importance  is similar to "deleted residuals" where on a case by case basis we asked whether this data point impacts the posterior. Instead of rerunning your model N  data points times, importance scores are used to weight each datapoint, resulting in an equivalent to LOO without actually doing LOO. 
+Great in theory, but computationally difficult. Pareto Smoothed Importance Sampling (PSIS). Importance  is similar to "deleted residuals" where on a case by case basis we asked whether this data point impacts the posterior. Instead of rerunning your model N  data points times, importance scores are used to weight each datapoint, resulting in an equivalent to LOO without actually doing LOO. Cross validation for free! 
 
 ---
 ## PSIS-LOO example
@@ -408,7 +410,9 @@ recommend the elpd_diff &gt; 4(se_diff). While the interaction fits better (mr.1
 ---
 ## Information Criteria
 
-AIC, BIC, WAIC, DIC, etc. Information criteria are a theoretical fit for out of sample cross validation, not unlike psis-loo
+AIC, BIC, WAIC, DIC, etc. 
+
+Information criteria are a theoretical fit for the out of sample cross validation, not unlike psis-loo
 
 AIC = deviance(training) + 2p (p = number of parameters). Low scores better. 
 
@@ -529,39 +533,8 @@ You can compare non-nested models eg ones with different sets of predictors
 - find coefficients that compromise between (a) minimizing the SS
 and (b) minimizing sum of abs value of coefficients
 - Tends to "shrink"" coefficients to zero
-- Shrinkage/penalization is based on lambda
-
----
-## Mimicking NHST
-
-If you wanted to appease an editor/reviewer/adviser what do you do (other than teach them Bayes)?
-
-CIs! HDPIs! Predictions! Probability of direction!
 
 
-```r
-mr.10 &lt;- readRDS("mr.10.rds")
-
-mr.10 %&gt;%
-  spread_draws(r_iv[group,]) %&gt;% 
-    mean_qi()
-```
-
-```
-## Warning: `gather_()` was deprecated in tidyr 1.2.0.
-## Please use `gather()` instead.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
-```
-
-```
-## # A tibble: 3 × 7
-##   group    r_iv .lower .upper .width .point .interval
-##   &lt;int&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1     1 -0.113  -0.954  0.521   0.95 mean   qi       
-## 2     2  0.0359 -0.663  0.807   0.95 mean   qi       
-## 3     3  0.0782 -0.609  0.847   0.95 mean   qi
-```
 
 
 ---
@@ -682,15 +655,385 @@ priors %&gt;%
 
 
 .pull-right[
-![](info-6_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
 ]
+
+
+---
+## Mimicking NHST
+
+If you wanted to appease an editor/reviewer/adviser what do you do (other than teach them Bayes)?
+
+CIs! HDPIs! Predictions! Probability of direction!
+
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: happiness ~ 1 + SS_c * FQ_c 
+##    Data: MR (Number of observations: 118) 
+##   Draws: 2 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 2000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     5.03      0.16     4.73     5.33 1.00     2243     1503
+## SS_c          0.33      0.05     0.22     0.43 1.00     1991     1480
+## FQ_c          0.21      0.07     0.07     0.35 1.00     1977     1671
+## SS_c:FQ_c    -0.04      0.01    -0.07    -0.01 1.00     2185     1453
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     1.55      0.10     1.36     1.76 1.00     2097     1434
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+### Can you describe? 
+
+The difference between frequentist vs bayesian CIs? 
+What happens when we choose an 90 or a 99% CI compared to a 95? 
+The difference between CI/qi/ETI  vs HDPI/HPI?   
+How are each (CI vs HDPI) of these computed?   
+When would they (CI vs HDPI) be similar vs when would they be different?   
+
+---
+
+Given the observed data, the effect has 95% probability of falling within this range
+
+---
+## Probability of direction
+
+The Probability of Direction (pd) is an index of effect existence representing the certainty with which an effect goes in a particular direction.
+
+Simple: only depends on the posterior distributions (unlike say Bayes Factors) 
+Scale independent: interpretation doesn't change with scale change
+Similar to p - value: interpretation has parallels, so it helps convince pesky reviewers
+
+
+---
+
+
+```r
+get_variables(mr.13)
+```
+
+```
+##  [1] "b_Intercept"       "b_SS_c"            "b_FQ_c"           
+##  [4] "b_SS_c:FQ_c"       "sigma"             "prior_Intercept"  
+##  [7] "prior_b_SS_c"      "prior_b_FQ_c"      "prior_b_SS_c:FQ_c"
+## [10] "prior_sigma"       "lp__"              "accept_stat__"    
+## [13] "stepsize__"        "treedepth__"       "n_leapfrog__"     
+## [16] "divergent__"       "energy__"
+```
+
+```r
+mr.13 %&gt;%
+  gather_draws(b_SS_c, b_FQ_c, `b_SS_c:FQ_c`) %&gt;%
+  ggplot(aes(y = fct_rev(.variable), x = .value)) +
+  stat_halfeye(.width = c(.90, .5))
+```
+
+![](info-6_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+
+
+---
+## How to calculate?
+
+Compute the area under the curve (AUC) of the density curve on the other side of 0.
+
+
+```r
+library(bayestestR)
+```
+
+```
+## 
+## Attaching package: 'bayestestR'
+```
+
+```
+## The following object is masked from 'package:tidybayes':
+## 
+##     hdi
+```
+
+```r
+p_direction(mr.13)
+```
+
+```
+## Probability of Direction
+## 
+## Parameter   |     pd
+## --------------------
+## (Intercept) |   100%
+## SS_c        |   100%
+## FQ_c        | 99.95%
+## SS_c:FQ_c   |   100%
+```
+
+---
+
+```r
+describe_posterior(mr.13)
+```
+
+```
+## Summary of Posterior Distribution
+## 
+## Parameter   | Median |         95% CI |     pd |          ROPE | % in ROPE |  Rhat |     ESS
+## --------------------------------------------------------------------------------------------
+## (Intercept) |   5.03 | [ 4.72,  5.32] |   100% | [-0.19, 0.19] |        0% | 1.001 | 2243.00
+## SS_c        |   0.33 | [ 0.22,  0.43] |   100% | [-0.19, 0.19] |        0% | 0.999 | 1993.00
+## FQ_c        |   0.21 | [ 0.07,  0.34] | 99.95% | [-0.19, 0.19] |    36.45% | 1.000 | 1970.00
+## SS_c:FQ_c   |  -0.04 | [-0.07, -0.01] |   100% | [-0.19, 0.19] |      100% | 1.000 | 2182.00
+```
+
+
+---
+### Downsides
+
+You can find a high PD for an effect that is quite small. Similar to a p &lt; .05 with a large sample size. Is it still meaningful? 
+
+Lead to other NHST foibles like dichotomous thinking
+
+More similar to a 1-tailed p-value, so equivalence for .05 should really be 90% PD. 
+
+
+```r
+onesided_p &lt;- 1 - pd / 100
+twosided_p &lt;- onesided_p * 2
+```
+
+---
+## nil hypothesis    
+
+With NHST you typically attempt to reject a H0 of zero. This is a point estimate. However, we know the probability of any point is zero, so conceptually a typical NHST is illogical. 
+
+What we really mean when we set up a standard NHST nil hypothesis is to reject zero -- OR VALUES THAT ARE EQUIVALENT TO ZERO. 
+
+What are those values? In frequentist it depends on your se which is a function of your sample SD and N. We just don't talk about it. 
+
+---
+# ROPE
+Bayesian inference is not based on NHST. Rather than concluding that an effect is present when it simply differs from zero, we would conclude that the probability of being outside a specific range that can be considered as “practically no effect”. 
+
+Region of Practical Equivalence - a small range of parameter values that are considered to be practically equivalent to the null. E.g,. std b = [-.07, .07]
+
+Let the user define an area around the null value enclosing values that are equivalent to the null 
+
+---
+
+Compare our 95% (or whatever value you want) CI/HDI to see if it overlaps with the ROPE. Some suggest using full posterior rather than a CI. 
+
+If this percentage is sufficiently low, the null hypothesis is rejected. If this percentage is sufficiently high, the null hypothesis is accepted.
+
+Note: not all values within the ROPE are rejected, just the null. 
+
+---
+
+
+```r
+rope.1 &lt;- rope(mr.13, range = c(-0.05, 0.05))
+rope.1
+```
+
+```
+## # Proportion of samples inside the ROPE [-0.05, 0.05]:
+## 
+## Parameter | inside ROPE
+## -----------------------
+## Intercept |      0.00 %
+## SS_c      |      0.00 %
+## FQ_c      |      0.00 %
+## SS_c:FQ_c |     80.59 %
+```
+* Note how the rope is the same for all parameters
+
+---
+
+```r
+plot(rope.1)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+
+
+---
+
+
+
+
+
+```r
+rope.2 &lt;- rope(mr.13, range = c(-0.05, 0.05), ci = c(0.99))
+plot(rope.2)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+
+```r
+result &lt;- equivalence_test(mr.13, range = c(-0.05, 0.05), ci = c(0.95))
+result
+```
+
+```
+## # Test for Practical Equivalence
+## 
+##   ROPE: [-0.05 0.05]
+## 
+## Parameter |        H0 | inside ROPE |       95% HDI
+## ---------------------------------------------------
+## Intercept |  Rejected |      0.00 % | [ 4.72  5.32]
+## SS_c      |  Rejected |      0.00 % | [ 0.22  0.43]
+## FQ_c      |  Rejected |      0.00 % | [ 0.07  0.34]
+## SS_c:FQ_c | Undecided |     80.59 % | [-0.07 -0.01]
+```
+
+---
+
+```r
+result &lt;- equivalence_test(mr.13, range = c(-0.1, 0.1), ci = c(0.99))
+result
+```
+
+```
+## # Test for Practical Equivalence
+## 
+##   ROPE: [-0.10 0.10]
+## 
+## Parameter |        H0 | inside ROPE |       99% HDI
+## ---------------------------------------------------
+## Intercept |  Rejected |      0.00 % | [ 4.64  5.44]
+## SS_c      |  Rejected |      0.00 % | [ 0.20  0.46]
+## FQ_c      | Undecided |      4.80 % | [ 0.04  0.39]
+## SS_c:FQ_c |  Accepted |    100.00 % | [-0.07 -0.00]
+```
+
+---
+
+
+```r
+rope.3 &lt;- rope(mr.13, range = c(-0.1, 0.1), ci = c(0.99))
+plot(rope.3)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
+
+
+
+---
+## ROPE
+
+Why not just use the CI like you normally would? Because what if CI and ROPE overlap like above for FQ_c?
+
+This allows you to 1. have a middle ground between accept vs reject. A range of equivalence. 
+
+2. Allows one to affirm a predicted value, which is logically impossible in a standard NHST framework. Ie rather than fail to reject null, we can state given the observed data, the effect has XX% probability of being practically zero. 
+
+
+---
+## ROPE
+
+How to come up with ROPE values? 
+
+Difficult. Balance practicality with expertise judgment. DBDA: -0.1 to 0.1 of a standardized parameter (ie negligible effect size, Cohen, 1988). Or [-1*se, +1*se] 
+
+
+```r
+rope_range(mr.13)
+```
+
+```
+## [1] -0.1893523  0.1893523
+```
+
+Usually implemented when a decision needs to be made. More common in medicine than psych. 
+
+---
+.pull-left[
+
+```r
+rope.4 &lt;- rope(mr.13)
+rope.4
+```
+
+```
+## # Proportion of samples inside the ROPE [-0.19, 0.19]:
+## 
+## Parameter | inside ROPE
+## -----------------------
+## Intercept |      0.00 %
+## SS_c      |      0.00 %
+## FQ_c      |     36.45 %
+## SS_c:FQ_c |    100.00 %
+```
+]
+
+
+.pull-right[
+
+
+```r
+plot(rope.4)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
+
+]
+
+---
+
+```r
+describe_posterior(mr.13, test = "all")
+```
+
+```
+## Sampling priors, please wait...
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Summary of Posterior Distribution
+## 
+## Parameter   | Median |         95% CI | p (MAP) |     pd | p (ROPE) |   ps |          ROPE | % in ROPE | Equivalence (ROPE) |  Rhat |     ESS |     BF
+## ------------------------------------------------------------------------------------------------------------------------------------------------------
+## (Intercept) |   5.03 | [ 4.72,  5.32] |  &lt; .001 |   100% |   &lt; .001 | 1.00 | [-0.19, 0.19] |        0% |           Rejected | 1.001 | 2243.00 | &gt; 1000
+## SS_c        |   0.33 | [ 0.22,  0.43] |  &lt; .001 |   100% |   0.002  | 1.00 | [-0.19, 0.19] |        0% |           Rejected | 0.999 | 1993.00 | &gt; 1000
+## FQ_c        |   0.21 | [ 0.07,  0.34] |  0.012  | 99.95% |   0.367  | 0.63 | [-0.19, 0.19] |    36.45% |          Undecided | 1.000 | 1970.00 |   3.22
+## SS_c:FQ_c   |  -0.04 | [-0.07, -0.01] |  &lt; .001 |   100% |   &gt; .999 | 0.00 | [-0.19, 0.19] |      100% |           Accepted | 1.000 | 2182.00 |  0.864
+```
+
+
 
 ---
 ## Bayes Factors
 
-Quantifies the support in the data for two competing statistical models. Ratio of the two marginal likelihoods of an observed outcome for these two models. E.g., how likely is a b = .2 vs b = 0, given our data. Gives relative evidence for different positions by comparing the predictive accuracy of two model-prior combinations
+Quantifies the support in the data for two competing statistical models. Ratio of the two marginal likelihoods of an observed outcome for these two models. E.g., how likely is a b = .2 vs b = 0, given our data. Gives relative evidence for different positions by comparing two marginal likelihoods
 
-`$$\text{BF} = \frac{p(D | m = 1)}{p(D | m = 2)}$$`
+`$$BF_{12} = \frac{p(D | m = 1)}{p(D | m = 2)}$$`
+
+---
+
+Can also think of it as the factor by which some prior odds have been updated after observing the data to posterior odds. Since they can be computed by dividing posterior odds by prior odds.
+
+`$$\underbrace{\frac{P(M_1|D)}{P(M_2|D)}}_{\text{Posterior Odds}} = \underbrace{\frac{P(D|M_1)}{P(D|M_2)}}_{\text{Likelihood Ratio}} \times \underbrace{\frac{P(M_1)}{P(M_2)}}_{\text{Prior Odds}}$$`
+
+
+`$$BF_{12}=\frac{Posterior~Odds_{12}}{Prior~Odds_{12}}$$`
 
 ---
 
@@ -700,7 +1043,29 @@ Quantifies the support in the data for two competing statistical models. Ratio o
 ## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+bayesfactor_parameters(posterior, prior, direction = "two-sided", null = 0)
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Bayes Factor (Savage-Dickey density ratio)
+## 
+## BF  
+## ----
+## 1.95
+## 
+## * Evidence Against The Null: 0
+```
+This BF indicates that the data provide .4/0.2 = 2 times more evidence for the effect compared to a model without the effect. 
 
 ---
 ### BF interpretation 
@@ -710,11 +1075,71 @@ Strength of evidence from data about the hypotheses
 
 Relative predictive accuracy of one hypothesis over another
 
+Has the null hypothesis of an absence of an effect become more or less credible?
+
 
 ---
 
-`$$\frac{p(m = 1 | D)}{p(m = 2 | D)} = \left (\frac{p(D | m = 1)}{p(D | m = 2)} \right ) \left ( \frac{p(m = 1)}{p(m = 2)} \right)$$`
-This equation shows that the posterior odds is determined entirely by the ratio of the marginal likelihoods (Bayes Factors) multiplied by the prior odds
+
+```r
+library(effectsize)
+interpret_bf(1.95)
+```
+
+```
+## [1] "anecdotal evidence in favour of"
+## (Rules: jeffreys1961)
+```
+
+
+
+---
+What happens if we increase our prior SD? Going from 1 to 5? 
+Is our BF going to increase or decrease? 
+
+```r
+prior2 &lt;- distribution_normal(10000, mean = 0, sd = 5)
+posterior2 &lt;- distribution_normal(10000, mean = 1, sd = 0.7)
+bf_plot2&lt;- bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```r
+plot(bf_plot2)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+
+
+---
+
+```r
+bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Bayes Factor (Savage-Dickey density ratio)
+## 
+## BF   
+## -----
+## 0.389
+## 
+## * Evidence Against The Null: 0
+```
+
+---
+Note that the method this is computed by is called the Savage–Dickey density ratio. Literally just taking the fraction of these point estimates. Crucially, however, it ignores the shape of the distribution, focusing on a single point estimate. 
+
+This is good in that it parallels NHST conventions. This is bad in that it doesn't tell you much much outside of a specific point estimate. In other words you are ignoring the shape of the posterior. 
 
 ---
 
@@ -732,8 +1157,38 @@ mr.2 &lt;-
       file = "mr.2")
 ```
 
+
 ---
-## BF with {brms}
+
+```r
+summary(mr.2)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: happiness ~ 1 + SS_c + FQ_c 
+##    Data: MR (Number of observations: 118) 
+##   Draws: 2 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 2000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     5.21      0.14     4.92     5.50 1.00     2207     1478
+## SS_c          0.35      0.05     0.25     0.44 1.00     1809     1338
+## FQ_c          0.18      0.07     0.05     0.30 1.00     1873     1513
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     1.60      0.11     1.40     1.81 1.00     1946     1457
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+---
 
 
 ```r
@@ -758,9 +1213,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 2.97e+29
-## SS_c        | 1.35e+05
-## FQ_c        |    15.43
+## (Intercept) | 2.82e+29
+## SS_c        | 1.29e+05
+## FQ_c        |    14.83
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -772,11 +1227,11 @@ bf.result
 plot(bf.result)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
 
 
 ---
-
+## we can also do this with ROPE! 
 
 ```r
 bf.result2 &lt;- bayesfactor_parameters(mr.2, null = rope_range(mr.2))
@@ -795,9 +1250,9 @@ bf.result2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 9.89e+28
-## SS_c        | 1.26e+03
-## FQ_c        |     1.42
+## (Intercept) | 9.08e+28
+## SS_c        | 1.14e+03
+## FQ_c        |     1.60
 ## 
 ## * Evidence Against The Null: [-0.189, 0.189]
 ```
@@ -813,7 +1268,7 @@ The Bayes factor represents the degree by which the distribution mass of the pos
 plot(bf.result2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -837,22 +1292,6 @@ hypothesis(mr.2, "FQ_c = 0")
 ## Posterior probabilities of point hypotheses assume equal prior probabilities.
 ```
 
-
-```r
-hypothesis(mr.2, "FQ_c &gt; 0")
-```
-
-```
-## Hypothesis Tests for class b:
-##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (FQ_c) &gt; 0     0.18      0.07     0.07     0.29     221.22         1    *
-## ---
-## 'CI': 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
-## '*': For one-sided hypotheses, the posterior probability exceeds 95%;
-## for two-sided hypotheses, the value tested against lies outside the 95%-CI.
-## Posterior probabilities of point hypotheses assume equal prior probabilities.
-```
-
 ---
 
 
@@ -860,38 +1299,27 @@ hypothesis(mr.2, "FQ_c &gt; 0")
 plot(hypothesis(mr.2, "FQ_c = 0"))
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
-
----
-###Model comparisons
-via {bridgesampling and brms}
-
-```r
-bayes_factor(mr.12, mr.11)
-```
+![](info-6_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
 
 
 ---
-###Model comparisons
-via {bayestestR}
-
-```r
-comparison &lt;- bayesfactor_models(mr.12, denominator = mr.11)
-comparison
-```
-
----
-### group comparison
-caution for factors with more than 2 levels 
 
 
 ```r
-library(emmeans)
-groups &lt;- emmeans(mr.11, ~ iv.d)
-group_diff &lt;- pairs(groups)
-groups_all &lt;- rbind(groups, group_diff)
-bayesfactor_parameters(groups_all, prior = mr.11)
+mr.13 &lt;- 
+  brm(family = gaussian,
+      happiness ~ 1 + SS_c * FQ_c,
+      prior = c(prior(normal(0, 3), class = Intercept),
+                prior(normal(0, 2), class = b, coef = SS_c),
+                prior(normal(0, 2), class = b, coef = FQ_c),
+                prior(normal(0, 2), class = b, coef = SS_c:FQ_c),
+                prior(exponential(1), class = sigma)),
+      iter = 2000, warmup = 1000, chains = 2, cores = 2,
+      data = MR,
+      sample_prior = T,
+      file = "mr.13")
 ```
+
 
 ---
 ### Proposed cutoffs
@@ -933,8 +1361,7 @@ bayesfactor_parameters(groups_all, prior = mr.11)
 
 
 ```r
-mr.1 &lt;- readRDS("mr.1.rds")
-mr.1 &lt;- 
+info.1 &lt;- 
   brm(family = gaussian,
       happiness ~ 1 + SS_c + FQ_c,
       prior = c(prior(normal(5, 2), class = Intercept),
@@ -944,12 +1371,13 @@ mr.1 &lt;-
       iter = 2000, warmup = 1000, chains = 2, cores = 2,
       data = MR,
       sample_prior = T,
-      file = "mr.1")
+      save_pars = save_pars(all = TRUE),
+      file = "info.1")
 ```
 
 
 ```r
-mr.2 &lt;- 
+info.2 &lt;- 
   brm(family = gaussian,
       happiness ~ 1 + SS_c + FQ_c,
       prior = c(prior(normal(5, 2), class = Intercept),
@@ -959,14 +1387,15 @@ mr.2 &lt;-
       iter = 2000, warmup = 1000, chains = 2, cores = 2,
       data = MR,
       sample_prior = T,
-      file = "mr.2")
+      save_pars = save_pars(all = TRUE),
+      file = "info.2")
 ```
 
 ---
 .pull-left[
 
 ```r
-bf.result &lt;- bayestestR::bayesfactor_parameters(mr.1)
+bf.result &lt;- bayestestR::bayesfactor_parameters(info.1)
 ```
 
 ```
@@ -987,9 +1416,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 6.20e+34
-## SS_c        | 1.49e+04
-## FQ_c        |     2.59
+## (Intercept) | 1.10e+26
+## SS_c        | 1.62e+06
+## FQ_c        |     5.56
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -999,7 +1428,7 @@ bf.result
 .pull-right[
 
 ```r
-bf.result &lt;- bayestestR::bayesfactor_parameters(mr.2)
+bf.result &lt;- bayestestR::bayesfactor_parameters(info.2)
 ```
 
 ```
@@ -1020,107 +1449,47 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 2.89e+29
-## SS_c        | 1.28e+05
-## FQ_c        |    14.12
+## (Intercept) | 8.73e+29
+## SS_c        | 7.95e+04
+## FQ_c        |    15.24
 ## 
 ## * Evidence Against The Null: 0
 ```
 ]
  
+ 
 ---
-## ROPE
-Region of Practical Equivalence - a small range of parameter values that are considered to be practically equivalent to the null. E.g,. std b = [-.07, .07]
 
-Compare our 95% (or whatever value you want) CI/HDPI to see if it overlaps with the ROPE. Reject null if it doesn't. 
-
-Note: not all values within the ROPE are rejected, just the null. 
-
-
----
+###Model comparisons
 
 
 ```r
-bayestestR::rope(mr.2, range = c(-0.07, 0.07))
+info.3 &lt;- 
+  brm(family = gaussian,
+      happiness ~ 1 + SS_c * FQ_c,
+      prior = c(prior(normal(5, 2), class = Intercept),
+                prior(normal(0, .2), class = b, coef = SS_c),
+                prior(normal(0, .2), class = b, coef = FQ_c),
+                prior(exponential(.5), class = sigma)),
+      iter = 2000, warmup = 1000, chains = 2, cores = 2,
+      data = MR,
+      sample_prior = T,
+      save_pars = save_pars(all = TRUE),
+      file = "info.3")
 ```
 
-```
-## # Proportion of samples inside the ROPE [-0.07, 0.07]:
-## 
-## Parameter | inside ROPE
-## -----------------------
-## Intercept |      0.00 %
-## SS_c      |      0.00 %
-## FQ_c      |      3.42 %
-```
+
+
+
+
 
 ---
-
+via {bayestestR}
 
 ```r
-rope &lt;- rope(mr.2, range = c(-0.07, 0.07), ci = c(0.93))
-plot(rope)
+comparison &lt;- bayesfactor_models(info.3, denominator = info.2)
+comparison
 ```
-
-![](info-6_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
-
-
----
-
-
-```r
-result &lt;- equivalence_test(mr.2)
-result
-```
-
-```
-## # Test for Practical Equivalence
-## 
-##   ROPE: [-0.19 0.19]
-## 
-## Parameter |        H0 | inside ROPE |     95% HDI
-## -------------------------------------------------
-## Intercept |  Rejected |      0.00 % | [4.95 5.52]
-## SS_c      |  Rejected |      0.00 % | [0.25 0.44]
-## FQ_c      | Undecided |     57.08 % | [0.05 0.30]
-```
-
-
----
-## ROPE
-
-Why not just use the CI like you normally would? Because what if CI and ROPE overlap? 
-
-CI completely contains ROPE vs partially contains
-
-This allows you to 1. have a middle ground between accept vs reject. A range of equivalence. 
-
-2. Allows one to affirm a predicted value, which is logically impossible in a standard NHST framework
-
----
-## ROPE
-
-How to come up with ROPE values? 
-
-Difficult. Balance practicality with expertise judgment. DBDA: -0.1 to 0.1 of a standardized parameter (ie negligible effect size, Cohen, 1988). 
-
-
-```r
-rope_range(mr.2)
-```
-
-```
-## [1] -0.1893523  0.1893523
-```
-
-
-Usually implemented when a decision needs to be made. More common in medicine than psych. 
-
-
-
-
-
-
 
 
     </textarea>
