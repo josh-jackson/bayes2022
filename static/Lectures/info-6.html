@@ -700,9 +700,6 @@ The difference between CI/qi/ETI  vs HDPI/HPI?
 How are each (CI vs HDPI) of these computed?   
 When would they (CI vs HDPI) be similar vs when would they be different?   
 
----
-
-Given the observed data, the effect has 95% probability of falling within this range
 
 ---
 ## Probability of direction
@@ -715,11 +712,18 @@ Similar to p - value: interpretation has parallels, so it helps convince pesky r
 
 
 ---
-
+.pull-left[
 
 ```r
 get_variables(mr.13)
+mr.13 %&gt;%
+  gather_draws(b_SS_c, b_FQ_c, `b_SS_c:FQ_c`) %&gt;%
+  ggplot(aes(y = fct_rev(.variable), x = .value)) +
+  stat_halfeye(.width = c(.90, .5))
 ```
+]
+
+.pull-right[
 
 ```
 ##  [1] "b_Intercept"       "b_SS_c"            "b_FQ_c"           
@@ -730,14 +734,9 @@ get_variables(mr.13)
 ## [16] "divergent__"       "energy__"
 ```
 
-```r
-mr.13 %&gt;%
-  gather_draws(b_SS_c, b_FQ_c, `b_SS_c:FQ_c`) %&gt;%
-  ggplot(aes(y = fct_rev(.variable), x = .value)) +
-  stat_halfeye(.width = c(.90, .5))
-```
+![](info-6_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+]
 
-![](info-6_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -748,20 +747,6 @@ Compute the area under the curve (AUC) of the density curve on the other side of
 
 ```r
 library(bayestestR)
-```
-
-```
-## 
-## Attaching package: 'bayestestR'
-```
-
-```
-## The following object is masked from 'package:tidybayes':
-## 
-##     hdi
-```
-
-```r
 p_direction(mr.13)
 ```
 
@@ -860,7 +845,7 @@ rope.1
 plot(rope.1)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -874,7 +859,7 @@ rope.2 &lt;- rope(mr.13, range = c(-0.05, 0.05), ci = c(0.99))
 plot(rope.2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
 
 
 
@@ -927,7 +912,7 @@ rope.3 &lt;- rope(mr.13, range = c(-0.1, 0.1), ci = c(0.99))
 plot(rope.3)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
 
 
 
@@ -987,34 +972,25 @@ rope.4
 plot(rope.4)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
 
 ]
 
 ---
 
 ```r
-describe_posterior(mr.13, test = "all")
-```
-
-```
-## Sampling priors, please wait...
-```
-
-```
-## Warning: Bayes factors might not be precise.
-## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+describe_posterior(mr.13, test = "ROPE")
 ```
 
 ```
 ## Summary of Posterior Distribution
 ## 
-## Parameter   | Median |         95% CI | p (MAP) |     pd | p (ROPE) |   ps |          ROPE | % in ROPE | Equivalence (ROPE) |  Rhat |     ESS |     BF
-## ------------------------------------------------------------------------------------------------------------------------------------------------------
-## (Intercept) |   5.03 | [ 4.72,  5.32] |  &lt; .001 |   100% |   &lt; .001 | 1.00 | [-0.19, 0.19] |        0% |           Rejected | 1.001 | 2243.00 | &gt; 1000
-## SS_c        |   0.33 | [ 0.22,  0.43] |  &lt; .001 |   100% |   0.002  | 1.00 | [-0.19, 0.19] |        0% |           Rejected | 0.999 | 1993.00 | &gt; 1000
-## FQ_c        |   0.21 | [ 0.07,  0.34] |  0.012  | 99.95% |   0.367  | 0.63 | [-0.19, 0.19] |    36.45% |          Undecided | 1.000 | 1970.00 |   3.35
-## SS_c:FQ_c   |  -0.04 | [-0.07, -0.01] |  &lt; .001 |   100% |   &gt; .999 | 0.00 | [-0.19, 0.19] |      100% |           Accepted | 1.000 | 2182.00 |  0.903
+## Parameter   | Median |         95% CI |          ROPE | % in ROPE |  Rhat |     ESS
+## -----------------------------------------------------------------------------------
+## (Intercept) |   5.03 | [ 4.72,  5.32] | [-0.19, 0.19] |        0% | 1.001 | 2243.00
+## SS_c        |   0.33 | [ 0.22,  0.43] | [-0.19, 0.19] |        0% | 0.999 | 1993.00
+## FQ_c        |   0.21 | [ 0.07,  0.34] | [-0.19, 0.19] |    36.45% | 1.000 | 1970.00
+## SS_c:FQ_c   |  -0.04 | [-0.07, -0.01] | [-0.19, 0.19] |      100% | 1.000 | 2182.00
 ```
 
 
@@ -1036,14 +1012,17 @@ Can also think of it as the factor by which some prior odds have been updated af
 `$$BF_{12}=\frac{Posterior~Odds_{12}}{Prior~Odds_{12}}$$`
 
 ---
-
+.pull-left[
 
 ```
 ## Warning: Bayes factors might not be precise.
 ## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
 ```
+]
 
-![](info-6_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+.pull-right[
+![](info-6_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
+]
 
 ---
 
@@ -1091,6 +1070,11 @@ interpret_bf(1.95)
 ## (Rules: jeffreys1961)
 ```
 
+---
+
+For every parameter or model test there is an infininte number of bayes factors. That is, there is no single bayes factor for your analysis!
+
+When someone says the bayes factor for this test was XX you have to ask yourself what exactly they are testing. 
 
 
 ---
@@ -1114,7 +1098,7 @@ bf_plot2&lt;- bayesfactor_parameters(posterior2, prior2, direction = "two-sided"
 plot(bf_plot2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1216,9 +1200,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 1.95e+29
-## SS_c        | 1.41e+05
-## FQ_c        |    15.39
+## (Intercept) | 2.44e+29
+## SS_c        | 1.20e+05
+## FQ_c        |    14.67
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1230,7 +1214,7 @@ bf.result
 plot(bf.result)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1253,9 +1237,9 @@ bf.result2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 7.18e+28
-## SS_c        | 1.16e+03
-## FQ_c        |     1.39
+## (Intercept) | 8.86e+28
+## SS_c        | 1.21e+03
+## FQ_c        |     1.47
 ## 
 ## * Evidence Against The Null: [-0.189, 0.189]
 ```
@@ -1271,7 +1255,7 @@ The Bayes factor represents the degree by which the distribution mass of the pos
 plot(bf.result2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1302,26 +1286,8 @@ hypothesis(mr.2, "FQ_c = 0")
 plot(hypothesis(mr.2, "FQ_c = 0"))
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
 
-
----
-
-
-```r
-mr.13 &lt;- 
-  brm(family = gaussian,
-      happiness ~ 1 + SS_c * FQ_c,
-      prior = c(prior(normal(0, 3), class = Intercept),
-                prior(normal(0, 2), class = b, coef = SS_c),
-                prior(normal(0, 2), class = b, coef = FQ_c),
-                prior(normal(0, 2), class = b, coef = SS_c:FQ_c),
-                prior(exponential(1), class = sigma)),
-      iter = 2000, warmup = 1000, chains = 2, cores = 2,
-      data = MR,
-      sample_prior = T,
-      file = "mr.13")
-```
 
 
 ---
@@ -1398,7 +1364,7 @@ info.2 &lt;-
 .pull-left[
 
 ```r
-bf.result &lt;- bayestestR::bayesfactor_parameters(info.1)
+bf.result.1 &lt;- bayestestR::bayesfactor_parameters(info.1)
 ```
 
 ```
@@ -1411,7 +1377,7 @@ bf.result &lt;- bayestestR::bayesfactor_parameters(info.1)
 ```
 
 ```r
-bf.result
+bf.result.1
 ```
 
 ```
@@ -1419,9 +1385,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 7.06e+25
-## SS_c        | 1.56e+06
-## FQ_c        |     6.03
+## (Intercept) | 9.51e+25
+## SS_c        | 1.73e+06
+## FQ_c        |     5.54
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1431,7 +1397,7 @@ bf.result
 .pull-right[
 
 ```r
-bf.result &lt;- bayestestR::bayesfactor_parameters(info.2)
+bf.result.2 &lt;- bayestestR::bayesfactor_parameters(info.2)
 ```
 
 ```
@@ -1444,7 +1410,7 @@ bf.result &lt;- bayestestR::bayesfactor_parameters(info.2)
 ```
 
 ```r
-bf.result
+bf.result.2
 ```
 
 ```
@@ -1452,19 +1418,62 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 9.22e+29
-## SS_c        | 7.45e+04
-## FQ_c        |    15.79
+## (Intercept) | 5.47e+29
+## SS_c        | 7.44e+04
+## FQ_c        |    16.27
 ## 
 ## * Evidence Against The Null: 0
 ```
 ]
  
  
+
+ 
+---
+.pull-left[
+
+```r
+plot(bf.result.1)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+
+]
+
+.pull-right[
+
+```r
+plot(bf.result.2)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
+]
+ 
+ 
+---
+.pull-left[
+
+```r
+plot(info.1)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+
+]
+
+.pull-right[
+
+```r
+plot(info.2)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
+] 
+ 
 ---
 
-###Model comparisons
-
+## Model comparisons
+Compare interaction with a main effects model
 
 ```r
 info.3 &lt;- 
@@ -1480,8 +1489,6 @@ info.3 &lt;-
       save_pars = save_pars(all = TRUE),
       file = "info.3")
 ```
-
-
 
 
 
@@ -1510,7 +1517,7 @@ comparison
 ## Bayes Factors for Model Comparison
 ## 
 ##     Model             BF
-## [1] 1 + SS_c * FQ_c 2.44
+## [1] 1 + SS_c * FQ_c 2.45
 ## 
 ## * Against Denominator: [2] 1 + SS_c + FQ_c
 ## *   Bayes Factor Type: marginal likelihoods (bridgesampling)

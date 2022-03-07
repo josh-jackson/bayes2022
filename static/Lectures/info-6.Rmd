@@ -564,9 +564,6 @@ The difference between CI/qi/ETI  vs HDPI/HPI?
 How are each (CI vs HDPI) of these computed?   
 When would they (CI vs HDPI) be similar vs when would they be different?   
 
----
-
-Given the observed data, the effect has 95% probability of falling within this range
 
 ---
 ## Probability of direction
@@ -579,14 +576,26 @@ Similar to p - value: interpretation has parallels, so it helps convince pesky r
 
 
 ---
-
-```{r}
+.pull-left[
+```{r, eval = FALSE}
 get_variables(mr.13)
 mr.13 %>%
   gather_draws(b_SS_c, b_FQ_c, `b_SS_c:FQ_c`) %>%
   ggplot(aes(y = fct_rev(.variable), x = .value)) +
   stat_halfeye(.width = c(.90, .5))
 ```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+get_variables(mr.13)
+mr.13 %>%
+  gather_draws(b_SS_c, b_FQ_c, `b_SS_c:FQ_c`) %>%
+  ggplot(aes(y = fct_rev(.variable), x = .value)) +
+  stat_halfeye(.width = c(.90, .5))
+```
+]
+
 
 
 ---
@@ -594,7 +603,7 @@ mr.13 %>%
 
 Compute the area under the curve (AUC) of the density curve on the other side of 0.
 
-```{r}
+```{r, message=FALSE}
 library(bayestestR)
 p_direction(mr.13)
 ```
@@ -737,7 +746,7 @@ plot(rope.4)
 
 ---
 ```{r}
-describe_posterior(mr.13, test = "all")
+describe_posterior(mr.13, test = "ROPE")
 ```
 
 
@@ -759,15 +768,21 @@ $$\underbrace{\frac{P(M_1|D)}{P(M_2|D)}}_{\text{Posterior Odds}} = \underbrace{\
 $$BF_{12}=\frac{Posterior~Odds_{12}}{Prior~Odds_{12}}$$
 
 ---
-
+.pull-left[
 ```{r, message = FALSE, echo = FALSE}
 library(bayestestR)
 library(see)
 prior <- distribution_normal(10000, mean = 0, sd = 1)
 posterior <- distribution_normal(10000, mean = 1, sd = 0.7)
 bf_plot<- bayesfactor_parameters(posterior, prior, direction = "two-sided", null = 0)
+```
+]
+
+.pull-right[
+```{r, message = FALSE, echo = FALSE}
 plot(bf_plot)
 ```
+]
 
 ---
 ```{r}
@@ -793,6 +808,11 @@ library(effectsize)
 interpret_bf(1.95)
 ```
 
+---
+
+For every parameter or model test there is an infininte number of bayes factors. That is, there is no single bayes factor for your analysis!
+
+When someone says the bayes factor for this test was XX you have to ask yourself what exactly they are testing. 
 
 
 ---
@@ -891,23 +911,6 @@ plot(hypothesis(mr.2, "FQ_c = 0"))
 ```
 
 
----
-
-```{r}
-mr.13 <- 
-  brm(family = gaussian,
-      happiness ~ 1 + SS_c * FQ_c,
-      prior = c(prior(normal(0, 3), class = Intercept),
-                prior(normal(0, 2), class = b, coef = SS_c),
-                prior(normal(0, 2), class = b, coef = FQ_c),
-                prior(normal(0, 2), class = b, coef = SS_c:FQ_c),
-                prior(exponential(1), class = sigma)),
-      iter = 2000, warmup = 1000, chains = 2, cores = 2,
-      data = MR,
-      sample_prior = T,
-      file = "mr.13")
-```
-
 
 ---
 ### Proposed cutoffs
@@ -980,24 +983,57 @@ info.2 <-
 ---
 .pull-left[
 ```{r}
-bf.result <- bayestestR::bayesfactor_parameters(info.1)
-bf.result
+bf.result.1 <- bayestestR::bayesfactor_parameters(info.1)
+bf.result.1
 ```
 
 ]
 
 .pull-right[
 ```{r}
-bf.result <- bayestestR::bayesfactor_parameters(info.2)
-bf.result
+bf.result.2 <- bayestestR::bayesfactor_parameters(info.2)
+bf.result.2
+```
+]
+ 
+ 
+
+ 
+---
+.pull-left[
+```{r}
+plot(bf.result.1)
+```
+
+]
+
+.pull-right[
+```{r}
+
+plot(bf.result.2)
 ```
 ]
  
  
 ---
+.pull-left[
+```{r}
+plot(info.1)
+```
 
-###Model comparisons
+]
 
+.pull-right[
+```{r}
+
+plot(info.2)
+```
+] 
+ 
+---
+
+## Model comparisons
+Compare interaction with a main effects model
 ```{r}
 
 info.3 <- 
@@ -1013,8 +1049,6 @@ info.3 <-
       save_pars = save_pars(all = TRUE),
       file = "info.3")
 ```
-
-
 
 
 
