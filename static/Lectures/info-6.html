@@ -1071,10 +1071,33 @@ interpret_bf(1.95)
 ```
 
 ---
+### Association with p values
 
-For every parameter or model test there is an infininte number of bayes factors. That is, there is no single bayes factor for your analysis!
+Similar in that they both provide a continuous metric to compare two hypotheses
 
-When someone says the bayes factor for this test was XX you have to ask yourself what exactly they are testing. 
+For a fixed sample size, p-values can be directly transformed into Bayes-Factors and vice versa, and of course into any effect size metric. Remember that p values are a composite of an effect size and sample size. Same is true with BF (except the calculation of effect size for BF uses different SDs rather than average with p-values).  
+
+
+---
+## Alternative to p-values
+
+Easier interpretation. (ratio of two likelihoods). P values are misunderstood.  
+
+Doesn't involve imaginary sampling distributions  
+
+Can provide evidence in favor of a null  
+
+Works better as an effect size substitute than a p-value   
+
+Less dichotomous thinking as there isn't a BF one *needs* to surpass   
+
+
+---
+## 1 major downside
+
+For every parameter or model test there is an infinite number of bayes factors. That is, there is no single Bayes factor for your analysis!
+
+When someone says the Bayes factor for this test was XX you have to ask yourself what exactly they are testing. 
 
 
 ---
@@ -1105,6 +1128,16 @@ plot(bf_plot2)
 
 
 ```r
+plot(bf_plot)
+```
+
+![](info-6_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
+
+
+---
+
+
+```r
 bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
 ```
 
@@ -1119,6 +1152,28 @@ bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
 ## BF   
 ## -----
 ## 0.389
+## 
+## * Evidence Against The Null: 0
+```
+
+---
+
+
+```r
+bayesfactor_parameters(posterior, prior, direction = "two-sided", null = 0)
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Bayes Factor (Savage-Dickey density ratio)
+## 
+## BF  
+## ----
+## 1.95
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1200,9 +1255,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 2.44e+29
-## SS_c        | 1.20e+05
-## FQ_c        |    14.67
+## (Intercept) | 2.24e+29
+## SS_c        | 1.28e+05
+## FQ_c        |    15.15
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1214,7 +1269,7 @@ bf.result
 plot(bf.result)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1237,9 +1292,9 @@ bf.result2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 8.86e+28
-## SS_c        | 1.21e+03
-## FQ_c        |     1.47
+## (Intercept) | 6.49e+28
+## SS_c        | 1.11e+03
+## FQ_c        |     1.46
 ## 
 ## * Evidence Against The Null: [-0.189, 0.189]
 ```
@@ -1255,7 +1310,7 @@ The Bayes factor represents the degree by which the distribution mass of the pos
 plot(bf.result2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1286,7 +1341,7 @@ hypothesis(mr.2, "FQ_c = 0")
 plot(hypothesis(mr.2, "FQ_c = 0"))
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
 
 
 
@@ -1312,17 +1367,17 @@ plot(hypothesis(mr.2, "FQ_c = 0"))
 ## Shortcomings of Bayes Factors
 
 .small[
-1. Heavy reliance on priors. The marginal likelihood is an average taken with respect to the prior, so bayes factors can be seen as relatively subjective compared to alternative approaches. This is less so a problem for models with more straightforward "nulls" eg a correct/incorrect and less so for more continuous metrics
+1. Heavy reliance on priors. The marginal likelihood is an average taken with respect to the prior, so bayes factors can be seen as relatively subjective
 
-2. BF provide differences between models without quantifying whether the chosen model is any good (similar issues with waic, loo, p-values -- you can calculate BF with bic!)
+2. BF provide differences between models without quantifying whether the chosen model is any good (similar issues with waic, loo, p-values)
 
 3. Favors more parsimonious models and thus is more conservative (could also be a pro) 
 
-4. Potentially reinforces dichotomous thinking 
+4. Potentially reinforces dichotomous thinking (better than p values but not by much)
 
 5. May be used as a measure of effect size (similar shortfalls to using p as such)
 
-6. Null is mostly not useful (!)
+6. Can be completely disconnected from our typical estimation stats
 ]
 
 ---
@@ -1385,9 +1440,9 @@ bf.result.1
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 9.51e+25
-## SS_c        | 1.73e+06
-## FQ_c        |     5.54
+## (Intercept) | 8.50e+25
+## SS_c        | 1.47e+06
+## FQ_c        |     5.34
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1418,9 +1473,9 @@ bf.result.2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 5.47e+29
-## SS_c        | 7.44e+04
-## FQ_c        |    16.27
+## (Intercept) | 1.01e+30
+## SS_c        | 7.40e+04
+## FQ_c        |    15.53
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1436,7 +1491,7 @@ bf.result.2
 plot(bf.result.1)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1446,7 +1501,7 @@ plot(bf.result.1)
 plot(bf.result.2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 ]
  
  
@@ -1457,7 +1512,7 @@ plot(bf.result.2)
 plot(info.1)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-66-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1467,7 +1522,7 @@ plot(info.1)
 plot(info.2)
 ```
 
-![](info-6_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
+![](info-6_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
 ] 
  
 ---
@@ -1517,12 +1572,42 @@ comparison
 ## Bayes Factors for Model Comparison
 ## 
 ##     Model             BF
-## [1] 1 + SS_c * FQ_c 2.45
+## [1] 1 + SS_c * FQ_c 2.44
 ## 
 ## * Against Denominator: [2] 1 + SS_c + FQ_c
 ## *   Bayes Factor Type: marginal likelihoods (bridgesampling)
 ```
 
+---
+
+
+```r
+summary(info.3)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: happiness ~ 1 + SS_c * FQ_c 
+##    Data: MR (Number of observations: 118) 
+##   Draws: 2 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 2000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     5.04      0.15     4.73     5.34 1.00     2398     1544
+## SS_c          0.30      0.05     0.19     0.40 1.00     1921     1484
+## FQ_c          0.18      0.06     0.05     0.30 1.00     1804     1561
+## SS_c:FQ_c    -0.04      0.01    -0.07    -0.01 1.00     2111     1276
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     1.55      0.10     1.35     1.76 1.00     2582     1639
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

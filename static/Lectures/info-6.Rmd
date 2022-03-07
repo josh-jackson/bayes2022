@@ -809,10 +809,33 @@ interpret_bf(1.95)
 ```
 
 ---
+### Association with p values
 
-For every parameter or model test there is an infininte number of bayes factors. That is, there is no single bayes factor for your analysis!
+Similar in that they both provide a continuous metric to compare two hypotheses
 
-When someone says the bayes factor for this test was XX you have to ask yourself what exactly they are testing. 
+For a fixed sample size, p-values can be directly transformed into Bayes-Factors and vice versa, and of course into any effect size metric. Remember that p values are a composite of an effect size and sample size. Same is true with BF (except the calculation of effect size for BF uses different SDs rather than average with p-values).  
+
+
+---
+## Alternative to p-values
+
+Easier interpretation. (ratio of two likelihoods). P values are misunderstood.  
+
+Doesn't involve imaginary sampling distributions  
+
+Can provide evidence in favor of a null  
+
+Works better as an effect size substitute than a p-value   
+
+Less dichotomous thinking as there isn't a BF one *needs* to surpass   
+
+
+---
+## 1 major downside
+
+For every parameter or model test there is an infinite number of bayes factors. That is, there is no single Bayes factor for your analysis!
+
+When someone says the Bayes factor for this test was XX you have to ask yourself what exactly they are testing. 
 
 
 ---
@@ -833,7 +856,20 @@ plot(bf_plot2)
 ---
 
 ```{r}
+plot(bf_plot)
+```
+
+
+---
+
+```{r}
 bayesfactor_parameters(posterior2, prior2, direction = "two-sided", null = 0)
+```
+
+---
+
+```{r}
+bayesfactor_parameters(posterior, prior, direction = "two-sided", null = 0)
 ```
 
 ---
@@ -934,17 +970,17 @@ plot(hypothesis(mr.2, "FQ_c = 0"))
 ## Shortcomings of Bayes Factors
 
 .small[
-1. Heavy reliance on priors. The marginal likelihood is an average taken with respect to the prior, so bayes factors can be seen as relatively subjective compared to alternative approaches. This is less so a problem for models with more straightforward "nulls" eg a correct/incorrect and less so for more continuous metrics
+1. Heavy reliance on priors. The marginal likelihood is an average taken with respect to the prior, so bayes factors can be seen as relatively subjective
 
-2. BF provide differences between models without quantifying whether the chosen model is any good (similar issues with waic, loo, p-values -- you can calculate BF with bic!)
+2. BF provide differences between models without quantifying whether the chosen model is any good (similar issues with waic, loo, p-values)
 
 3. Favors more parsimonious models and thus is more conservative (could also be a pro) 
 
-4. Potentially reinforces dichotomous thinking 
+4. Potentially reinforces dichotomous thinking (better than p values but not by much)
 
 5. May be used as a measure of effect size (similar shortfalls to using p as such)
 
-6. Null is mostly not useful (!)
+6. Can be completely disconnected from our typical estimation stats
 ]
 
 ---
@@ -1061,4 +1097,9 @@ comparison <- bayesfactor_models(info.3, denominator = info.2)
 comparison
 ```
 
+---
+
+```{r}
+summary(info.3)
+```
 
