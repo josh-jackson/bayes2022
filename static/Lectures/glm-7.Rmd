@@ -93,6 +93,16 @@ $$f(p) = logit(p) = log (\frac {p_{i}}{1-p_{i}})$$
 
 Logits are now in a shape similar to a normal regression (ie a line/plane that goes from negative to positive infinity)
 
+---
+## inverse link
+
+It is easier to think of transforming the probabilities but computationally the right side of the equation usually gets transformed. Note these two are equivalent. 
+
+$$f(p_i) = \alpha + \beta (x_i - \bar x)$$
+
+$$p_i = f^{-1}(\alpha + \beta (x_i - \bar x))$$
+
+You already know this, maybe not in this term, but we can go back and forth between the link and inverse link via the exponential function. 
 
 ---
 ## Maximum Entropy
@@ -260,6 +270,10 @@ prior_draws(glm.1) %>%
 
 ]
 
+
+---
+Before we see the data do we think that the event happens all the time time or never? 
+
 ---
 
 ```{r}
@@ -281,6 +295,11 @@ prior_draws(glm.2) %>%
   ggplot(aes(x = p)) +
   geom_density( )
 ```
+
+
+---
+
+Sees extreme values as a little more likely than equal odds. Is this reasonable? Depends! Maybe we want a prior that is closer to .5, with less mass in the extremes. Try N(0,1)
 
 ---
 
@@ -447,6 +466,9 @@ prior_draws(glm.4)%>%
 ```{r}
 summary(glm.4)
 ```
+
+---
+Interpretation of coefficients is not straight forward. Easier to plot predictions. 
 
 ---
 

@@ -1255,9 +1255,9 @@ bf.result
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 2.24e+29
-## SS_c        | 1.28e+05
-## FQ_c        |    15.15
+## (Intercept) | 2.59e+29
+## SS_c        | 1.27e+05
+## FQ_c        |    14.51
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1292,9 +1292,9 @@ bf.result2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 6.49e+28
-## SS_c        | 1.11e+03
-## FQ_c        |     1.46
+## (Intercept) | 8.19e+28
+## SS_c        | 1.21e+03
+## FQ_c        |     1.54
 ## 
 ## * Evidence Against The Null: [-0.189, 0.189]
 ```
@@ -1313,6 +1313,15 @@ plot(bf.result2)
 ![](info-6_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
 
 ]
+
+---
+## Marginal likelihood
+
+A marginal likelihood is a kind of weighted sum of the likelihood, weighted by the possible values of the parameter. How well we can explain the data using all the parameters, weighted by the prior. 
+
+It is hard to calculate for complex models, as it involves lots of integrating. 
+
+`$$P(X)=\int_{\theta}P(X|\theta)P(\theta)\mathrm{d}\theta$$`
 
 ---
 ### using hypothesis
@@ -1380,8 +1389,9 @@ plot(hypothesis(mr.2, "FQ_c = 0"))
 6. Can be completely disconnected from our typical estimation stats
 ]
 
----
 
+
+---
 
 
 ```r
@@ -1440,9 +1450,9 @@ bf.result.1
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 8.50e+25
-## SS_c        | 1.47e+06
-## FQ_c        |     5.34
+## (Intercept) | 8.27e+25
+## SS_c        | 1.58e+06
+## FQ_c        |     5.29
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1473,9 +1483,9 @@ bf.result.2
 ## 
 ## Parameter   |       BF
 ## ----------------------
-## (Intercept) | 1.01e+30
-## SS_c        | 7.40e+04
-## FQ_c        |    15.53
+## (Intercept) | 1.23e+30
+## SS_c        | 7.12e+04
+## FQ_c        |    16.17
 ## 
 ## * Evidence Against The Null: 0
 ```
@@ -1506,6 +1516,8 @@ plot(bf.result.2)
  
  
 ---
+Effects are basically indistinguishable
+
 .pull-left[
 
 ```r
@@ -1552,7 +1564,7 @@ info.3 &lt;-
 via {bayestestR}
 
 ```r
-comparison &lt;- bayesfactor_models(info.3, denominator = info.2)
+comparison &lt;- bayesfactor_models(info.3, denominator = info.2) 
 ```
 
 ```
@@ -1608,6 +1620,96 @@ summary(info.3)
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
 ## scale reduction factor on split chains (at convergence, Rhat = 1).
 ```
+
+---
+What happens if we try comparison but using different (wider) priors? 
+What do you think will happen to the comparison with the main effects model that has narrower priors? 
+
+```r
+info.3w &lt;- 
+  brm(family = gaussian,
+      happiness ~ 1 + SS_c * FQ_c,
+      prior = c(prior(normal(5, 5), class = Intercept),
+                prior(normal(0, 10), class = b, coef = SS_c),
+                prior(normal(0, 10), class = b, coef = FQ_c),
+                prior(exponential(.5), class = sigma)),
+      iter = 2000, warmup = 1000, chains = 2, cores = 2,
+      data = MR,
+      sample_prior = T,
+      save_pars = save_pars(all = TRUE),
+      file = "info.3w")
+```
+
+
+---
+
+
+```r
+# original 
+comparison &lt;- bayesfactor_models(info.3, denominator = info.2) 
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Computation of Bayes factors: estimating marginal likelihood, please wait...
+```
+
+```r
+comparison
+```
+
+```
+## Bayes Factors for Model Comparison
+## 
+##     Model             BF
+## [1] 1 + SS_c * FQ_c 2.45
+## 
+## * Against Denominator: [2] 1 + SS_c + FQ_c
+## *   Bayes Factor Type: marginal likelihoods (bridgesampling)
+```
+
+---
+
+
+```r
+# wide
+comparison.w &lt;- bayesfactor_models(info.3w, denominator = info.2) 
+```
+
+```
+## Warning: Bayes factors might not be precise.
+## For precise Bayes factors, sampling at least 40,000 posterior samples is recommended.
+```
+
+```
+## Computation of Bayes factors: estimating marginal likelihood, please wait...
+```
+
+```r
+comparison.w
+```
+
+```
+## Bayes Factors for Model Comparison
+## 
+##     Model              BF
+## [1] 1 + SS_c * FQ_c 0.002
+## 
+## * Against Denominator: [2] 1 + SS_c + FQ_c
+## *   Bayes Factor Type: marginal likelihoods (bridgesampling)
+```
+
+
+
+---
+## Priors for testing vs estimtaing
+
+Depending on your focus, you may need different types of priors. What is good for estimation, may not be good for testing two competing hypotheses. 
+
 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

@@ -933,6 +933,15 @@ plot(bf.result2)
 ]
 
 ---
+## Marginal likelihood
+
+A marginal likelihood is a kind of weighted sum of the likelihood, weighted by the possible values of the parameter. How well we can explain the data using all the parameters, weighted by the prior. 
+
+It is hard to calculate for complex models, as it involves lots of integrating. 
+
+$$P(X)=\int_{\theta}P(X|\theta)P(\theta)\mathrm{d}\theta$$
+
+---
 ### using hypothesis
 divides the posterior by the prior (1/evidence to flip)
 
@@ -983,8 +992,9 @@ plot(hypothesis(mr.2, "FQ_c = 0"))
 6. Can be completely disconnected from our typical estimation stats
 ]
 
----
 
+
+---
 
 ```{r}
 info.1 <- 
@@ -1052,6 +1062,8 @@ plot(bf.result.2)
  
  
 ---
+Effects are basically indistinguishable
+
 .pull-left[
 ```{r}
 plot(info.1)
@@ -1093,7 +1105,7 @@ info.3 <-
 via {bayestestR}
 ```{r}
 
-comparison <- bayesfactor_models(info.3, denominator = info.2)
+comparison <- bayesfactor_models(info.3, denominator = info.2) 
 comparison
 ```
 
@@ -1102,4 +1114,48 @@ comparison
 ```{r}
 summary(info.3)
 ```
+
+---
+What happens if we try comparison but using different (wider) priors? 
+What do you think will happen to the comparison with the main effects model that has narrower priors? 
+```{r}
+
+info.3w <- 
+  brm(family = gaussian,
+      happiness ~ 1 + SS_c * FQ_c,
+      prior = c(prior(normal(5, 5), class = Intercept),
+                prior(normal(0, 10), class = b, coef = SS_c),
+                prior(normal(0, 10), class = b, coef = FQ_c),
+                prior(exponential(.5), class = sigma)),
+      iter = 2000, warmup = 1000, chains = 2, cores = 2,
+      data = MR,
+      sample_prior = T,
+      save_pars = save_pars(all = TRUE),
+      file = "info.3w")
+```
+
+
+---
+
+```{r}
+# original 
+comparison <- bayesfactor_models(info.3, denominator = info.2) 
+comparison
+```
+
+---
+
+```{r}
+# wide
+comparison.w <- bayesfactor_models(info.3w, denominator = info.2) 
+comparison.w
+```
+
+
+
+---
+## Priors for testing vs estimtaing
+
+Depending on your focus, you may need different types of priors. What is good for estimation, may not be good for testing two competing hypotheses. 
+
 

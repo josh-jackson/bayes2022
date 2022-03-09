@@ -77,6 +77,16 @@ We need to map the s shaped ogive that goes between (0,1) to linear looking line
 
 Logits are now in a shape similar to a normal regression (ie a line/plane that goes from negative to positive infinity)
 
+---
+## inverse link
+
+It is easier to think of transforming the probabilities but computationally the right side of the equation usually gets transformed. Note these two are equivalent. 
+
+`$$f(p_i) = \alpha + \beta (x_i - \bar x)$$`
+
+`$$p_i = f^{-1}(\alpha + \beta (x_i - \bar x))$$`
+
+You already know this, maybe not in this term, but we can go back and forth between the link and inverse link via the exponential function. 
 
 ---
 ## Maximum Entropy
@@ -4209,6 +4219,10 @@ prior_draws(glm.1) %&gt;%
 
 ]
 
+
+---
+Before we see the data do we think that the event happens all the time time or never? 
+
 ---
 
 
@@ -4234,6 +4248,11 @@ prior_draws(glm.2) %&gt;%
 ```
 
 ![](glm-7_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+
+---
+
+Sees extreme values as a little more likely than equal odds. Is this reasonable? Depends! Maybe we want a prior that is closer to .5, with less mass in the extremes. Try N(0,1)
 
 ---
 
@@ -8403,6 +8422,9 @@ summary(glm.4)
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
 ## scale reduction factor on split chains (at convergence, Rhat = 1).
 ```
+
+---
+Interpretation of coefficients is not straight forward. Easier to plot predictions. 
 
 ---
 
