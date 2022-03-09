@@ -546,7 +546,7 @@ mortality %>%
   select(.epred)
 ```
 ]
-]
+
 
 .pull-right[
 ```{r}
@@ -561,6 +561,7 @@ mortality %>%
 
 
 ---
+.pull-left[
 ```{r, eval = FALSE, message= FALSE, warning=FALSE}
 mortality %>%
   data_grid(IQ_c = seq_range(IQ_c, n = 100)) %>%
