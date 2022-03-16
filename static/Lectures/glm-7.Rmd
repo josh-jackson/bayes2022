@@ -470,6 +470,8 @@ summary(glm.4)
 ---
 Interpretation of coefficients is not straight forward. Easier to plot predictions. 
 
+Why are they hard? 1. Logits, not in natural scale 2. Nonlinear association in natural scale. 3. predicted values depend on multiple variables.
+
 ---
 
 ```{r}
@@ -591,14 +593,14 @@ mortality %>%
 ## Multinomial logistic regression
 When you are predicting more than two groups (aka softmax regression aka categorical regression aka maximum entropy classifier)
 
-Uses a multi-nomial distribution, which is a parent of the binomial distribution. Like the binomial but with more events (think of the bucket tossing example where each bucket has its own p). 
+Uses a multi-nomial distribution, which is a parent of the binomial distribution. Like the binomial but with more events. 
 
 Need to construct K - 1 linear models for K events, similar to constructing number of dummy variables
 
 ---
 ### When would you use this?
 
-Anytime people have more than two choices in some task. Trying to understand different demographic categories (race/ethnicity/gender identitites/etc). 
+Anytime people have more than two choices in some task. Trying to understand different demographic categories (race/ethnicity/gender identities/etc). 
 
 Eg, does 401k amount predict whether someone at 62 is retired/part time/ still working? You could use 401k amount as the DV, with two dummy variables as predictors, but what if you wanted to control for years worked? Very different interpretations depending on what is your DV.  
 
@@ -644,6 +646,7 @@ For K categories, we estimate K -1 linear models. Think of a logistic regression
 
 
 ---
+Intercept only model, where we will get two intercepts, because it is like we have two models
 ```{r}
 glm.5 <-
   brm(family = categorical(link = logit, refcat = 3), # to match up with book
@@ -721,7 +724,6 @@ get_prior(data = d,
 ```
 
 
-
 ---
 ```{r}
 
@@ -743,56 +745,6 @@ glm.6 <-
 summary(glm.6)
 ```
 
----
-### Comparison with logistic
-Only fit 1 and 3 categories. Note how we fit a categorical, which a binomial is a special case, and which bernoulli is an even more special case. 
-
-```{r}
-glm.7 <-
-  brm(family = categorical(link = logit, refcat = 3),
-      career ~ 1 + family_income,
-      prior = c(prior(normal(0, 1), class = Intercept),
-                prior(normal(0, .5), class = b)),
-      iter = 2000, warmup = 1000, cores = 4, chains = 4,
-      data = d %>% filter(career != 2), 
-      file = "glm.7")
-```
-
-
----
-```{r}
-summary(glm.7)
-```
-
----
-
-```{r}
-
-tibble(b0     = -1.78,
-       b1     = -1.34,
-       career_income = c(0,.25,.5,.75,1)) %>% 
-  mutate(logit_mu = b0 + b1 * career_income ) %>%
-  mutate(career   = 1 / (1 + exp(-logit_mu)))
-```
-
----
-```{r}
-summary(glm.6)
-```
-
-
-
----
-```{r}
-
-tibble(b0     = -2.25,
-       b1     = -.89,
-       career_income = c(0,.25,.5,.75,1)) %>% 
-  mutate(logit_mu = b0 + b1 * career_income ) %>%
-  mutate(career   = 1 / (1 + exp(-logit_mu)))
-```
-
-
 
 ---
 ## GLMs for Counts
@@ -802,7 +754,13 @@ Geometric -- number of trials until an event
 
 Survival models  
 
-Mixtures like beta-binomial or Negative Binomial (gamma Poisson)  
+
+---
+## Mixtures
+
+Often the DGP of our data are complex in that there could be multiple reasons someone responds the way they do. Mixture models allows us to fit more than one DGP at a time. 
+
+We will focus on Zero inflated and Hurdle models. These models are helpful whenever there are more zeros in the response variable than one would naturally expect.
 
 ---
 ## Zero-inflated models
@@ -852,7 +810,7 @@ The probability of observing a zero is the probability that the monks didn’t d
 
 $$\operatorname{Pr} (y | y > 0, p, \lambda) = $$
 $$ \operatorname{Pr} (\text{drink} | p) (0) + \operatorname{Pr} (\text{work} | p) \operatorname{Pr} (y | \lambda) = (1 - p) \frac {\lambda^y \exp (- \lambda)}{y!}$$
-Since drinking monks never produce, the expression above is  the chance the monks both work (1-p), and finish y manuscripts
+Since drinking monks never produce, the expression above is the chance the monks both work (1-p), and finish y manuscripts
 
 ---
 
@@ -891,7 +849,6 @@ Noe: When there are no predictors for zi, the brms default is to use the identit
 summary(glm.9)
 ```
 
-
 ---
 Adding predictors. Do not necessarily need to have the same predictors for each process. One can predict the excess zeros, the other can predict the counts. 
 ```{r, eval = FALSE}
@@ -905,11 +862,31 @@ glm.9 <-
       data = zips,
       file = "glm.9")
 ```
-
+Often the associations can go in different directions (because they are modeling different processes!)
 ---
-### Hurdle models/zero augmented
+## Hurdle models/zero augmented
 
 Are also mixure (two-part) models that specifies one process for zero counts and another process for positive counts. The idea is that positive counts occur once a threshold is crossed. 
+
+
+---
+
+```{r}
+glm.9h <- 
+  brm(family = hurdle_poisson,
+      y ~ 1, 
+      prior = c(prior(normal(-1.5, 1), class = Intercept),
+               prior(beta(1, 1), class = hu)),  
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      data = zips,
+      file = "glm.9h")
+
+```
+
+---
+```{r}
+summary(glm.9h)
+```
 
 ---
 ## Ordinal regression models
@@ -928,10 +905,15 @@ common assumption is to treat differences as the same and model as continuous wi
 
 
 
-```{r}
+```{r, echo = FALSE}
 library(rethinking)
 data(Trolley)
 trolley <- Trolley
+p2a <-
+  trolley %>%
+  ggplot(aes(x = response)) +
+  geom_histogram() 
+p2a
 ```
 
 ]
@@ -943,14 +925,14 @@ p2 <-
   count(response) %>%
   mutate(pr_k     = n / nrow(trolley),
          cum_pr_k = cumsum(pr_k)) %>% 
-  ggplot(aes(x = response, y = cum_pr_k, 
+  ggplot(aes(x = response, y = pr_k, 
              fill = response)) +
   geom_line() +
   geom_point(shape = 21, color = "grey92", 
              size = 2.5, stroke = 1) +
-  scale_x_continuous(breaks = 1:7) +
-  scale_y_continuous("cumulative proportion", 
-                     breaks = c(0, .5, 1), limits = c(0, 1)) +
+  scale_x_continuous(breaks = 1:8) +
+  scale_y_continuous(" proportion", 
+                     limits = c(0, .35)) +
   theme(axis.ticks = element_blank(),
         axis.title.y = element_text(angle = 90),
         legend.position = "none")
@@ -958,6 +940,66 @@ p2 <-
 p2
 ```
 ]
+
+---
+Cumulative proportion. Each choice is larger than the previous
+```{r, echo = FALSE}
+p2b <-
+  trolley %>%
+  count(response) %>%
+  mutate(pr_k     = n / nrow(trolley),
+         cum_pr_k = cumsum(pr_k)) %>% 
+  ggplot(aes(x = response, y = cum_pr_k, 
+             fill = response)) +
+  geom_line() +
+  geom_point(shape = 21, color = "grey92", 
+             size = 2.5, stroke = 1) +
+  scale_x_continuous(breaks = 1:8) +
+  scale_y_continuous("cumulative proportion", 
+                     breaks = c(0, .25, .5, .75, 1), limits = c(0, 1.1)) +
+  theme(axis.ticks = element_blank(),
+        axis.title.y = element_text(angle = 90),
+        legend.position = "none")
+
+p2b
+```
+
+---
+Logic:
+Probability of any observation is just counting up the cumulative proportion for values to the left of the cut points. 
+
+Thus option 1 refers to all values up to the first. Option two is values to the left of cut point 2 and to the right of cut point 1. 
+
+We will discuss in terms of the probability of x being less than or equal to some cut point. 
+
+Thus what is the probability of getting a 5? It is the cumulative probability of getting a 5 or less subtracting  the cumulative probability of getting a 4 or less. 
+
+
+
+---
+We can change this into cumulative log odds, where each response value is represented as a logit. 
+
+This changes the x axis, making different cut points that represent the cumulative log odds of getting a 4, for example. 
+
+The cumulative log odds of getting a 7 here cannot be determined because the logit of 1 is infinity. Logit of 0 represents 50% of our values. Logit of -2 almost none, logit of +2 almost all of our values. 
+
+---
+.pull-left[
+We want to estimate the cutpoints
+
+$$\log\left(\dfrac{Pr(y_i)}{Pr(y_i)}\right)=\log\left(\dfrac{Pr(y_i \leq k)}{1-Pr(y_i \leq k)}\right)$$
+]
+
+.pull-right[
+
+```{r, echo = FALSE}
+p2b +  scale_x_continuous(breaks = c(.5,2,3.5,5,6.6), labels = c(-2,-1,0,1,2)) + xlab("cumulative log odds") +  theme(axis.title.y = element_blank(), axis.text.y = element_blank())
+```
+
+
+]
+
+
 
 ---
 
@@ -1044,7 +1086,7 @@ summary(glm.10)
 ```
 
 ---
-
+Bring back into cumulative proportions
 ```{r}
 glm.10 %>% 
 gather_draws(b_Intercept[cut]) %>% 
@@ -1095,14 +1137,14 @@ summary(glm.11)
 
 ---
 ```{r}
-posterior_samples(glm.11) %>% 
-  select(b_action:`b_contact:intention`) %>% 
-  pivot_longer(everything()) %>% 
-  ggplot(aes(x = value, y = name)) +
-  geom_vline(xintercept = 0, alpha = 1/5, linetype = 3) +
-  stat_gradientinterval(.width = .5, size = 1, point_size = 3/2, shape = 21) +
+glm.11 %>% 
+gather_draws(`b_action`,`b_contact`,`b_intention`,`b_action:intention`,`b_contact:intention`) %>% 
+  ggplot(aes(x = .value, y = .variable)) +
+  geom_vline(xintercept = 0, alpha = 1, linetype = 3) +
+  stat_gradientinterval(.width = .95, point_size = 1, shape = 1) +
   scale_x_continuous("marginal posterior", breaks = -5:0 / 4) +
   coord_cartesian(xlim = c(-1.4, 0))
+
 ```
 
 ---
@@ -1198,7 +1240,6 @@ summary(glm.12)
 ```
 
 
-
 ---
 ## Adjacent category /category specific models
 
@@ -1208,15 +1249,14 @@ For example, predicting educational attainment. Negative peer influences may hav
 
 
 
-
-
-
 ---
 ## Ordinal predictors
 
+Say you have an excerise variable: (none, 1 time a month, 1 time a week, multiple times a week, everday). How do you model? Continuous? 
+
 Cant you just model ordinal predictors as a series of dummy variables? 
 
-AKA monotonic effects
+Monotonic. Think about as a compromise between continuous and dummy. We can not assume categories are equidistant with respect to their effect on the response variable (because then we would be using continuous). Instead, the distance between adjacent predictor categories (or integers) is estimated from the data and may vary across categories.
 
 https://cran.r-project.org/web/packages/brms/vignettes/brms_monotonic.html
 
