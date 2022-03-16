@@ -1067,7 +1067,7 @@ $\alpha_k$ are our k intercepts, make up for #categories minus 1.
 
 
 ---
-
+Note we specified a categorical one in the model statement. The brms code uses the term cumulative. And SR uses Ordered logit. All the same. 
 ```{r}
 glm.10 <- 
   brm(family = cumulative,
@@ -1110,8 +1110,17 @@ glm.10 %>%
 ---
 ### adding predictors
 
+We are going to add predictors with our phi coefficient. What happens to our cumulative log odds when this occurs? 
+
+```{r echo=FALSE, out.height=550, out.width= 850}
+knitr::include_graphics("../media/cumlog.gif")
+```
+
+
+
+----
 $$ \text{response}_i  \sim \operatorname{Categorical} (\mathbf p) $$
-$$ \text{logit}(p_k)      = \alpha_k - \phi_i $$
+$$ \text{logit}(p_k)      = \alpha_k + \phi_i $$
 $$  \phi_i = \beta_1 \text{action}_i + \beta_2 \text{contact}_i + \beta_3 \text{intention}_i + \beta_4 (\text{action}_i \times \text{intention}_i) + \beta_5 (\text{contact}_i \times \text{intention}_i) $$
 $$\alpha_k               \sim \operatorname{Normal}(0, 1.5) $$
 $$\beta_1, ..., \beta_5  \sim \operatorname{Normal}(0, 0.5) $$

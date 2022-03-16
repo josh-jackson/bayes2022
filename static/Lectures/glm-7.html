@@ -9093,7 +9093,7 @@ Where `\(\phi\)` is a stand in for regression terms. Right now it is an intercep
 
 
 ---
-
+Note we specified a categorical one in the model statement. The brms code uses the term cumulative. And SR uses Ordered logit. All the same. 
 
 ```r
 glm.10 &lt;- 
@@ -9195,8 +9195,15 @@ glm.10 %&gt;%
 ---
 ### adding predictors
 
+We are going to add predictors with our phi coefficient. What happens to our cumulative log odds when this occurs? 
+
+&lt;img src="../media/cumlog.gif" width="850" height="550" /&gt;
+
+
+
+----
 $$ \text{response}_i  \sim \operatorname{Categorical} (\mathbf p) $$
-$$ \text{logit}(p_k)      = \alpha_k - \phi_i $$
+$$ \text{logit}(p_k)      = \alpha_k + \phi_i $$
 $$  \phi_i = \beta_1 \text{action}_i + \beta_2 \text{contact}_i + \beta_3 \text{intention}_i + \beta_4 (\text{action}_i \times \text{intention}_i) + \beta_5 (\text{contact}_i \times \text{intention}_i) $$
 $$\alpha_k               \sim \operatorname{Normal}(0, 1.5) $$
 $$\beta_1, ..., \beta_5  \sim \operatorname{Normal}(0, 0.5) $$
@@ -9273,7 +9280,7 @@ gather_draws(`b_action`,`b_contact`,`b_intention`,`b_action:intention`,`b_contac
 ##  - See help("geom_slabinterval") for more information.
 ```
 
-![](glm-7_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](glm-7_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -9288,11 +9295,11 @@ conditional_effects(glm.11, categorical =TRUE)
 ## Please use argument 'conditions' instead.
 ```
 
-![](glm-7_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-63-2.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-63-3.png)&lt;!-- --&gt;
+![](glm-7_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-64-2.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-64-3.png)&lt;!-- --&gt;
 
 ---
 
-![](glm-7_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](glm-7_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 
 
 

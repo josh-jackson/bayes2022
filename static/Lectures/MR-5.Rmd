@@ -264,7 +264,6 @@ Can you write this model equation? Assume two IVs.
 
 
 ```{r, message = FALSE}
-MR <-read_csv("https://raw.githubusercontent.com/josh-jackson/bayes/master/hw3.csv")
 MR <- MR %>% 
   mutate(SS_c = `schoool success` - mean(`schoool success`),
          FQ_c = `friendship quality` - mean(`friendship quality`),
