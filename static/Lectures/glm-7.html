@@ -8976,11 +8976,11 @@ no degree, hs degree, some college, college degree
 discrete, defined order, distance between categories is unknown
 
 common assumption is to treat differences as the same and model as continuous with guassian 
+
 ---
 ### log cumulative odds link
 
-.pull-left[ The cumulative probability of a value is the probability of that value or any smaller value. In the context of ordered categories, the cumulative probability of 3 is the sum of the probabilities of 3, 2, and 1
-
+.pull-left[ 
 
 
 
@@ -8996,9 +8996,16 @@ common assumption is to treat differences as the same and model as continuous wi
 ![](glm-7_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
 ]
 
----
-Cumulative proportion. Each choice is larger than the previous
+---&gt;
+.pull-left[Cumulative proportion. Each choice is larger than the previous
+
 ![](glm-7_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+]
+
+
+.pull-right[
+The cumulative probability of a value is the probability of that value or any smaller value. In the context of ordered categories, the cumulative probability of 3 is the sum of the probabilities of 3, 2, and 1
+]
 
 ---
 Logic:
@@ -9019,6 +9026,8 @@ This changes the x axis, making different cut points that represent the cumulati
 
 The cumulative log odds of getting a 7 here cannot be determined because the logit of 1 is infinity. Logit of 0 represents 50% of our values. Logit of -2 almost none, logit of +2 almost all of our values. 
 
+Why logits? Because we want to predict an ordered outcome. 
+
 ---
 .pull-left[
 We want to estimate the cutpoints
@@ -9027,12 +9036,6 @@ We want to estimate the cutpoints
 ]
 
 .pull-right[
-
-
-```
-## Scale for 'x' is already present. Adding another scale for 'x', which will
-## replace the existing scale.
-```
 
 ![](glm-7_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
@@ -9083,7 +9086,7 @@ trolley %&gt;%
 ---
 
 $$\text{response}_i  \sim \operatorname{Categorical} (\mathbf p) $$
-$$\text{logit}(p_k)  = \alpha_k - \phi $$ 
+$$\text{logit}(p_k)  = \alpha_k + \phi $$ 
 $$\phi               = 0 $$
 `$$\alpha_k           \sim \operatorname{Normal}(0, 1.5)$$`
 
@@ -9195,9 +9198,7 @@ glm.10 %&gt;%
 ---
 ### adding predictors
 
-We are going to add predictors with our phi coefficient. What happens to our cumulative log odds when this occurs? 
-
-&lt;img src="../media/cumlog.gif" width="850" height="550" /&gt;
+&lt;img src="../media/cumlog.gif" width="800" height="500" /&gt;
 
 
 
@@ -9272,34 +9273,22 @@ gather_draws(`b_action`,`b_contact`,`b_intention`,`b_action:intention`,`b_contac
   coord_cartesian(xlim = c(-1.4, 0))
 ```
 
-```
-## Warning: fill_type cannot be auto-detected in R &lt; 4.2.0.
-##  - Falling back to fill_type = "segments".
-##  - For best results, if you are using a graphics device that
-##    supports gradients, set fill_type = "gradient".
-##  - See help("geom_slabinterval") for more information.
-```
-
-![](glm-7_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
-
 ---
 
+![](glm-7_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+
+---
 
 
 ```r
 conditional_effects(glm.11, categorical =TRUE)
 ```
 
-```
-## Warning: Interactions cannot be plotted directly if 'categorical' is TRUE.
-## Please use argument 'conditions' instead.
-```
-
-![](glm-7_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-64-2.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-64-3.png)&lt;!-- --&gt;
+![](glm-7_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-65-2.png)&lt;!-- --&gt;![](glm-7_files/figure-html/unnamed-chunk-65-3.png)&lt;!-- --&gt;
 
 ---
 
-![](glm-7_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
+![](glm-7_files/figure-html/unnamed-chunk-66-1.png)&lt;!-- --&gt;
 
 
 
@@ -9392,9 +9381,13 @@ For example, predicting educational attainment. Negative peer influences may hav
 
 Say you have an excerise variable: (none, 1 time a month, 1 time a week, multiple times a week, everday). How do you model? Continuous? 
 
-Cant you just model ordinal predictors as a series of dummy variables? 
+Cant you just model ordinal predictors as a series of dummy variables? But what is we want to force the inherent order? 
 
 Monotonic. Think about as a compromise between continuous and dummy. We can not assume categories are equidistant with respect to their effect on the response variable (because then we would be using continuous). Instead, the distance between adjacent predictor categories (or integers) is estimated from the data and may vary across categories.
+
+
+---
+## extra readings
 
 https://cran.r-project.org/web/packages/brms/vignettes/brms_monotonic.html
 

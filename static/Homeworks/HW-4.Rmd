@@ -1,0 +1,32 @@
+---
+title: "HW-4"
+output: html_document
+---
+
+We will continue to use the mortality dataset from the GLM class for our next homework. 
+
+```{r}
+"https://raw.githubusercontent.com/josh-jackson/bayes/master/static/Lectures/mortality.csv"
+```
+
+
+1. Run a logistic regression where premature mortality is predicted by risky behavior. Interpret the coefficients in terms of 
+
+a. Logits
+b. Logits converted to odds
+c. NHST test using a confidence interval of your choosing
+d. NHST test using Probability of Direction
+e. NHST test using ROPE
+f. NHST test using Bayes Factor
+
+2. Rerun the model in #1 but use three different prior for the regression coefficient compared for #1. First, try a prior where the SD is of the regression coefficient is wide. Second, try a prior that is very narrow. Third, try a prior that is not centered on zero. 
+
+For each of the 4 ways we could test a hypothesis, which one's seem most influenced by your prior choice?
+
+3. Create predicted values for different levels of risky behavior. What is my probability of premature mortality if I was 1 sd deviation below the mean of risky behavior? 2 SDs above? Make sure to include CIs around these estimates. 
+
+4. Graph the predicted relationship between risky behavior and premature mortality.
+
+5. Run a new model with risky behavior AND IQ as predictors of premature mortality. Calculate psis-loo and waic for this model and use them to compare with the previous model from #1. Which model is a better model? 
+
+6. Graph the effect of IQ from the model in #5. Include both the expected value confidence band and the prediction confidence band. 

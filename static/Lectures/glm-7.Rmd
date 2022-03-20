@@ -898,11 +898,11 @@ no degree, hs degree, some college, college degree
 discrete, defined order, distance between categories is unknown
 
 common assumption is to treat differences as the same and model as continuous with guassian 
+
 ---
 ### log cumulative odds link
 
-.pull-left[ The cumulative probability of a value is the probability of that value or any smaller value. In the context of ordered categories, the cumulative probability of 3 is the sum of the probabilities of 3, 2, and 1
-
+.pull-left[ 
 
 
 ```{r, echo = FALSE}
@@ -941,8 +941,9 @@ p2
 ```
 ]
 
----
-Cumulative proportion. Each choice is larger than the previous
+--->
+.pull-left[Cumulative proportion. Each choice is larger than the previous
+
 ```{r, echo = FALSE}
 p2b <-
   trolley %>%
@@ -963,6 +964,12 @@ p2b <-
 
 p2b
 ```
+]
+
+
+.pull-right[
+The cumulative probability of a value is the probability of that value or any smaller value. In the context of ordered categories, the cumulative probability of 3 is the sum of the probabilities of 3, 2, and 1
+]
 
 ---
 Logic:
@@ -983,6 +990,8 @@ This changes the x axis, making different cut points that represent the cumulati
 
 The cumulative log odds of getting a 7 here cannot be determined because the logit of 1 is infinity. Logit of 0 represents 50% of our values. Logit of -2 almost none, logit of +2 almost all of our values. 
 
+Why logits? Because we want to predict an ordered outcome. 
+
 ---
 .pull-left[
 We want to estimate the cutpoints
@@ -992,7 +1001,7 @@ $$\log\left(\dfrac{Pr(y_i)}{Pr(y_i)}\right)=\log\left(\dfrac{Pr(y_i \leq k)}{1-P
 
 .pull-right[
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 p2b +  scale_x_continuous(breaks = c(.5,2,3.5,5,6.6), labels = c(-2,-1,0,1,2)) + xlab("cumulative log odds") +  theme(axis.title.y = element_blank(), axis.text.y = element_blank())
 ```
 
@@ -1057,7 +1066,7 @@ p3 <-
 ---
 
 $$\text{response}_i  \sim \operatorname{Categorical} (\mathbf p) $$
-$$\text{logit}(p_k)  = \alpha_k - \phi $$ 
+$$\text{logit}(p_k)  = \alpha_k + \phi $$ 
 $$\phi               = 0 $$
 $$\alpha_k           \sim \operatorname{Normal}(0, 1.5)$$
 
@@ -1110,9 +1119,7 @@ glm.10 %>%
 ---
 ### adding predictors
 
-We are going to add predictors with our phi coefficient. What happens to our cumulative log odds when this occurs? 
-
-```{r echo=FALSE, out.height=550, out.width= 850}
+```{r echo=FALSE, out.height=500, out.width= 800}
 knitr::include_graphics("../media/cumlog.gif")
 ```
 
@@ -1145,7 +1152,7 @@ summary(glm.11)
 ```
 
 ---
-```{r}
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
 glm.11 %>% 
 gather_draws(`b_action`,`b_contact`,`b_intention`,`b_action:intention`,`b_contact:intention`) %>% 
   ggplot(aes(x = .value, y = .variable)) +
@@ -1158,8 +1165,20 @@ gather_draws(`b_action`,`b_contact`,`b_intention`,`b_action:intention`,`b_contac
 
 ---
 
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+glm.11 %>% 
+gather_draws(`b_action`,`b_contact`,`b_intention`,`b_action:intention`,`b_contact:intention`) %>% 
+  ggplot(aes(x = .value, y = .variable)) +
+  geom_vline(xintercept = 0, alpha = 1, linetype = 3) +
+  stat_gradientinterval(.width = .95, point_size = 1, shape = 1) +
+  scale_x_continuous("marginal posterior", breaks = -5:0 / 4) +
+  coord_cartesian(xlim = c(-1.4, 0))
 
-```{r}
+```
+
+---
+
+```{r, warning = FALSE, message= FALSE}
 conditional_effects(glm.11, categorical =TRUE)
 ```
 
@@ -1263,9 +1282,13 @@ For example, predicting educational attainment. Negative peer influences may hav
 
 Say you have an excerise variable: (none, 1 time a month, 1 time a week, multiple times a week, everday). How do you model? Continuous? 
 
-Cant you just model ordinal predictors as a series of dummy variables? 
+Cant you just model ordinal predictors as a series of dummy variables? But what is we want to force the inherent order? 
 
 Monotonic. Think about as a compromise between continuous and dummy. We can not assume categories are equidistant with respect to their effect on the response variable (because then we would be using continuous). Instead, the distance between adjacent predictor categories (or integers) is estimated from the data and may vary across categories.
+
+
+---
+## extra readings
 
 https://cran.r-project.org/web/packages/brms/vignettes/brms_monotonic.html
 
