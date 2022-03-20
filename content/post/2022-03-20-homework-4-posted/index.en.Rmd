@@ -1,0 +1,20 @@
+---
+title: homework 4 posted
+author: Package Build
+date: '2022-03-20'
+slug: homework-4-posted
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-03-20T11:01:09-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+Due April 4th
