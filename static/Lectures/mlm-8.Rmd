@@ -1,0 +1,2222 @@
+---
+title: "MLM"
+author: Josh Jackson
+date: "11-24-20"
+output:
+  xaringan::moon_reader:
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    css: xaringan-themer.css
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      ratio: "16:9"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_light(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Droid Mono"),
+)
+
+library(tidyverse)
+library(broom)
+library(tidybayes)
+library(modelr)
+```
+
+<style type="text/css">
+.remark-slide-content {
+    font-size: 30px;
+    padding: 1em 4em 1em 4em;
+}
+
+.small{ 
+  font-size: 80%}
+.tiny{
+  font-size: 65%}
+</style>
+
+## This time
+
+MLM bayes Style
+
+---
+## MLM review 
+
+$${Y}_{i} = b_{0} + b_{1}X_{i} +  ... +\epsilon_{i}$$
+
+$${Y}_{ij} = b_{0} + b_{1}X_{ij} + ... +\epsilon_{i}$$
+Where j refers to some clustering or grouping variable and i refers to the observations within j
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+data <- "https://raw.githubusercontent.com/josh-jackson/bayes/master/mlm.csv"
+
+mlm <- read.csv(data) 
+
+```
+
+
+```{r, echo = FALSE}
+library(tidyverse)
+sample_n_of <- function(data, size, ...) {
+  dots <- quos(...)
+  
+  group_ids <- data %>% 
+    group_by(!!! dots) %>% 
+    group_indices()
+  
+  sampled_groups <- sample(unique(group_ids), size)
+  data %>% 
+    filter(group_ids %in% sampled_groups)
+}
+```
+
+---
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+
+set.seed(114)
+mlm %>%
+  sample_n_of(20, ID) %>% 
+ggplot(aes(x = week, y = CON, group = ID, fill = ID)) + geom_point(aes(color = factor(ID))) + stat_smooth(aes(color = factor(ID)),method = "lm", se = FALSE) +
+  xlab("X") + ylab("Y") + theme(legend.position = "none")
+
+```
+
+
+---
+### Empty model
+
+Level 1
+$${Y}_{ij} = \beta_{0j}  + \varepsilon_{ij}$$
+
+Level 2
+$${\beta}_{0j} = \gamma_{00} + U_{0j}$$
+
+$${U}_{0j} \sim \mathcal{N}(0, \tau_{00}^{2})$$
+$${e}_{ij} \sim \mathcal{N}(0, \sigma^{2})$$
+
+---
+
+
+  
+.pull-left[
+```{r, echo = FALSE, warning = FALSE}
+
+mlm %>%
+  sample_n_of(8, ID) %>% 
+ggplot(aes(x = week, y = CON, group = ID)) + geom_point(aes(color = factor(ID))) + stat_smooth(aes(color = factor(ID)), method = "lm", formula=y~1, se = FALSE) + xlab("X") + ylab("Y") + theme(legend.position = "none")
+```
+]
+
+.pull-right[
+  $${Y}_{ij} = \gamma_{00} + U_{0j}  + \varepsilon_{ij}$$
+
+Akin to ANOVA if we treat $U_{0j}$ as between subjects variance & $\varepsilon_{ij}$ as within subjects variance. 
+]
+
+---
+## Random and fixed effects
+
+.pull-left[
+Level 1:
+$${Y}_{ij} = \beta_{0j}  + \varepsilon_{ij}$$
+
+Level 2:
+$${\beta}_{0j} = \gamma_{00} + U_{0j}$$
+Combined:
+$${Y}_{ij} = \gamma_{00} + U_{0j}  + \varepsilon_{ij}$$
+]
+
+.pull-right[
+$U_{0j}$ is considered a random effect, as it is varies across our grouping
+
+$\gamma_{00}$ is considered a fixed effect, as it is what is fixed (average) across our grouping
+]
+
+---
+## Level 1 predictors
+
+Level 1 is where you have data that repeats within your grouping or clustering data. Is your cluster classrooms? Then students are level 1. Is your cluster people? Then observations are level 1. 
+
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
+Notice on the subscript of X that these predictors vary across group (j) and within the group (i) So if your grouping (j) is people, then i refers to different observations. 
+
+---
+
+Level 2 takes the parameters at level 1 and decomposes them into a fixed component ($\gamma$) that reflects the average and, if desired, the individual deviations around that fixed effect (U).
+
+level 1
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
+
+level 2
+$${\beta}_{0j} = \gamma_{00} + U_{0j}$$  
+$${\beta}_{1j} = \gamma_{10}$$  
+
+
+
+---
+## Predictions for a person
+.pull-left[
+Level 1:
+ 
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
+Level 2:  
+$${\beta}_{0j} = \gamma_{00} + U_{0j}$$
+
+
+$${\beta}_{1j} = \gamma_{10} + U_{1j}$$  
+
+Combined
+$${Y}_{ij} = \gamma_{00} + \gamma_{10}(X_{ij})+ U_{0j} + U_{1j}(X_{ij}) + \varepsilon_{ij}$$
+]
+.pull-right[
+Can think of a persons score divided up into a fixed component as well as the random component. 
+
+$${\beta}_{16} = \gamma_{10} \pm U_{16}$$ 
+]
+
+
+---
+## Error structure
+The residual structure, where the random effects are again normally distributed with a mean of zero, but this time one must also consider covariance in addition to variance. 
+
+$$\begin{pmatrix} {U}_{0j} \\ {U}_{1j} \end{pmatrix}
+\sim \mathcal{N} \begin{pmatrix} 
+  0,      \tau_{00}^{2} & \tau_{01}\\ 
+  0,  \tau_{01} & \tau_{10}^{2}
+\end{pmatrix}$$
+
+Note that it is possible to have a different error structure for the random effects
+
+$${e}_{ij} \sim \mathcal{N}(0, \sigma^{2})$$
+
+---
+## Multiple level 1 predictors
+
+Level 1:
+ 
+$${Y}_{ijk} = \beta_{0j}  + \beta_{1j}X_{ij} + \beta_{2j}Z_{ik} + \varepsilon_{ijk}$$
+Level 2:  
+$${\beta}_{0j} = \gamma_{00} + U_{0j}$$
+
+$${\beta}_{1j} = \gamma_{10} + U_{1j}$$ 
+$${\beta}_{2k} = \gamma_{20} + U_{2k}$$
+
+---
+## Level 2 predictors
+.small[
+Level 1: 
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
+Level 2: 
+$${\beta}_{0j} = \gamma_{00} + \gamma_{01}G_{j} +   U_{0j}$$  
+$${\beta}_{1j} = \gamma_{10} + U_{1j}$$  
+]
+
+Combined
+  $${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + U_{0j} + U_{1j}(Time_{ij}) + \varepsilon_{ij}$$
+  $${Y}_{ij} = [\gamma_{00} + \gamma_{01}G_{j}+ U_{0j}]  + [(\gamma_{10}  + U_{1j})(Time_{ij})] + \varepsilon_{ij}$$
+
+---
+## Cross level interactions
+
+.small[
+level 1: 
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
+Level 2: 
+$${\beta}_{0j} = \gamma_{00} + \gamma_{01}G_{j} +   U_{0j}$$  
+$${\beta}_{1j} = \gamma_{10} + \gamma_{11}G_{j} + U_{1j}$$  
+]
+
+Combined
+  $${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + \gamma_{11}(G_{j}*Time_{ij}) +  U_{0j} + U_{1j}(Time_{ij}) + \varepsilon_{ij}$$
+
+$${Y}_{ij} = [\gamma_{00} + U_{0j} +\gamma_{01}G_{j}] + [(\gamma_{10}  + \gamma_{11}G_{j}+  U_{1j})(Time_{ij})] + \varepsilon_{ij}$$
+
+---
+## Centering
+
+As a rule, each level-1 predictor is usually really 2 predictor variables. It is important to separate within-group from between group variance. Failing to do so will "smush" between and within variance to level 1.
+
+Example: student SES at level 1, with schools at level 2. 
+Some kids have more money than other kids in their school
+Some schools have more money than other schools
+
+Fortunately it is easy to separate this
+
+---
+
+Level 1: 
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}(X_{ij}- \bar{X_j}) + \varepsilon_{ij}$$
+
+Level 2: 
+$${\beta}_{0j} = \gamma_{00} + \bar{X_j} +   U_{0j}$$ 
+
+$${\beta}_{1j} = \gamma_{10} + \bar{X_j} + U_{1j}$$ 
+
+---
+## MLM as default and make it maximum
+
+If you have data like this you should analyze like this! If you don't, then you are losing information (GEE being a potential exception).
+
+The question often is about which random effects to fit. There are multiple opinions, but mine is to start maximum, and then work downward (ie simplify) if necessary/consistent with theory. It doesn't really hurt to include them, especially within Bayesian estimation! 
+
+
+
+---
+
+# MLM intuitions
+
+Anytime you have repeated DVs you should use MLM as opposed to doing aggregation outside the model. While that should be your default, it is helpful to conceptualize why it is helpful.
+
+1. Aggregation is bad 
+2. Regressions within regressions (ie coefficients as outcomes) 
+3. Variance decomposition  
+4. Learning from other data through pooling/shrinkage
+5. Parameters that depend on parameters
+
+
+```{r, message = FALSE}
+library(tidyverse)
+
+simp<- tribble(
+  ~ID, ~group,  ~test.score, ~study,
+1,1,5,1,
+2,1,7,3,
+3,2,4,2,
+4,2,6,4,
+5,3,3,3,
+6,3,5,5,
+7,4,2,4,
+8,4,4,6,
+9,5,1,5,
+10,5,3,7)
+```
+
+---
+```{r, echo=FALSE}
+simp %>% 
+ggplot(aes(x=study, y=test.score)) +
+    geom_point(aes(colour = factor(group)))
+```
+
+---
+ What is the between person association between study and score? 
+```{r, echo = FALSE, message=FALSE}
+simp.1<- tribble(
+  ~ID, ~group,  ~test.score, ~study,
+  1,1,6,2,
+  2,2,5,3,
+  3,3,4,4,
+  4,4,3,5,
+  5,5,2,6)
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+simp.1 %>% 
+ggplot(aes(x=study, y=test.score)) +
+    geom_point() +    
+    geom_smooth(method=lm, se=FALSE) +
+  geom_point(data = simp, aes(colour = factor(group)))
+```
+
+---
+What is the within person association?
+
+```{r, echo = FALSE, message=FALSE}
+simp %>% 
+ggplot(aes(x=study, y=test.score, group = group)) +
+    geom_point(aes(colour = factor(group))) +   
+    geom_smooth(aes(colour = factor(group)),method=lm,se=FALSE)
+```
+
+---
+## 1. Aggregation obscures hypotheses
+
+Between person H1: Do students who study more get better grades?   
+
+Within person H2: When a student studies, do they get better grades?
+			        	
+H1 and H2 are independent from one another!
+
+---
+
+Think of our variables in these terms too. Long format. Level 1 (observation) repeats, level 2 (people) is constant across people. 
+
+If you get confused you can always look at your data! 
+
+```{r, echo = FALSE, message=FALSE}
+ex<- tribble(
+  ~ID, ~grade, ~test.score, ~study,
+  1,3,6,2,
+  1,3,5,3,
+  1,3,4,4,
+  2,4,3,5,
+  2,4,2,6,
+  2,4,2,6)
+ex
+```
+
+
+---
+## 2. Regressions within regressions 
+
+Regression inception. MLM is multiple simple regressions jammed together into a single model. 
+
+$${Y}_{ij} = \beta_{0j}  + \beta_{NEWDVj}X_{ij} + \varepsilon_{ij}$$
+The subscript NEWDVj indicates that people have different values of the regression coefficient. That vector of values can then be predicted, just like a normal, simple regression equation. 
+
+level 2
+$${\beta}_{0j} = \gamma_{00} + U_{0j}$$  
+$${\beta}_{NEWDVj} = \gamma_{10} + U_{1j}$$  
+
+
+---
+We want to model both associations -- the observation level and the average/fixed simultaneously. 
+
+You can see how these could be two regression equations. 
+1. Does studying help *you*? 
+2. Do people who study have better test scores? 
+
+$scores_{t} = bo + b1*S$ (bo = your average when study (S) = 0, b1 = how you change in scores when you study compared to not studying)
+
+$scores_{i} = bo + b1*S$ (bo = average of all people when S = 0, b1 = expected difference when people study (1 unit more) compared to when they don't)
+
+---
+
+```{r, echo = FALSE, messages=FALSE, warning = FALSE}
+ggplot(mlm, aes(x = week, y = SMN7, group = ID)) + geom_line() +  geom_point() + facet_wrap( ~ ID) +ylab("test score") + xlab("study")
+
+```
+
+---
+
+```{r, echo = FALSE, message=FALSE, warning = FALSE}
+ggplot(mlm, aes(x = week, y = SMN7)) + geom_point() + stat_smooth(method="lm") +ylab("test score") + xlab("study") +  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+```
+
+---
+Combine levels into one model
+
+L1
+$$Y_{ti} = \beta_{0i} + \beta_{1i}X_{ti} + \varepsilon_{ti}$$
+The subscript i means that people can have different values for $\beta_{0}$ and $\beta_{1}$
+
+
+---
+### Level 1 coefficient becomes the DV for level 2
+
+L1
+$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+      
+L2
+$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$
+$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$
+Our B0 coefficient is the intercept, and is interpreted when our predictors = 0. People differ on this effect, seen with the i subscript. We can ask questions (with simple regressions) about that random variable. 
+
+---
+$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+      
+$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$
+$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$
+There is some average effect ( $\gamma_{00}$ ; fixed effect) that people vary around like an intercept. You can put in predictors (e.g., Age) and there is person specific residual ( $U_{0i}$ ). 
+
+---
+### Residuals and random effects 
+
+L1: $$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+      
+L2: $$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$
+$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$
+
+Together a person's intercept ( $\beta_{0i}$ ) or slope ( $\beta_{1i}$ ) is made up of the fixed effect, any regression coefficients and $U_{0i}$ and $U_{1i}$ reflect deviations from the fixed effect (plus any predictors). 
+
+Josh's test score $\beta_{0i} = 10$ = avg score ( $\gamma_{00} = 5$ ) + age effect ( $\gamma_{01} = -2$ ) + random effect ( $U_{0i} = 7$ )
+
+
+---
+
+Distribution of person specific estimates makes up the fixed (average) effect. Us are deviations around the average effect. 
+
+```{r, echo=FALSE}
+mlm %>% group_by(ID) %>%
+  do(avg = tidy(lm(SMN7 ~ 1, data = .))) %>% 
+  unnest(avg) %>% 
+  ggplot(aes(x = estimate)) +
+  stat_dotsinterval() + ylab("density")
+```
+
+
+
+---
+# 3. Variance decomposition
+
+
+To the extent that we can put variance into different "piles" we will have more explained variance and less unexplained variance. Less unexplained variance means our model fits better
+
+---
+
+Fit a simple model that does not include study time.  
+L1  
+$$Y_{t i} = \beta_{0i} +  \varepsilon_{ti}$$
+      
+L2
+$$\beta_{0i} = \gamma_{00} + U_{0i}$$
+Combined 
+$$Y_{t i} =  \gamma_{00} + U_{0i} +  \varepsilon_{ti}$$
+      
+---
+People differ in the average effect
+```{r, echo = FALSE, message=FALSE, warning = FALSE}
+
+set.seed(11)
+ex.random <- mlm %>% 
+  dplyr::select(ID) %>% 
+  distinct %>% 
+  sample_n(3) 
+
+example2 <-
+  left_join(ex.random, mlm)  
+  
+g2<- ggplot(example2,
+   aes(x = week, y = SMN7, group = ID)) +  geom_point() + stat_smooth(method="lm", formula=y~1, se = FALSE) + facet_wrap( ~ID) +
+  geom_hline(yintercept = .13) +  ylab("test score") + xlab("study amount") +
+  geom_label(label="gamma_00 ",  x=1,y=.13,
+    label.size = 0.15) 
+g2
+```
+
+---
+
+Fit a model that includes study time. 
+
+L1
+$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+      
+L2
+$$\beta_{0i} = \gamma_{00} + U_{0i}$$
+$$\beta_{1i} = \gamma_{10} + U_{1i}$$
+Combined 
+$$Y_{t i} =  \gamma_{00} +  \gamma_{10}Study_{ti} + U_{0i} + U_{1i}Study_{ti} + \varepsilon_{ti}$$
+
+---
+```{r, echo = FALSE, message= FALSE, warning=FALSE}
+ob.var <- mlm %>% 
+  filter(ID %in% c("99", "67","82", "110")) 
+
+example3 <-
+  left_join(ob.var, mlm)  
+  
+ggplot(example3,
+   aes(x = week, y = SMN7, group = ID)) +  geom_point() + stat_smooth(method="lm", se = F) + facet_wrap( ~ID) +  ylab("test score") + xlab("study amount") 
+```
+
+---
+### variance decomposition
+
+By fitting random intercept (people differ on their average score) and random slopes (people differ in how studying relates to test scores) we will get fewer residuals!  Fewer residuals = better model fit.
+
+For standard regression, we think of error as existing in one big bucket called $\varepsilon$ . Everything that we do not know goes into that bucket, from measurement error to unmeasured important factors. 
+
+For MLMs we will be breaking up unexplained variance ( $\varepsilon$ ) into multiple buckets ( $U_0$ + $U_1$ + $e_{ti}$ and potentially more).
+
+
+---
+
+Random effects used to be error, but they are going to be useful going forward. They index how much people DIFFER on some effect. e.g. does everyone benefit from studying the same?  
+
+We will treat them as variables themselves e.g. individual/group differences. By including random effects (Us) you making a claim that every group/cluster/not does *not* have the same $\gamma$ i.e. people differ. 
+
+We can relate the random effects to other random effects e.g., do people who tend to have high scores benefit more or less from studying?  
+
+---
+# 4. Learning via shrinkage
+
+We treat our group variable as coming from a population. All groups are alike (because they are from the same population), but different in their own way. Because of this it is helpful to use information from other groups to help make predictions. 
+
+We do this in standard regression where we make predictions based on values not only using binned data from X but from the whole dataset. A similar analogy for MLM is running a regression for each group. We want to pool information as this leads to better predictions as we are not overfitting our data! 
+
+---
+
+
+L1
+$$Y_{ti} = \beta_{0i} +  \varepsilon_{ti}$$
+L2
+$$\beta_{0} = \gamma_{00} + U_{0i}$$
+ 
+Where does $U_{0i}$ come from? If we calculated each by hand, through taking the average test score for each person i and subtracting that from the grand mean test score, would that equal $U_{0i}$ ?
+ 
+---
+## Complete, partial and no pooling
+
+Complete pooling assumes everyone is the same, with $U_{0i}$ being zero for everyone. $Y_{t i} =  \gamma_{00} +  \varepsilon_{ti}$ 
+
+This is standard ANOVA type model. Everyone who is in a group is thought to be the same. Why do scores differ within a group? Error. Everyone is equally exchangable. 
+
+---
+No pooling is if we calculate every person's effect with a separate regression, subtracting out the grand mean average. So rather than a single $\gamma_{00}$, we have as many as there are people/groups. 
+
+Inefficient in that we are not learning from anyone's data. Every person/group is treated as different. But people may differ. Maybe not everyone who studies benefits. Maybe not everyone demonstrates the experimental effect. 
+
+---
+Partial pooling is in the middle, a weighted average between the two. For those with fewer tests there is less information for a particular individual. So we borrow information from others in the data. We "learn" from them. 
+
+If someone has a lot of data, their weighted average is closer to no pooling. Why? Because they have a lot of information already, so we don't need to learn as much.  
+
+Because of partial pooling these individual estimates are better as this procedure prevents over and under fitting of your data, leading to increased out of sample predictions. 
+
+---
+Complete pooling
+
+```{r, echo = FALSE, message=FALSE, warning = FALSE}
+ggplot(mlm, aes(x = week, y = SMN7)) + geom_point() + stat_smooth(method="lm") +ylab("test score") + xlab("study") +  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+```
+
+---
+No Pooling
+
+```{r, echo = FALSE, messages=FALSE, warning = FALSE}
+ggplot(mlm, aes(x = week, y = SMN7, group = ID)) + geom_line() +  geom_point() + facet_wrap( ~ ID) +ylab("test score") + xlab("study")
+
+```
+
+
+---
+Partial pooling aka shrinkage
+
+```{r, echo = FALSE, message = FALSE}
+library(viridis)
+ggplot(mlm, aes(x = week, y = SMN7, group = ID, colour = ID)) + stat_smooth(method = "lm", se = FALSE, alpha = .5) +scale_color_viridis()+  ylab("test score") + xlab("study amount") + geom_point()
+```
+
+
+---
+## 5. Parameters that depend on other parameters
+
+How do we figure out the amount of pooling? The extent of shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. We are going to learn the prior based on the data. This is known as a hyperprior
+
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
+$$\mu_i  = \beta_{0[i]}$$ 
+
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+
+---
+## Hyperprior
+
+We now have a prior for the population of effects. This is a little different from what we are used to. We typically put a prior directly on parameters. Here, because are using a multi-level model, we are interested in the population of intercepts, not just a single intercept. 
+
+Intercept in simple regression --> a (prior/posterior) distribution of possible scores
+
+Intercept in mlm --> a distribution of group/clusters of intercepts. 
+
+Note how the population we are sampling from can have some distribution (mu, sigma), and that is different from the observed distribution of mu or the distribution of sigma
+
+
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(brms)
+```
+
+
+```{r}
+mlm.1 <- 
+  brm(family = gaussian,
+      CON ~ 1 + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.1")
+```
+
+---
+
+```{r}
+summary(mlm.1)
+```
+
+---
+Notice we have one less paramter we are estimating. 
+```{r}
+mlm.2 <- 
+  brm(family = gaussian,
+      CON ~ 1 ,
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.2")
+```
+
+---
+```{r}
+summary(mlm.2)
+```
+
+---
+```{r}
+mlm.1 <- add_criterion(mlm.1, "loo")
+mlm.2 <- add_criterion(mlm.2, "loo")
+loo_compare(mlm.1, mlm.2, criterion = "loo")
+```
+
+---
+Notice how the intercept is the same in each of these models. Even the CIs. Conceptually they are different though.  The intercept is directly modeled in the standard regression. In the MLM it is better thought of as the map of the distribution of random effects. 
+
+The population is larger than what we have. This is true for almost anything we do. We sample paradigms, we sample people, we usually never have a full population under our study. 
+
+---
+```{r, echo = FALSE, warning = FALSE}
+
+mlm %>%
+  sample_n_of(8, ID) %>% 
+ggplot(aes(x = week, y = CON, group = ID)) + geom_point(aes(color = factor(ID))) + stat_smooth(aes(color = factor(ID)), method = "lm", formula=y~1, se = FALSE) + xlab("X") + ylab("Y") + theme(legend.position = "none")
+```
+
+---
+
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$
+$$\mu_i  = \beta_{0[j]}$$ 
+This line indicates we have varying intercepts that vary over individual j. Much like going from level 1 -> 2, we do priors on that parameter. Indicates that there is a distribution FOR EACH PERSON/GROUP. The distribution needs a prior. 
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+
+
+---
+### Parameters that depend on parameters
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+# normal density
+library(beyonce)
+library(patchwork)
+
+
+bp <- beyonce_palette(128, n = 9, type = "continuous")
+
+
+p1 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("italic(M)[0]", "italic(S)[0]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# half-normal density
+p2 <-
+  tibble(x = seq(from = 0, to = 3, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 1.5, y = .2,
+           label = "half-normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 1.5, y = .6,
+           label = "0*','*sigma[sigma][0]", 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+my_arrow <- arrow(angle = 20, length = unit(0.35, "cm"), type = "closed")
+
+
+# a second normal density
+p3 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("italic(M)[1]", "italic(S)[1]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# a second half-normal density
+p4 <-
+  tibble(x = seq(from = 0, to = 3, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 1.5, y = .2,
+           label = "half-normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 1.5, y = .6,
+           label = "0*','*sigma[sigma][1]", 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# four annotated arrows
+p5 <-
+  tibble(x    = c(.05, .35, .65, .95),
+         y    = c(1, 1, 1, 1),
+         xend = c(.32, .4, .65, .72),
+         yend = c(.2, .2, .2, .2)) %>%
+  
+  ggplot(aes(x = x, xend = xend,
+             y = y, yend = yend)) +
+  geom_segment(arrow = my_arrow, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(.15, .35, .625, .78), y = .55,
+           label = "'~'",
+           size = 10, color = bp[1], family = "Times", parse = T) +
+  xlim(0, 1) +
+  theme_void()
+
+# third normal density
+p6 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("mu[0]", "sigma[0]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# fourth normal density
+p7 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("mu[1]", "sigma[1]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# two annotated arrows
+p8 <-
+  tibble(x    = c(.18, .82),
+         y    = c(1, 1),
+         xend = c(.36, .55),
+         yend = c(0, 0)) %>%
+  
+  ggplot(aes(x = x, xend = xend,
+             y = y, yend = yend)) +
+  geom_segment(arrow = my_arrow, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(.18, .33, .64, .77), y = .55,
+           label = c("'~'", "italic(j)", "'~'", "italic(j)"),
+           size = c(10, 7, 10, 7), 
+           color = bp[1], family = "Times", parse = T) +
+  xlim(0, 1) +
+  theme_void()
+
+# exponential density
+p9 <-
+  tibble(x = seq(from = 0, to = 1, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dexp(x, 2) / max(dexp(x, 2))))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = .5, y = .2,
+           label = "exp",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = .5, y = .6,
+           label = "italic(K)",
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# likelihood formula
+p10 <-
+  tibble(x = .5,
+         y = .25,
+         label = "beta[0][italic(j)]+beta[1][italic(j)]*italic(x)[italic(i)*'|'*italic(j)]") %>% 
+  
+  ggplot(aes(x = x, y = y, label = label)) +
+  geom_text(size = 7, color = bp[1], parse = T, family = "Times") +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 1)) +
+  ylim(0, 1) +
+  theme_void()
+
+# half-normal density
+p11 <-
+  tibble(x = seq(from = 0, to = 3, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 1.5, y = .2,
+           label = "half-normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 1.5, y = .6,
+           label = "0*','*sigma [sigma]", 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# four annotated arrows
+p12 <-
+  tibble(x    = c(.43, .43, 1.5, 2.5),
+         y    = c(1, .55, 1, 1),
+         xend = c(.43, 1.225, 1.5, 1.75),
+         yend = c(.8, .15, .2, .2)) %>%
+  
+  ggplot(aes(x = x, xend = xend,
+             y = y, yend = yend)) +
+  geom_segment(arrow = my_arrow, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(.3, .7, 1.38, 2), y = c(.92, .22, .65, .6),
+           label = c("'~'", "'='", "'='", "'~'"),
+           size = 10, 
+           color = bp[1], family = "Times", parse = T) +
+  annotate(geom = "text",
+           x = .43, y = .7,
+           label = "nu*minute+1",
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  xlim(0, 3) +
+  theme_void()
+
+# student-t density
+p13 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dt(x, 3) / max(dt(x, 3))))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "student t",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 0, y = .6,
+           label = "nu~~mu~~sigma",
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# the final annotated arrow
+p14 <-
+  tibble(x     = c(.375, .625),
+         y     = c(1/3, 1/3),
+         label = c("'~'", "italic(i)*'|'*italic(j)")) %>% 
+  
+  ggplot(aes(x = x, y = y, label = label)) +
+  geom_text(size = c(10, 7), color = bp[1], parse = T, family = "Times") +
+  geom_segment(x = .5, xend = .5,
+               y = 1, yend = 0, 
+               color = bp[1], arrow = my_arrow) +
+  xlim(0, 1) +
+  theme_void()
+
+# some text
+p15 <-
+  tibble(x     = .5,
+         y     = .5,
+         label = "italic(y)[italic(i)*'|'*italic(j)]") %>% 
+  
+  ggplot(aes(x = x, y = y, label = label)) +
+  geom_text(size = 7, color = bp[1], parse = T, family = "Times") +
+  xlim(0, 1) +
+  theme_void()
+
+# define the layout
+layout <- c(
+  area(t = 1, b = 2, l = 1, r = 3),
+  area(t = 1, b = 2, l = 5, r = 7),
+  area(t = 1, b = 2, l = 9, r = 11),
+  area(t = 1, b = 2, l = 13, r = 15),
+  area(t = 4, b = 5, l = 5, r = 7),
+  area(t = 4, b = 5, l = 9, r = 11),
+  area(t = 3, b = 4, l = 1, r = 15),
+  area(t = 7, b = 8, l = 3, r = 5),
+  area(t = 7, b = 8, l = 7, r = 9),
+  area(t = 7, b = 8, l = 11, r = 13),
+  area(t = 6, b = 7, l = 5, r = 11),
+  area(t = 10, b = 11, l = 7, r = 9),
+  area(t = 9, b = 10, l = 3, r = 13),
+  area(t = 12, b = 12, l = 7, r = 9),
+  area(t = 13, b = 13, l = 7, r = 9)
+)
+
+# combine and plot!
+(p1 + p2 + p3 + p4 + p6 + p7 + p5 + p9 + p10 + p11 + p8 + p13 + p12 + p14 + p15) + 
+  plot_layout(design = layout) &
+  ylim(0, 1) &
+  theme(plot.margin = margin(0, 5.5, 0, 5.5))
+```
+
+
+
+---
+What does it mean that we are learning from our data? Or that the priors are based on our data? 
+
+Well we set up the prior for values we are not directly estimating. We are instead using those priors plus data to help us create estimates that are informed by the prior but also by the data. 
+
+---
+###  Partial pooling/Shrinkage 
+
+.small[
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
+
+$$\mu_i  = \beta_{0[i]}$$ 
+
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+
+$$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$
+
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+]
+
+Half normal can turn on/off shrinkage. Setting SD to zero says everyone is the same (complete). Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+
+---
+
+```{r}
+summary(mlm.1)
+```
+
+
+
+---
+
+```{r}
+library(tidybayes)
+get_variables(mlm.1)
+```
+
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) 
+```
+16000 samples (4 chains * 4k iterations) * 91 people
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(r_ID[ID]) 
+```
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) %>%
+ median_qi()
+```
+
+
+---
+.pull-left[
+```{r, eval = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = r_ID), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) 
+    
+```
+]
+
+.pull-right[
+```{r, echo = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = r_ID), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "orange is model based, black circles are observed means")
+
+    
+```
+]
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) 
+
+```
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>% 
+   mutate(person_I = b_Intercept + r_ID) 
+```
+
+---
+
+```{r, echo = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+  mutate(person_I = b_Intercept + r_ID) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = person_I), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "orange is model based, black circles are observed means") +
+  geom_hline(yintercept =0.1849846)
+
+```
+
+---
+.pull-left[
+```{r, eval = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+   median_qi(person_I = b_Intercept + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+   median_qi(person_I = b_Intercept + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+
+
+
+
+
+
+---
+## priors for priors
+
+The extent we do the shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. Also known as hyperpriors
+
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
+$$\mu_i  = \beta_{0[i]}$$ 
+
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(brms)
+```
+
+
+```{r}
+mlm.1 <- 
+  brm(family = gaussian,
+      CON ~ 1 + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.1")
+```
+
+---
+
+```{r}
+summary(mlm.1)
+```
+
+---
+Notice we have one less paramter we are estimating. 
+```{r}
+mlm.2 <- 
+  brm(family = gaussian,
+      CON ~ 1 ,
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.2")
+```
+
+---
+```{r}
+summary(mlm.2)
+```
+
+---
+```{r}
+mlm.1 <- add_criterion(mlm.1, "loo")
+mlm.2 <- add_criterion(mlm.2, "loo")
+loo_compare(mlm.1, mlm.2, criterion = "loo")
+```
+
+
+---
+```{r, echo = FALSE, warning = FALSE}
+
+mlm %>%
+  sample_n_of(8, ID) %>% 
+ggplot(aes(x = week, y = CON, group = ID)) + geom_point(aes(color = factor(ID))) + stat_smooth(aes(color = factor(ID)), method = "lm", formula=y~1, se = FALSE) + xlab("X") + ylab("Y") + theme(legend.position = "none")
+```
+
+---
+
+When we have these priors it indicates that we have some 
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$
+$$\mu_i  = \beta_{0[i]}$$ 
+This line indicates we have varying intercepts. Much like going from level 1 -> 2, we do priors on that parameter. Indicates that there is a distribution FOR EACH PERSON/GROUP. The distribution needs a prior. 
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+
+
+---
+### Parameters that depend on parameters
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+# normal density
+
+library(patchwork)
+
+
+bp <- beyonce_palette(128, n = 9, type = "continuous")
+
+
+p1 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("italic(M)[0]", "italic(S)[0]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# half-normal density
+p2 <-
+  tibble(x = seq(from = 0, to = 3, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 1.5, y = .2,
+           label = "half-normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 1.5, y = .6,
+           label = "0*','*~italic(S)[sigma][0]", 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+my_arrow <- arrow(angle = 20, length = unit(0.35, "cm"), type = "closed")
+
+
+# a second normal density
+p3 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("italic(M)[1]", "italic(S)[1]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# a second half-normal density
+p4 <-
+  tibble(x = seq(from = 0, to = 3, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 1.5, y = .2,
+           label = "half-normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 1.5, y = .6,
+           label = "0*','*~italic(S)[sigma][1]", 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# four annotated arrows
+p5 <-
+  tibble(x    = c(.05, .35, .65, .95),
+         y    = c(1, 1, 1, 1),
+         xend = c(.32, .4, .65, .72),
+         yend = c(.2, .2, .2, .2)) %>%
+  
+  ggplot(aes(x = x, xend = xend,
+             y = y, yend = yend)) +
+  geom_segment(arrow = my_arrow, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(.15, .35, .625, .78), y = .55,
+           label = "'~'",
+           size = 10, color = bp[1], family = "Times", parse = T) +
+  xlim(0, 1) +
+  theme_void()
+
+# third normal density
+p6 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("mu[0]", "sigma[0]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# fourth normal density
+p7 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(0, 1.5), y = .6,
+           label = c("mu[1]", "sigma[1]"), 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# two annotated arrows
+p8 <-
+  tibble(x    = c(.18, .82),
+         y    = c(1, 1),
+         xend = c(.36, .55),
+         yend = c(0, 0)) %>%
+  
+  ggplot(aes(x = x, xend = xend,
+             y = y, yend = yend)) +
+  geom_segment(arrow = my_arrow, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(.18, .33, .64, .77), y = .55,
+           label = c("'~'", "italic(j)", "'~'", "italic(j)"),
+           size = c(10, 7, 10, 7), 
+           color = bp[1], family = "Times", parse = T) +
+  xlim(0, 1) +
+  theme_void()
+
+# exponential density
+p9 <-
+  tibble(x = seq(from = 0, to = 1, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dexp(x, 2) / max(dexp(x, 2))))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = .5, y = .2,
+           label = "exp",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = .5, y = .6,
+           label = "italic(K)",
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# likelihood formula
+p10 <-
+  tibble(x = .5,
+         y = .25,
+         label = "beta[0][italic(j)]+beta[1][italic(j)]*italic(x)[italic(i)*'|'*italic(j)]") %>% 
+  
+  ggplot(aes(x = x, y = y, label = label)) +
+  geom_text(size = 7, color = bp[1], parse = T, family = "Times") +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 1)) +
+  ylim(0, 1) +
+  theme_void()
+
+# half-normal density
+p11 <-
+  tibble(x = seq(from = 0, to = 3, by = .01)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dnorm(x)) / max(dnorm(x)))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 1.5, y = .2,
+           label = "half-normal",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 1.5, y = .6,
+           label = "0*','*~italic(S)[sigma]", 
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# four annotated arrows
+p12 <-
+  tibble(x    = c(.43, .43, 1.5, 2.5),
+         y    = c(1, .55, 1, 1),
+         xend = c(.43, 1.225, 1.5, 1.75),
+         yend = c(.8, .15, .2, .2)) %>%
+  
+  ggplot(aes(x = x, xend = xend,
+             y = y, yend = yend)) +
+  geom_segment(arrow = my_arrow, color = bp[1]) +
+  annotate(geom = "text",
+           x = c(.3, .7, 1.38, 2), y = c(.92, .22, .65, .6),
+           label = c("'~'", "'='", "'='", "'~'"),
+           size = 10, 
+           color = bp[1], family = "Times", parse = T) +
+  annotate(geom = "text",
+           x = .43, y = .7,
+           label = "nu*minute+1",
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  xlim(0, 3) +
+  theme_void()
+
+# student-t density
+p13 <-
+  tibble(x = seq(from = -3, to = 3, by = .1)) %>% 
+  ggplot(aes(x = x, ymin = 0, ymax = (dt(x, 3) / max(dt(x, 3))))) +
+  geom_ribbon(fill = bp[6], size = 0) +
+  annotate(geom = "text",
+           x = 0, y = .2,
+           label = "student t",
+           size = 7, color = bp[1]) +
+  annotate(geom = "text",
+           x = 0, y = .6,
+           label = "nu~~mu[italic(i)*'|'*italic(j)]~~sigma",
+           size = 7, color = bp[1], family = "Times", parse = T) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_void() +
+  theme(axis.line.x = element_line(size = 0.5, color = bp[1]))
+
+# the final annotated arrow
+p14 <-
+  tibble(x     = c(.375, .625),
+         y     = c(1/3, 1/3),
+         label = c("'~'", "italic(i)*'|'*italic(j)")) %>% 
+  
+  ggplot(aes(x = x, y = y, label = label)) +
+  geom_text(size = c(10, 7), color = bp[1], parse = T, family = "Times") +
+  geom_segment(x = .5, xend = .5,
+               y = 1, yend = 0, 
+               color = bp[1], arrow = my_arrow) +
+  xlim(0, 1) +
+  theme_void()
+
+# some text
+p15 <-
+  tibble(x     = .5,
+         y     = .5,
+         label = "italic(y)[italic(i)*'|'*italic(j)]") %>% 
+  
+  ggplot(aes(x = x, y = y, label = label)) +
+  geom_text(size = 7, color = bp[1], parse = T, family = "Times") +
+  xlim(0, 1) +
+  theme_void()
+
+# define the layout
+layout <- c(
+  area(t = 1, b = 2, l = 1, r = 3),
+  area(t = 1, b = 2, l = 5, r = 7),
+  area(t = 1, b = 2, l = 9, r = 11),
+  area(t = 1, b = 2, l = 13, r = 15),
+  area(t = 4, b = 5, l = 5, r = 7),
+  area(t = 4, b = 5, l = 9, r = 11),
+  area(t = 3, b = 4, l = 1, r = 15),
+  area(t = 7, b = 8, l = 3, r = 5),
+  area(t = 7, b = 8, l = 7, r = 9),
+  area(t = 7, b = 8, l = 11, r = 13),
+  area(t = 6, b = 7, l = 5, r = 11),
+  area(t = 10, b = 11, l = 7, r = 9),
+  area(t = 9, b = 10, l = 3, r = 13),
+  area(t = 12, b = 12, l = 7, r = 9),
+  area(t = 13, b = 13, l = 7, r = 9)
+)
+
+# combine and plot!
+(p1 + p2 + p3 + p4 + p6 + p7 + p5 + p9 + p10 + p11 + p8 + p13 + p12 + p14 + p15) + 
+  plot_layout(design = layout) &
+  ylim(0, 1) &
+  theme(plot.margin = margin(0, 5.5, 0, 5.5))
+```
+
+
+---
+###  Shrinkage towards mean 
+
+.small[
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
+
+$$\mu_i  = \beta_{0[i]}$$ 
+
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+
+$$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$
+
+
+
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+]
+
+Half normal can turn on/off shrinkage. Setting SD to zero says everyone is the same (complete). Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+
+---
+
+```{r}
+summary(mlm.1)
+```
+
+
+
+---
+
+```{r}
+library(tidybayes)
+get_variables(mlm.1)
+```
+
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) 
+```
+16000 samples (4 chains * 4k iterations) * 91 people
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) %>%
+ median_qi()
+```
+
+
+---
+.pull-left[
+```{r, eval = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = r_ID), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) 
+    
+```
+]
+
+.pull-right[
+```{r, echo = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(r_ID[ID, term]) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = r_ID), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "orange is model based, black circles are observed means")
+
+    
+```
+]
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) 
+
+```
+
+---
+
+```{r}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>% 
+   mutate(person_I = b_Intercept + r_ID) 
+```
+
+---
+
+```{r, echo = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+  mutate(person_I = b_Intercept + r_ID) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = person_I), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "orange is model based, black circles are observed means") +
+  geom_hline(yintercept =0.1849846)
+
+```
+
+---
+.pull-left[
+```{r, eval = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+   median_qi(person_I = b_Intercept + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+   median_qi(person_I = b_Intercept + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+
+---
+## level 1 predictors
+
+$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
+$$\mu_i  = \beta_{0[i]} + \beta_{1[i]}$$ 
+
+$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu}, \sigma_0)$$
+$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
+$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
+$$\beta_{1[j]} \sim {\operatorname{Normal}(0, 1.5)}$$
+$$\sigma \sim {\operatorname{Exponential}(1)}$$
+
+---
+
+```{r}
+get_prior(CON ~ 1 + time + (1|ID), data = mlm)
+```
+
+
+---
+```{r}
+
+mlm.3 <- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(normal(0, 1.5), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      file = "mlm.3",
+      data = mlm)
+      
+```
+
+
+---
+
+```{r}
+summary(mlm.3)
+```
+
+---
+```{r}
+posterior_summary(mlm.3)
+```
+
+---
+
+```{r}
+pp_check(mlm.3)
+```
+
+
+---
+
+```{r}
+plot(mlm.3)
+```
+
+---
+
+
+
+---
+
+
+
+---
+## Mr. P
+aka multilevel regression with poststratification
+
+One of the biggest problems with psych data is that it is unrepresentative. Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+
+https://www.monicaalexander.com/posts/2019-08-07-mrp/
+https://bookdown.org/content/4857/models-with-memory.html#summary-bonus-post-stratification-in-an-example
+
+
+---
+```{r, eval = FALSE}
+mrp <-load("mrp.rds")
+mrp
+```
+
+```{r, eval = FALSE}
+head(d)
+```
+
+```{r, eval = FALSE}
+head(cell_counts)
+```
+
+---
+
+
+```{r, eval = FALSE}
+mlm.mrp <-
+  brm(family = binomial,
+      kept_name | trials(1) ~ 1 + (1 | age_group) + (1 | decade_married) + (1 | educ_group) + (1 | state_name),
+      prior = c(prior(normal(-1, 1), class = Intercept),
+                prior(exponential(1), class = sd)),
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      control = list(adapt_delta = .98),
+      data = d,
+      file = "mlm.mrp")
+```
+
+
+---
+
+```{r, eval = FALSE,echo = FALSE}
+posterior_samples(mlm.mrp) %>% 
+  select(starts_with("sd_")) %>% 
+  set_names(str_c("sigma[", c("age", "decade~married", "education", "state"), "]")) %>% 
+  pivot_longer(everything()) %>% 
+  group_by(name) %>%
+  median_qi(.width = seq(from = .70, to = .95, by = .1)) %>%
+  
+  ggplot(aes(x = value, xmin = .lower, xmax = .upper, y = reorder(name, value))) +
+  geom_interval(aes(alpha = .width), color = "orange3") +
+  scale_y_discrete(labels = ggplot2:::parse_safe) +
+  scale_alpha_continuous("CI width", range = c(.7, .15)) +
+  xlim(0, NA) +
+  theme(axis.text.y = element_text(hjust = 0),
+        panel.grid.major.y = element_blank())
+```
+
+
+---
+
+```{r, eval = FALSE}
+age_prop <- 
+  cell_counts %>% 
+  group_by(age_group) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  ungroup()
+
+age_prop
+```
+
+
+---
+.small[
+```{r, eval = FALSE}
+p <- 
+  add_predicted_draws(mlm.mrp, newdata = age_prop %>% 
+                        filter(age_group > 20, 
+                               age_group < 80, 
+                               decade_married > 1969),
+                      allow_new_levels = T)
+p
+```
+]
+
+6,058 census categories * 4,000 samples = 24,232,000
+
+---
+
+If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights, which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
+
+$$\frac{\sum_i N_i p_i}{\sum_i N_i}$$
+
+---
+
+```{r, eval = FALSE}
+p <-
+  p %>% 
+  group_by(age_group, .draw) %>% 
+  summarise(kept_name_predict = sum(.prediction * prop)) %>% 
+  group_by(age_group) %>% 
+  mean_qi(kept_name_predict)
+
+p
+```
+
+
+
+---
+.pull-left[
+```{r, eval = FALSE, echo = FALSE, message = FALSE}
+levels <- c("raw data", "multilevel", "MRP")
+
+p1 <-
+  # compute the proportions from the data
+  d %>% 
+  group_by(age_group, kept_name) %>%
+  summarise(n = n()) %>% 
+  group_by(age_group) %>% 
+  mutate(prop = n/sum(n),
+         type = factor("raw data", levels = levels)) %>% 
+  filter(kept_name == 1, age_group < 80, age_group > 20) %>%
+
+  # plot!
+  ggplot(aes(x = prop, y = age_group)) + 
+  geom_point() +
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) 
+
+
+nd <- distinct(d, age_group) %>% arrange(age_group)
+
+p2 <-
+  fitted(mlm.mrp,
+         re_formula = ~ (1 | age_group),
+         newdata = nd) %>% 
+  data.frame() %>% 
+  bind_cols(nd) %>% 
+  mutate(prop = Estimate,
+         type = factor("multilevel", levels = levels)) %>% 
+  
+  ggplot(aes(x = prop, xmin = Q2.5, xmax = Q97.5, y = age_group)) + 
+  geom_pointrange(color = "blue2", size = 0.8, fatten = 2) +
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
+  scale_y_discrete(labels = NULL) +
+  facet_wrap(~type)
+
+
+p3 <-
+  p %>%
+  mutate(type = factor("MRP", levels = levels)) %>% 
+
+  ggplot(aes(x = kept_name_predict, xmin = .lower, xmax = .upper, y = age_group)) + 
+  geom_pointrange(color = "orange2", size = 0.8, fatten = 2) +
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
+  scale_y_discrete(labels = NULL) +
+  facet_wrap(~type)
+
+# combine!
+(p1 | p2 | p3) +
+  plot_annotation(title = "Proportion of women keeping name after marriage, by age",
+                  subtitle = "Proportions are on the x-axis and age groups are on the y-axis.")
+
+```
+]
+
+.pull-right[The survey has an over-sample of highly educated women, who are more likely to keep their name, hence the regularization of MLM]
+
+---
+### Not limited to surveys
+
+Example (using brms) with experimental data -- can you generalize from your sample of undergraduates to other undergraduates at your university, let alone undergraduates in general, let alone young adults, to say nothing about the population of humans. 
+https://arxiv.org/pdf/1906.11323.pdf
+
+
+---
+## Random slopes
+
+.pull-left[
+1. Modeling the joint population of intercepts and slopes, which means by modeling their covariance. We will use joint multivariate Gaussian distribution b/c it is max entropy distribution
+
+2. Involves lots of interactions
+]
+.pull-right[
+Level 1:
+$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
+Level 2: 
+$${\beta}_{0j} = \gamma_{00} + \gamma_{01}G_{j} +   U_{0j}$$  
+$${\beta}_{1j} = \gamma_{10} + \gamma_{11}G_{j} + U_{1j}$$
+
+$$\begin{pmatrix} {U}_{0j} \\ {U}_{1j} \end{pmatrix}
+\sim \mathcal{N} \begin{pmatrix} 
+  0,      \tau_{00}^{2} & \tau_{01}\\ 
+  0,  \tau_{01} & \tau_{10}^{2}
+\end{pmatrix}$$
+
+
+
+]
+
+---
+## Random slopes
+
+.pull-left[.tiny[
+$$y_i \sim \text{Normal}(\mu, \sigma)$$ 
+$$\mu_i = \beta_{0j} + \beta_{1j}X_{ij}$$
+$$(\beta_{0j}, \beta_{1j}) \sim \text{MVNormal}  ([\beta_0, \beta_1], \Sigma)$$
+
+
+$$\Sigma = 
+\left(\begin{array}{cc}
+\sigma_{\beta_0}&0\\
+0&\sigma_{\beta_1}
+\end{array}\right)R
+\left(\begin{array}{cc}
+\sigma_{\beta_0}&0\\
+0&\sigma_{\beta_1}
+\end{array}\right)$$
+$$\beta_0 \sim \text{Normal}(0, 1)$$
+
+$$\beta_1 \sim \text{Normal}(0, 1)$$
+$$\sigma_{\beta_0} \sim \text{Exponential}(1)$$
+$$\sigma_{\beta_1} \sim \text{Exponential}(1)$$
+$$\sigma \sim \text{Exponential}(1)$$
+$$R \sim \text{LKJcorr(2)}$$
+
+]]
+
+.pull-right[
+where Σ is the covariance matrix 
+$$\Sigma = 
+\left(\begin{array}{cc}
+\sigma^2_{\beta_0}&\sigma_{\beta_0}\sigma_{\beta_1}\rho\\
+\sigma_{\beta_0}\sigma_{\beta_1}\rho&\sigma^2_{\beta_1}
+\end{array}\right)$$
+
+and R is the correlation matrix R = $\begin{bmatrix} 1 & \rho \\ \rho & 1 \end{bmatrix}$.
+
+With more random effects, this matrix expands.
+
+
+
+]
+
+
+---
+## lkj
+.pull-left[Our regularizing prior for correlation matrices. Has one parameter to tune the potential associations. 
+]
+
+.pull-right[
+```{r, echo=FALSE}
+
+library(forcats)
+
+expand.grid(
+  eta = 1:6,
+  K = 2:6
+) %>%
+  ggplot(aes(y = fct_rev(ordered(eta)), dist = "lkjcorr_marginal", arg1 = K, arg2 = eta)) +
+  stat_dist_slab() +
+  facet_grid(~ paste0(K, "x", K)) +
+  labs(
+    title = paste0(
+      "LKJ(eta) prior on different matrix sizes:\n"
+    ),
+    y = "eta",
+    x = "Marginal correlation"
+  ) +
+  theme(axis.title = element_text(hjust = 0))
+
+
+```
+
+]
+
+
+---
+
+```{r}
+get_prior(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      data = mlm)
+```
+
+6 parameters we are estimating
+
+---
+
+```{r}
+
+mlm.4 <- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(normal(0, 1.5), class = sd, coef = Intercept, group = ID), 
+                prior(normal(0, 1.5), class = sd, coef = time, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.4",
+      data = mlm)
+      
+```
+
+
+---
+
+```{r}
+summary(mlm.4)
+```
+
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+p.mlm4 <- posterior_samples(mlm.4)
+library(rethinking)
+
+r_2 <- 
+  rlkjcorr(1000, K = 2, eta = 2) %>%
+  as_tibble()
+
+p.mlm4 %>%
+  ggplot() +
+  geom_density(data = r_2, aes(x = V2),
+               color = "transparent", fill = "blue", alpha = 3/4) +
+  geom_density(aes(x = cor_ID__Intercept__time),
+               color = "transparent", fill = "grey", alpha = 9/10) +
+  annotate(geom = "text", x = -0.15, y = 1.1, 
+           label = "posterior", color = "black", family = "Courier") +
+  annotate(geom = "text", x = .2, y = 1.35, 
+           label = "prior", color = "blue", alpha = 2/3, family = "Courier") +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(subtitle = "Correlation between intercepts\nand slopes, prior and posterior",
+  x = "correlation")
+```
+
+---
+
+```{r, echo = FALSE}
+partially_pooled_params <-
+  coef(mlm.4)$ID [ , 1, 1:2] %>%
+  as_tibble(rownames = "ID") 
+
+
+un_pooled_params <-
+  mlm %>%
+  group_by(ID, time) %>%
+  summarise(mean = mean(CON)) %>%
+  do(tidy(lm(mean ~ time, data=.))) %>% 
+  ungroup() %>%  
+  select(ID, term, estimate) %>% 
+  pivot_wider(names_from = term, values_from = estimate) %>% 
+  mutate(Intercept = `(Intercept)`) %>% 
+  select(-`(Intercept)`) %>% 
+  mutate(ID = as.character(ID))
+
+params <-
+  # `bind_rows()` will stack the second tibble below the first
+  bind_rows(partially_pooled_params, un_pooled_params) %>%
+  # index whether the estimates are pooled
+  mutate(pooled = rep(c("partially", "not"), each = nrow(.)/2)) 
+
+p1 <-
+  ggplot(data = params, aes(x = time, y = Intercept)) +
+  stat_ellipse(geom = "polygon", type = "norm", level = 1/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 2/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 3/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 4/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 5/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 6/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 7/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 8/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = 9/10, size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  stat_ellipse(geom = "polygon", type = "norm", level = .99,  size = 0, alpha = 1/20, fill = "#E7CDC2") +
+  geom_point(aes(group = ID, color = pooled)) +
+  geom_line(aes(group = ID), size = 1/4) +
+  scale_color_manual("Pooled?",
+                     values = c("#80A0C7", "#A65141")) +
+  coord_cartesian(xlim = range(params$time),
+                  ylim = range(params$Intercept))
+p1
+```
+
+
+---
+
+```{r}
+get_variables(mlm.4)
+```
+
+---
+
+```{r}
+mlm.4 %>%
+  spread_draws(r_ID[ID,term]) 
+```
+
+---
+
+```{r}
+mlm.4 %>%
+  spread_draws(b_time, r_ID[ID, term]) %>%
+  filter(term == "time") %>% 
+  mutate(person_t = b_time + r_ID) %>% 
+ median_qi()
+```
+
+---
+.pull-left[
+```{r, eval = FALSE}
+
+mlm.4 %>%
+  spread_draws(b_time, r_ID[ID, term]) %>%
+  filter(term == "time") %>% 
+  median_qi(person_t = b_time + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+
+mlm.4 %>%
+  spread_draws(b_time, r_ID[ID, term]) %>%
+  filter(term == "time") %>% 
+  median_qi(person_t = b_time + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+---
+
+coef = fixef + raneff
+```{r}
+ranef(mlm.4)
+```
+
+---
+coef = fixef + raneff
+```{r}
+coef(mlm.4)
+```
+
+---
+```{r}
+mlm.5 <- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(gamma(3, .1), class = sd, coef = Intercept, group = ID), 
+                prior(gamma(3, .1), class = sd, coef = time, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.5",
+      data = mlm)
+      
+```
+
+---
+```{r, echo = FALSE}
+tibble(x = seq(from = 0, to = 110, by = .1)) %>% 
+  
+  ggplot(aes(x = x, ymin = 0, ymax = dgamma(x, 3, 0.1))) +
+  geom_ribbon(size = 0, fill = "grey") +
+  annotate(geom = "text", x = 14.25, y = 0.015, label = "'gamma'*(3*', '*0.1)", 
+           parse = T, color = "black", size = 4.25) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 110)) +
+  scale_y_continuous(NULL, breaks = NULL, expand = expansion(mult = c(0, 0.05)))
+```
+
+---
+```{r}
+summary(mlm.5)
+
+```
+
+---
+
+
+```{r, echo = FALSE}
+mlm.5 %>%
+  spread_draws(b_time, r_ID[ID, term]) %>%
+  filter(term == "time") %>% 
+  median_qi(person_t = b_time + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+
+

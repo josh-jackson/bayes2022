@@ -19,9 +19,7 @@ d. NHST test using Probability of Direction
 e. NHST test using ROPE
 f. NHST test using Bayes Factor
 
-2. Rerun the model in #1 but use three different prior for the regression coefficient compared for #1. First, try a prior where the SD is of the regression coefficient is wide. Second, try a prior that is very narrow. Third, try a prior that is not centered on zero. 
-
-For each of the 4 ways we could test a hypothesis, which one's seem most influenced by your prior choice?
+2. Rerun the model in #1 but use three different prior for the regression coefficient. First, try a prior where the SD is of the regression coefficient is wide. Second, try a prior that is very narrow. Third, try a prior that is not centered on zero. For each of the 4 NHST ways we could test a hypothesis, which one's seem most influenced by your prior choice?   
 
 3. Create predicted values for different levels of risky behavior. What is my probability of premature mortality if I was 1 sd deviation below the mean of risky behavior? 2 SDs above? Make sure to include CIs around these estimates. 
 

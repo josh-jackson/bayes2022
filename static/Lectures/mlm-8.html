@@ -1,0 +1,2726 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>MLM</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Josh Jackson" />
+    <script src="mlm-8_files/header-attrs-2.11/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+&lt;style type="text/css"&gt;
+.remark-slide-content {
+    font-size: 30px;
+    padding: 1em 4em 1em 4em;
+}
+
+.small{ 
+  font-size: 80%}
+.tiny{
+  font-size: 65%}
+&lt;/style&gt;
+
+## This time
+
+MLM bayes Style
+
+---
+## MLM review 
+
+`$${Y}_{i} = b_{0} + b_{1}X_{i} +  ... +\epsilon_{i}$$`
+
+`$${Y}_{ij} = b_{0} + b_{1}X_{ij} + ... +\epsilon_{i}$$`
+Where j refers to some clustering or grouping variable and i refers to the observations within j
+
+
+
+
+
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+
+---
+### Empty model
+
+Level 1
+`$${Y}_{ij} = \beta_{0j}  + \varepsilon_{ij}$$`
+
+Level 2
+`$${\beta}_{0j} = \gamma_{00} + U_{0j}$$`
+
+`$${U}_{0j} \sim \mathcal{N}(0, \tau_{00}^{2})$$`
+`$${e}_{ij} \sim \mathcal{N}(0, \sigma^{2})$$`
+
+---
+
+
+  
+.pull-left[
+![](mlm-8_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+  `$${Y}_{ij} = \gamma_{00} + U_{0j}  + \varepsilon_{ij}$$`
+
+Akin to ANOVA if we treat `\(U_{0j}\)` as between subjects variance &amp; `\(\varepsilon_{ij}\)` as within subjects variance. 
+]
+
+---
+## Random and fixed effects
+
+.pull-left[
+Level 1:
+`$${Y}_{ij} = \beta_{0j}  + \varepsilon_{ij}$$`
+
+Level 2:
+`$${\beta}_{0j} = \gamma_{00} + U_{0j}$$`
+Combined:
+`$${Y}_{ij} = \gamma_{00} + U_{0j}  + \varepsilon_{ij}$$`
+]
+
+.pull-right[
+`\(U_{0j}\)` is considered a random effect, as it is varies across our grouping
+
+`\(\gamma_{00}\)` is considered a fixed effect, as it is what is fixed (average) across our grouping
+]
+
+---
+## Level 1 predictors
+
+Level 1 is where you have data that repeats within your grouping or clustering data. Is your cluster classrooms? Then students are level 1. Is your cluster people? Then observations are level 1. 
+
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
+Notice on the subscript of X that these predictors vary across group (j) and within the group (i) So if your grouping (j) is people, then i refers to different observations. 
+
+---
+
+Level 2 takes the parameters at level 1 and decomposes them into a fixed component ($\gamma$) that reflects the average and, if desired, the individual deviations around that fixed effect (U).
+
+level 1
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
+
+level 2
+`$${\beta}_{0j} = \gamma_{00} + U_{0j}$$`  
+`$${\beta}_{1j} = \gamma_{10}$$`  
+
+
+
+---
+## Predictions for a person
+.pull-left[
+Level 1:
+ 
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
+Level 2:  
+`$${\beta}_{0j} = \gamma_{00} + U_{0j}$$`
+
+
+`$${\beta}_{1j} = \gamma_{10} + U_{1j}$$`  
+
+Combined
+`$${Y}_{ij} = \gamma_{00} + \gamma_{10}(X_{ij})+ U_{0j} + U_{1j}(X_{ij}) + \varepsilon_{ij}$$`
+]
+.pull-right[
+Can think of a persons score divided up into a fixed component as well as the random component. 
+
+`$${\beta}_{16} = \gamma_{10} \pm U_{16}$$` 
+]
+
+
+---
+## Error structure
+The residual structure, where the random effects are again normally distributed with a mean of zero, but this time one must also consider covariance in addition to variance. 
+
+`$$\begin{pmatrix} {U}_{0j} \\ {U}_{1j} \end{pmatrix}
+\sim \mathcal{N} \begin{pmatrix} 
+  0,      \tau_{00}^{2} &amp; \tau_{01}\\ 
+  0,  \tau_{01} &amp; \tau_{10}^{2}
+\end{pmatrix}$$`
+
+Note that it is possible to have a different error structure for the random effects
+
+`$${e}_{ij} \sim \mathcal{N}(0, \sigma^{2})$$`
+
+---
+## Multiple level 1 predictors
+
+Level 1:
+ 
+`$${Y}_{ijk} = \beta_{0j}  + \beta_{1j}X_{ij} + \beta_{2j}Z_{ik} + \varepsilon_{ijk}$$`
+Level 2:  
+`$${\beta}_{0j} = \gamma_{00} + U_{0j}$$`
+
+`$${\beta}_{1j} = \gamma_{10} + U_{1j}$$` 
+`$${\beta}_{2k} = \gamma_{20} + U_{2k}$$`
+
+---
+## Level 2 predictors
+.small[
+Level 1: 
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
+Level 2: 
+`$${\beta}_{0j} = \gamma_{00} + \gamma_{01}G_{j} +   U_{0j}$$`  
+`$${\beta}_{1j} = \gamma_{10} + U_{1j}$$`  
+]
+
+Combined
+  `$${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + U_{0j} + U_{1j}(Time_{ij}) + \varepsilon_{ij}$$`
+  `$${Y}_{ij} = [\gamma_{00} + \gamma_{01}G_{j}+ U_{0j}]  + [(\gamma_{10}  + U_{1j})(Time_{ij})] + \varepsilon_{ij}$$`
+
+---
+## Cross level interactions
+
+.small[
+level 1: 
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
+Level 2: 
+`$${\beta}_{0j} = \gamma_{00} + \gamma_{01}G_{j} +   U_{0j}$$`  
+`$${\beta}_{1j} = \gamma_{10} + \gamma_{11}G_{j} + U_{1j}$$`  
+]
+
+Combined
+  `$${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + \gamma_{11}(G_{j}*Time_{ij}) +  U_{0j} + U_{1j}(Time_{ij}) + \varepsilon_{ij}$$`
+
+`$${Y}_{ij} = [\gamma_{00} + U_{0j} +\gamma_{01}G_{j}] + [(\gamma_{10}  + \gamma_{11}G_{j}+  U_{1j})(Time_{ij})] + \varepsilon_{ij}$$`
+
+---
+## Centering
+
+As a rule, each level-1 predictor is usually really 2 predictor variables. It is important to separate within-group from between group variance. Failing to do so will "smush" between and within variance to level 1.
+
+Example: student SES at level 1, with schools at level 2. 
+Some kids have more money than other kids in their school
+Some schools have more money than other schools
+
+Fortunately it is easy to separate this
+
+---
+
+Level 1: 
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}(X_{ij}- \bar{X_j}) + \varepsilon_{ij}$$`
+
+Level 2: 
+`$${\beta}_{0j} = \gamma_{00} + \bar{X_j} +   U_{0j}$$` 
+
+`$${\beta}_{1j} = \gamma_{10} + \bar{X_j} + U_{1j}$$` 
+
+---
+## MLM as default and make it maximum
+
+If you have data like this you should analyze like this! If you don't, then you are losing information (GEE being a potential exception).
+
+The question often is about which random effects to fit. There are multiple opinions, but mine is to start maximum, and then work downward (ie simplify) if necessary/consistent with theory. It doesn't really hurt to include them, especially within Bayesian estimation! 
+
+
+
+---
+
+# MLM intuitions
+
+Anytime you have repeated DVs you should use MLM as opposed to doing aggregation outside the model. While that should be your default, it is helpful to conceptualize why it is helpful.
+
+1. Aggregation is bad 
+2. Regressions within regressions (ie coefficients as outcomes) 
+3. Variance decomposition  
+4. Learning from other data through pooling/shrinkage
+5. Parameters that depend on parameters
+
+
+
+```r
+library(tidyverse)
+
+simp&lt;- tribble(
+  ~ID, ~group,  ~test.score, ~study,
+1,1,5,1,
+2,1,7,3,
+3,2,4,2,
+4,2,6,4,
+5,3,3,3,
+6,3,5,5,
+7,4,2,4,
+8,4,4,6,
+9,5,1,5,
+10,5,3,7)
+```
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+---
+ What is the between person association between study and score? 
+
+
+
+![](mlm-8_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+What is the within person association?
+
+![](mlm-8_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+## 1. Aggregation obscures hypotheses
+
+Between person H1: Do students who study more get better grades?   
+
+Within person H2: When a student studies, do they get better grades?
+			        	
+H1 and H2 are independent from one another!
+
+---
+
+Think of our variables in these terms too. Long format. Level 1 (observation) repeats, level 2 (people) is constant across people. 
+
+If you get confused you can always look at your data! 
+
+
+```
+## # A tibble: 6 × 4
+##      ID grade test.score study
+##   &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     3          6     2
+## 2     1     3          5     3
+## 3     1     3          4     4
+## 4     2     4          3     5
+## 5     2     4          2     6
+## 6     2     4          2     6
+```
+
+
+---
+## 2. Regressions within regressions 
+
+Regression inception. MLM is multiple simple regressions jammed together into a single model. 
+
+`$${Y}_{ij} = \beta_{0j}  + \beta_{NEWDVj}X_{ij} + \varepsilon_{ij}$$`
+The subscript NEWDVj indicates that people have different values of the regression coefficient. That vector of values can then be predicted, just like a normal, simple regression equation. 
+
+level 2
+`$${\beta}_{0j} = \gamma_{00} + U_{0j}$$`  
+`$${\beta}_{NEWDVj} = \gamma_{10} + U_{1j}$$`  
+
+
+---
+We want to model both associations -- the observation level and the average/fixed simultaneously. 
+
+You can see how these could be two regression equations. 
+1. Does studying help *you*? 
+2. Do people who study have better test scores? 
+
+`\(scores_{t} = bo + b1*S\)` (bo = your average when study (S) = 0, b1 = how you change in scores when you study compared to not studying)
+
+`\(scores_{i} = bo + b1*S\)` (bo = average of all people when S = 0, b1 = expected difference when people study (1 unit more) compared to when they don't)
+
+---
+
+![](mlm-8_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+---
+
+![](mlm-8_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+---
+Combine levels into one model
+
+L1
+`$$Y_{ti} = \beta_{0i} + \beta_{1i}X_{ti} + \varepsilon_{ti}$$`
+The subscript i means that people can have different values for `\(\beta_{0}\)` and `\(\beta_{1}\)`
+
+
+---
+### Level 1 coefficient becomes the DV for level 2
+
+L1
+`$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$`
+      
+L2
+`$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$`
+`$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$`
+Our B0 coefficient is the intercept, and is interpreted when our predictors = 0. People differ on this effect, seen with the i subscript. We can ask questions (with simple regressions) about that random variable. 
+
+---
+`$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$`
+      
+`$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$`
+`$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$`
+There is some average effect ( `\(\gamma_{00}\)` ; fixed effect) that people vary around like an intercept. You can put in predictors (e.g., Age) and there is person specific residual ( `\(U_{0i}\)` ). 
+
+---
+### Residuals and random effects 
+
+L1: `$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$`
+      
+L2: `$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$`
+`$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$`
+
+Together a person's intercept ( `\(\beta_{0i}\)` ) or slope ( `\(\beta_{1i}\)` ) is made up of the fixed effect, any regression coefficients and `\(U_{0i}\)` and `\(U_{1i}\)` reflect deviations from the fixed effect (plus any predictors). 
+
+Josh's test score `\(\beta_{0i} = 10\)` = avg score ( `\(\gamma_{00} = 5\)` ) + age effect ( `\(\gamma_{01} = -2\)` ) + random effect ( `\(U_{0i} = 7\)` )
+
+
+---
+
+Distribution of person specific estimates makes up the fixed (average) effect. Us are deviations around the average effect. 
+
+![](mlm-8_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+
+
+---
+# 3. Variance decomposition
+
+
+To the extent that we can put variance into different "piles" we will have more explained variance and less unexplained variance. Less unexplained variance means our model fits better
+
+---
+
+Fit a simple model that does not include study time.  
+L1  
+`$$Y_{t i} = \beta_{0i} +  \varepsilon_{ti}$$`
+      
+L2
+`$$\beta_{0i} = \gamma_{00} + U_{0i}$$`
+Combined 
+`$$Y_{t i} =  \gamma_{00} + U_{0i} +  \varepsilon_{ti}$$`
+      
+---
+People differ in the average effect
+![](mlm-8_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+
+---
+
+Fit a model that includes study time. 
+
+L1
+`$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$`
+      
+L2
+`$$\beta_{0i} = \gamma_{00} + U_{0i}$$`
+`$$\beta_{1i} = \gamma_{10} + U_{1i}$$`
+Combined 
+`$$Y_{t i} =  \gamma_{00} +  \gamma_{10}Study_{ti} + U_{0i} + U_{1i}Study_{ti} + \varepsilon_{ti}$$`
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+
+---
+### variance decomposition
+
+By fitting random intercept (people differ on their average score) and random slopes (people differ in how studying relates to test scores) we will get fewer residuals!  Fewer residuals = better model fit.
+
+For standard regression, we think of error as existing in one big bucket called `\(\varepsilon\)` . Everything that we do not know goes into that bucket, from measurement error to unmeasured important factors. 
+
+For MLMs we will be breaking up unexplained variance ( `\(\varepsilon\)` ) into multiple buckets ( `\(U_0\)` + `\(U_1\)` + `\(e_{ti}\)` and potentially more).
+
+
+---
+
+Random effects used to be error, but they are going to be useful going forward. They index how much people DIFFER on some effect. e.g. does everyone benefit from studying the same?  
+
+We will treat them as variables themselves e.g. individual/group differences. By including random effects (Us) you making a claim that every group/cluster/not does *not* have the same `\(\gamma\)` i.e. people differ. 
+
+We can relate the random effects to other random effects e.g., do people who tend to have high scores benefit more or less from studying?  
+
+---
+# 4. Learning via shrinkage
+
+We treat our group variable as coming from a population. All groups are alike (because they are from the same population), but different in their own way. Because of this it is helpful to use information from other groups to help make predictions. 
+
+We do this in standard regression where we make predictions based on values not only using binned data from X but from the whole dataset. A similar analogy for MLM is running a regression for each group. We want to pool information as this leads to better predictions as we are not overfitting our data! 
+
+---
+
+
+L1
+`$$Y_{ti} = \beta_{0i} +  \varepsilon_{ti}$$`
+L2
+`$$\beta_{0} = \gamma_{00} + U_{0i}$$`
+ 
+Where does `\(U_{0i}\)` come from? If we calculated each by hand, through taking the average test score for each person i and subtracting that from the grand mean test score, would that equal `\(U_{0i}\)` ?
+ 
+---
+## Complete, partial and no pooling
+
+Complete pooling assumes everyone is the same, with `\(U_{0i}\)` being zero for everyone. `\(Y_{t i} =  \gamma_{00} +  \varepsilon_{ti}\)` 
+
+This is standard ANOVA type model. Everyone who is in a group is thought to be the same. Why do scores differ within a group? Error. Everyone is equally exchangable. 
+
+---
+No pooling is if we calculate every person's effect with a separate regression, subtracting out the grand mean average. So rather than a single `\(\gamma_{00}\)`, we have as many as there are people/groups. 
+
+Inefficient in that we are not learning from anyone's data. Every person/group is treated as different. But people may differ. Maybe not everyone who studies benefits. Maybe not everyone demonstrates the experimental effect. 
+
+---
+Partial pooling is in the middle, a weighted average between the two. For those with fewer tests there is less information for a particular individual. So we borrow information from others in the data. We "learn" from them. 
+
+If someone has a lot of data, their weighted average is closer to no pooling. Why? Because they have a lot of information already, so we don't need to learn as much.  
+
+Because of partial pooling these individual estimates are better as this procedure prevents over and under fitting of your data, leading to increased out of sample predictions. 
+
+---
+Complete pooling
+
+![](mlm-8_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+
+---
+No Pooling
+
+![](mlm-8_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+
+
+---
+Partial pooling aka shrinkage
+
+
+```
+## Warning: Removed 9 rows containing non-finite values (stat_smooth).
+```
+
+```
+## Warning: Removed 9 rows containing missing values (geom_point).
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+
+
+---
+## 5. Parameters that depend on other parameters
+
+How do we figure out the amount of pooling? The extent of shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. We are going to learn the prior based on the data. This is known as a hyperprior
+
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+`$$\mu_i  = \beta_{0[i]}$$` 
+
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+`$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$`
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+
+---
+## Hyperprior
+
+We now have a prior for the population of effects. This is a little different from what we are used to. We typically put a prior directly on parameters. Here, because are using a multi-level model, we are interested in the population of intercepts, not just a single intercept. 
+
+Intercept in simple regression --&gt; a (prior/posterior) distribution of possible scores
+
+Intercept in mlm --&gt; a distribution of group/clusters of intercepts. 
+
+Note how the population we are sampling from can have some distribution (mu, sigma), and that is different from the observed distribution of mu or the distribution of sigma
+
+
+---
+
+
+
+
+
+```r
+mlm.1 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.1")
+```
+
+---
+
+
+```r
+summary(mlm.1)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + (1 | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 5000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 16000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.06      0.01     0.05     0.07 1.00     5578     9505
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.20 1.00     7063    10298
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00    10871    12201
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+Notice we have one less paramter we are estimating. 
+
+```r
+mlm.2 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 ,
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.2")
+```
+
+---
+
+```r
+summary(mlm.2)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 5000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 16000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.00     0.18     0.20 1.00    14875     9860
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.07      0.00     0.07     0.08 1.00    10065     9313
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+```r
+mlm.1 &lt;- add_criterion(mlm.1, "loo")
+mlm.2 &lt;- add_criterion(mlm.2, "loo")
+loo_compare(mlm.1, mlm.2, criterion = "loo")
+```
+
+```
+##       elpd_diff se_diff
+## mlm.1   0.0       0.0  
+## mlm.2 -58.4       8.8
+```
+
+---
+Notice how the intercept is the same in each of these models. Even the CIs. Conceptually they are different though.  The intercept is directly modeled in the standard regression. In the MLM it is better thought of as the map of the distribution of random effects. 
+
+The population is larger than what we have. This is true for almost anything we do. We sample paradigms, we sample people, we usually never have a full population under our study. 
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
+
+---
+
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$`
+`$$\mu_i  = \beta_{0[j]}$$` 
+This line indicates we have varying intercepts that vary over individual j. Much like going from level 1 -&gt; 2, we do priors on that parameter. Indicates that there is a distribution FOR EACH PERSON/GROUP. The distribution needs a prior. 
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+`$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$`
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+
+
+---
+### Parameters that depend on parameters
+
+![](mlm-8_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+
+
+
+---
+What does it mean that we are learning from our data? Or that the priors are based on our data? 
+
+Well we set up the prior for values we are not directly estimating. We are instead using those priors plus data to help us create estimates that are informed by the prior but also by the data. 
+
+---
+###  Partial pooling/Shrinkage 
+
+.small[
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+
+`$$\mu_i  = \beta_{0[i]}$$` 
+
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+
+`$$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$`
+
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+]
+
+Half normal can turn on/off shrinkage. Setting SD to zero says everyone is the same (complete). Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+
+---
+
+
+```r
+summary(mlm.1)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + (1 | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 5000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 16000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.06      0.01     0.05     0.07 1.00     5578     9505
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.20 1.00     7063    10298
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00    10871    12201
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+
+---
+
+
+```r
+library(tidybayes)
+get_variables(mlm.1)
+```
+
+```
+##   [1] "b_Intercept"         "sd_ID__Intercept"    "sigma"              
+##   [4] "r_ID[6,Intercept]"   "r_ID[29,Intercept]"  "r_ID[34,Intercept]" 
+##   [7] "r_ID[36,Intercept]"  "r_ID[37,Intercept]"  "r_ID[48,Intercept]" 
+##  [10] "r_ID[53,Intercept]"  "r_ID[54,Intercept]"  "r_ID[58,Intercept]" 
+##  [13] "r_ID[61,Intercept]"  "r_ID[66,Intercept]"  "r_ID[67,Intercept]" 
+##  [16] "r_ID[69,Intercept]"  "r_ID[71,Intercept]"  "r_ID[74,Intercept]" 
+##  [19] "r_ID[75,Intercept]"  "r_ID[76,Intercept]"  "r_ID[78,Intercept]" 
+##  [22] "r_ID[79,Intercept]"  "r_ID[80,Intercept]"  "r_ID[81,Intercept]" 
+##  [25] "r_ID[82,Intercept]"  "r_ID[85,Intercept]"  "r_ID[86,Intercept]" 
+##  [28] "r_ID[87,Intercept]"  "r_ID[89,Intercept]"  "r_ID[91,Intercept]" 
+##  [31] "r_ID[92,Intercept]"  "r_ID[93,Intercept]"  "r_ID[94,Intercept]" 
+##  [34] "r_ID[96,Intercept]"  "r_ID[97,Intercept]"  "r_ID[98,Intercept]" 
+##  [37] "r_ID[99,Intercept]"  "r_ID[101,Intercept]" "r_ID[102,Intercept]"
+##  [40] "r_ID[103,Intercept]" "r_ID[104,Intercept]" "r_ID[105,Intercept]"
+##  [43] "r_ID[106,Intercept]" "r_ID[110,Intercept]" "r_ID[112,Intercept]"
+##  [46] "r_ID[114,Intercept]" "r_ID[115,Intercept]" "r_ID[116,Intercept]"
+##  [49] "r_ID[120,Intercept]" "r_ID[122,Intercept]" "r_ID[125,Intercept]"
+##  [52] "r_ID[127,Intercept]" "r_ID[129,Intercept]" "r_ID[135,Intercept]"
+##  [55] "r_ID[136,Intercept]" "r_ID[137,Intercept]" "r_ID[140,Intercept]"
+##  [58] "r_ID[141,Intercept]" "r_ID[142,Intercept]" "r_ID[143,Intercept]"
+##  [61] "r_ID[144,Intercept]" "r_ID[146,Intercept]" "r_ID[149,Intercept]"
+##  [64] "r_ID[150,Intercept]" "r_ID[152,Intercept]" "r_ID[153,Intercept]"
+##  [67] "r_ID[155,Intercept]" "r_ID[156,Intercept]" "r_ID[159,Intercept]"
+##  [70] "r_ID[160,Intercept]" "r_ID[162,Intercept]" "r_ID[163,Intercept]"
+##  [73] "r_ID[165,Intercept]" "r_ID[167,Intercept]" "r_ID[169,Intercept]"
+##  [76] "r_ID[171,Intercept]" "r_ID[174,Intercept]" "r_ID[182,Intercept]"
+##  [79] "r_ID[187,Intercept]" "r_ID[189,Intercept]" "r_ID[190,Intercept]"
+##  [82] "r_ID[193,Intercept]" "r_ID[194,Intercept]" "r_ID[201,Intercept]"
+##  [85] "r_ID[204,Intercept]" "r_ID[205,Intercept]" "r_ID[208,Intercept]"
+##  [88] "r_ID[209,Intercept]" "r_ID[211,Intercept]" "r_ID[214,Intercept]"
+##  [91] "r_ID[219,Intercept]" "r_ID[222,Intercept]" "r_ID[223,Intercept]"
+##  [94] "r_ID[229,Intercept]" "prior_Intercept"     "prior_sigma"        
+##  [97] "prior_sd_ID"         "lp__"                "accept_stat__"      
+## [100] "stepsize__"          "treedepth__"         "n_leapfrog__"       
+## [103] "divergent__"         "energy__"
+```
+
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID, term]) 
+```
+
+```
+## Warning: `gather_()` was deprecated in tidyr 1.2.0.
+## Please use `gather()` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
+```
+
+```
+## # A tibble: 1,456,000 × 6
+## # Groups:   ID, term [91]
+##       ID term          r_ID .chain .iteration .draw
+##    &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;
+##  1     6 Intercept -0.0256       1          1     1
+##  2     6 Intercept  0.00522      1          2     2
+##  3     6 Intercept -0.00908      1          3     3
+##  4     6 Intercept  0.0119       1          4     4
+##  5     6 Intercept -0.00512      1          5     5
+##  6     6 Intercept -0.00672      1          6     6
+##  7     6 Intercept  0.0224       1          7     7
+##  8     6 Intercept -0.0432       1          8     8
+##  9     6 Intercept  0.0330       1          9     9
+## 10     6 Intercept -0.0137       1         10    10
+## # … with 1,455,990 more rows
+```
+16000 samples (4 chains * 4k iterations) * 91 people
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID]) 
+```
+
+```
+## Warning: Expected 1 pieces. Additional pieces discarded in 91 rows [1, 2, 3, 4,
+## 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
+```
+
+```
+## # A tibble: 1,456,000 × 5
+## # Groups:   ID [91]
+##       ID     r_ID .chain .iteration .draw
+##    &lt;int&gt;    &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;
+##  1     6 -0.0256       1          1     1
+##  2     6  0.00522      1          2     2
+##  3     6 -0.00908      1          3     3
+##  4     6  0.0119       1          4     4
+##  5     6 -0.00512      1          5     5
+##  6     6 -0.00672      1          6     6
+##  7     6  0.0224       1          7     7
+##  8     6 -0.0432       1          8     8
+##  9     6  0.0330       1          9     9
+## 10     6 -0.0137       1         10    10
+## # … with 1,455,990 more rows
+```
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID, term]) %&gt;%
+ median_qi()
+```
+
+```
+## # A tibble: 91 × 8
+##       ID term           r_ID   .lower   .upper .width .point .interval
+##    &lt;int&gt; &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+##  1     6 Intercept  0.000439 -0.0486   0.0509    0.95 median qi       
+##  2    29 Intercept -0.0487   -0.106    0.0105    0.95 median qi       
+##  3    34 Intercept -0.0614   -0.119   -0.00335   0.95 median qi       
+##  4    36 Intercept -0.0218   -0.0794   0.0352    0.95 median qi       
+##  5    37 Intercept -0.00280  -0.0523   0.0466    0.95 median qi       
+##  6    48 Intercept  0.0231   -0.0266   0.0741    0.95 median qi       
+##  7    53 Intercept  0.000195 -0.0571   0.0587    0.95 median qi       
+##  8    54 Intercept  0.0451   -0.00473  0.0931    0.95 median qi       
+##  9    58 Intercept  0.0369   -0.0132   0.0854    0.95 median qi       
+## 10    61 Intercept -0.0742   -0.132   -0.0159    0.95 median qi       
+## # … with 81 more rows
+```
+
+
+---
+.pull-left[
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID, term]) %&gt;%
+  left_join(mlm %&gt;% select (ID, CON) %&gt;% group_by(ID) %&gt;%  mutate(CON = mean(CON))) %&gt;% 
+ median_qi() %&gt;% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = r_ID), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) 
+```
+]
+
+.pull-right[
+![](mlm-8_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+]
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(b_Intercept, r_ID[ID, term]) 
+```
+
+```
+## # A tibble: 1,456,000 × 7
+## # Groups:   ID, term [91]
+##    .chain .iteration .draw b_Intercept    ID term         r_ID
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;       &lt;dbl&gt;
+##  1      1          1     1       0.191     6 Intercept -0.0256
+##  2      1          1     1       0.191    29 Intercept -0.0652
+##  3      1          1     1       0.191    34 Intercept -0.0327
+##  4      1          1     1       0.191    36 Intercept -0.0205
+##  5      1          1     1       0.191    37 Intercept -0.0213
+##  6      1          1     1       0.191    48 Intercept  0.0379
+##  7      1          1     1       0.191    53 Intercept -0.0189
+##  8      1          1     1       0.191    54 Intercept  0.0788
+##  9      1          1     1       0.191    58 Intercept  0.0550
+## 10      1          1     1       0.191    61 Intercept -0.0949
+## # … with 1,455,990 more rows
+```
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(b_Intercept, r_ID[ID, term]) %&gt;% 
+   mutate(person_I = b_Intercept + r_ID) 
+```
+
+```
+## # A tibble: 1,456,000 × 8
+## # Groups:   ID, term [91]
+##    .chain .iteration .draw b_Intercept    ID term         r_ID person_I
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+##  1      1          1     1       0.191     6 Intercept -0.0256   0.166 
+##  2      1          1     1       0.191    29 Intercept -0.0652   0.126 
+##  3      1          1     1       0.191    34 Intercept -0.0327   0.159 
+##  4      1          1     1       0.191    36 Intercept -0.0205   0.171 
+##  5      1          1     1       0.191    37 Intercept -0.0213   0.170 
+##  6      1          1     1       0.191    48 Intercept  0.0379   0.229 
+##  7      1          1     1       0.191    53 Intercept -0.0189   0.172 
+##  8      1          1     1       0.191    54 Intercept  0.0788   0.270 
+##  9      1          1     1       0.191    58 Intercept  0.0550   0.246 
+## 10      1          1     1       0.191    61 Intercept -0.0949   0.0963
+## # … with 1,455,990 more rows
+```
+
+---
+
+![](mlm-8_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
+
+---
+.pull-left[
+
+```r
+mlm.1 %&gt;%
+  spread_draws(b_Intercept, r_ID[ID, term]) %&gt;%
+   median_qi(person_I = b_Intercept + r_ID) %&gt;%
+  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+.pull-right[
+![](mlm-8_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+
+
+
+---
+## priors for priors
+
+The extent we do the shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. Also known as hyperpriors
+
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+`$$\mu_i  = \beta_{0[i]}$$` 
+
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+`$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$`
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+
+---
+
+
+
+
+
+```r
+mlm.1 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.1")
+```
+
+---
+
+
+```r
+summary(mlm.1)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + (1 | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 5000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 16000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.06      0.01     0.05     0.07 1.00     5578     9505
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.20 1.00     7063    10298
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00    10871    12201
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+Notice we have one less paramter we are estimating. 
+
+```r
+mlm.2 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 ,
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(exponential(1), class = sigma)),
+      iter = 5000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      data = mlm, 
+      file = "mlm.2")
+```
+
+---
+
+```r
+summary(mlm.2)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 5000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 16000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.00     0.18     0.20 1.00    14875     9860
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.07      0.00     0.07     0.08 1.00    10065     9313
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+```r
+mlm.1 &lt;- add_criterion(mlm.1, "loo")
+mlm.2 &lt;- add_criterion(mlm.2, "loo")
+loo_compare(mlm.1, mlm.2, criterion = "loo")
+```
+
+```
+##       elpd_diff se_diff
+## mlm.1   0.0       0.0  
+## mlm.2 -58.4       8.8
+```
+
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+
+---
+
+When we have these priors it indicates that we have some 
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$`
+`$$\mu_i  = \beta_{0[i]}$$` 
+This line indicates we have varying intercepts. Much like going from level 1 -&gt; 2, we do priors on that parameter. Indicates that there is a distribution FOR EACH PERSON/GROUP. The distribution needs a prior. 
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+`$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$`
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+
+
+---
+### Parameters that depend on parameters
+
+![](mlm-8_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+
+
+---
+###  Shrinkage towards mean 
+
+.small[
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+
+`$$\mu_i  = \beta_{0[i]}$$` 
+
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+
+`$$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$`
+
+
+
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+]
+
+Half normal can turn on/off shrinkage. Setting SD to zero says everyone is the same (complete). Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+
+---
+
+
+```r
+summary(mlm.1)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + (1 | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 5000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 16000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.06      0.01     0.05     0.07 1.00     5578     9505
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.20 1.00     7063    10298
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00    10871    12201
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+
+---
+
+
+```r
+library(tidybayes)
+get_variables(mlm.1)
+```
+
+```
+##   [1] "b_Intercept"         "sd_ID__Intercept"    "sigma"              
+##   [4] "r_ID[6,Intercept]"   "r_ID[29,Intercept]"  "r_ID[34,Intercept]" 
+##   [7] "r_ID[36,Intercept]"  "r_ID[37,Intercept]"  "r_ID[48,Intercept]" 
+##  [10] "r_ID[53,Intercept]"  "r_ID[54,Intercept]"  "r_ID[58,Intercept]" 
+##  [13] "r_ID[61,Intercept]"  "r_ID[66,Intercept]"  "r_ID[67,Intercept]" 
+##  [16] "r_ID[69,Intercept]"  "r_ID[71,Intercept]"  "r_ID[74,Intercept]" 
+##  [19] "r_ID[75,Intercept]"  "r_ID[76,Intercept]"  "r_ID[78,Intercept]" 
+##  [22] "r_ID[79,Intercept]"  "r_ID[80,Intercept]"  "r_ID[81,Intercept]" 
+##  [25] "r_ID[82,Intercept]"  "r_ID[85,Intercept]"  "r_ID[86,Intercept]" 
+##  [28] "r_ID[87,Intercept]"  "r_ID[89,Intercept]"  "r_ID[91,Intercept]" 
+##  [31] "r_ID[92,Intercept]"  "r_ID[93,Intercept]"  "r_ID[94,Intercept]" 
+##  [34] "r_ID[96,Intercept]"  "r_ID[97,Intercept]"  "r_ID[98,Intercept]" 
+##  [37] "r_ID[99,Intercept]"  "r_ID[101,Intercept]" "r_ID[102,Intercept]"
+##  [40] "r_ID[103,Intercept]" "r_ID[104,Intercept]" "r_ID[105,Intercept]"
+##  [43] "r_ID[106,Intercept]" "r_ID[110,Intercept]" "r_ID[112,Intercept]"
+##  [46] "r_ID[114,Intercept]" "r_ID[115,Intercept]" "r_ID[116,Intercept]"
+##  [49] "r_ID[120,Intercept]" "r_ID[122,Intercept]" "r_ID[125,Intercept]"
+##  [52] "r_ID[127,Intercept]" "r_ID[129,Intercept]" "r_ID[135,Intercept]"
+##  [55] "r_ID[136,Intercept]" "r_ID[137,Intercept]" "r_ID[140,Intercept]"
+##  [58] "r_ID[141,Intercept]" "r_ID[142,Intercept]" "r_ID[143,Intercept]"
+##  [61] "r_ID[144,Intercept]" "r_ID[146,Intercept]" "r_ID[149,Intercept]"
+##  [64] "r_ID[150,Intercept]" "r_ID[152,Intercept]" "r_ID[153,Intercept]"
+##  [67] "r_ID[155,Intercept]" "r_ID[156,Intercept]" "r_ID[159,Intercept]"
+##  [70] "r_ID[160,Intercept]" "r_ID[162,Intercept]" "r_ID[163,Intercept]"
+##  [73] "r_ID[165,Intercept]" "r_ID[167,Intercept]" "r_ID[169,Intercept]"
+##  [76] "r_ID[171,Intercept]" "r_ID[174,Intercept]" "r_ID[182,Intercept]"
+##  [79] "r_ID[187,Intercept]" "r_ID[189,Intercept]" "r_ID[190,Intercept]"
+##  [82] "r_ID[193,Intercept]" "r_ID[194,Intercept]" "r_ID[201,Intercept]"
+##  [85] "r_ID[204,Intercept]" "r_ID[205,Intercept]" "r_ID[208,Intercept]"
+##  [88] "r_ID[209,Intercept]" "r_ID[211,Intercept]" "r_ID[214,Intercept]"
+##  [91] "r_ID[219,Intercept]" "r_ID[222,Intercept]" "r_ID[223,Intercept]"
+##  [94] "r_ID[229,Intercept]" "prior_Intercept"     "prior_sigma"        
+##  [97] "prior_sd_ID"         "lp__"                "accept_stat__"      
+## [100] "stepsize__"          "treedepth__"         "n_leapfrog__"       
+## [103] "divergent__"         "energy__"
+```
+
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID, term]) 
+```
+
+```
+## # A tibble: 1,456,000 × 6
+## # Groups:   ID, term [91]
+##       ID term          r_ID .chain .iteration .draw
+##    &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;
+##  1     6 Intercept -0.0256       1          1     1
+##  2     6 Intercept  0.00522      1          2     2
+##  3     6 Intercept -0.00908      1          3     3
+##  4     6 Intercept  0.0119       1          4     4
+##  5     6 Intercept -0.00512      1          5     5
+##  6     6 Intercept -0.00672      1          6     6
+##  7     6 Intercept  0.0224       1          7     7
+##  8     6 Intercept -0.0432       1          8     8
+##  9     6 Intercept  0.0330       1          9     9
+## 10     6 Intercept -0.0137       1         10    10
+## # … with 1,455,990 more rows
+```
+16000 samples (4 chains * 4k iterations) * 91 people
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID, term]) %&gt;%
+ median_qi()
+```
+
+```
+## # A tibble: 91 × 8
+##       ID term           r_ID   .lower   .upper .width .point .interval
+##    &lt;int&gt; &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+##  1     6 Intercept  0.000439 -0.0486   0.0509    0.95 median qi       
+##  2    29 Intercept -0.0487   -0.106    0.0105    0.95 median qi       
+##  3    34 Intercept -0.0614   -0.119   -0.00335   0.95 median qi       
+##  4    36 Intercept -0.0218   -0.0794   0.0352    0.95 median qi       
+##  5    37 Intercept -0.00280  -0.0523   0.0466    0.95 median qi       
+##  6    48 Intercept  0.0231   -0.0266   0.0741    0.95 median qi       
+##  7    53 Intercept  0.000195 -0.0571   0.0587    0.95 median qi       
+##  8    54 Intercept  0.0451   -0.00473  0.0931    0.95 median qi       
+##  9    58 Intercept  0.0369   -0.0132   0.0854    0.95 median qi       
+## 10    61 Intercept -0.0742   -0.132   -0.0159    0.95 median qi       
+## # … with 81 more rows
+```
+
+
+---
+.pull-left[
+
+```r
+mlm.1 %&gt;%
+  spread_draws(r_ID[ID, term]) %&gt;%
+  left_join(mlm %&gt;% select (ID, CON) %&gt;% group_by(ID) %&gt;%  mutate(CON = mean(CON))) %&gt;% 
+ median_qi() %&gt;% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = r_ID), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) 
+```
+]
+
+.pull-right[
+![](mlm-8_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+]
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(b_Intercept, r_ID[ID, term]) 
+```
+
+```
+## # A tibble: 1,456,000 × 7
+## # Groups:   ID, term [91]
+##    .chain .iteration .draw b_Intercept    ID term         r_ID
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;       &lt;dbl&gt;
+##  1      1          1     1       0.191     6 Intercept -0.0256
+##  2      1          1     1       0.191    29 Intercept -0.0652
+##  3      1          1     1       0.191    34 Intercept -0.0327
+##  4      1          1     1       0.191    36 Intercept -0.0205
+##  5      1          1     1       0.191    37 Intercept -0.0213
+##  6      1          1     1       0.191    48 Intercept  0.0379
+##  7      1          1     1       0.191    53 Intercept -0.0189
+##  8      1          1     1       0.191    54 Intercept  0.0788
+##  9      1          1     1       0.191    58 Intercept  0.0550
+## 10      1          1     1       0.191    61 Intercept -0.0949
+## # … with 1,455,990 more rows
+```
+
+---
+
+
+```r
+mlm.1 %&gt;%
+  spread_draws(b_Intercept, r_ID[ID, term]) %&gt;% 
+   mutate(person_I = b_Intercept + r_ID) 
+```
+
+```
+## # A tibble: 1,456,000 × 8
+## # Groups:   ID, term [91]
+##    .chain .iteration .draw b_Intercept    ID term         r_ID person_I
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;       &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+##  1      1          1     1       0.191     6 Intercept -0.0256   0.166 
+##  2      1          1     1       0.191    29 Intercept -0.0652   0.126 
+##  3      1          1     1       0.191    34 Intercept -0.0327   0.159 
+##  4      1          1     1       0.191    36 Intercept -0.0205   0.171 
+##  5      1          1     1       0.191    37 Intercept -0.0213   0.170 
+##  6      1          1     1       0.191    48 Intercept  0.0379   0.229 
+##  7      1          1     1       0.191    53 Intercept -0.0189   0.172 
+##  8      1          1     1       0.191    54 Intercept  0.0788   0.270 
+##  9      1          1     1       0.191    58 Intercept  0.0550   0.246 
+## 10      1          1     1       0.191    61 Intercept -0.0949   0.0963
+## # … with 1,455,990 more rows
+```
+
+---
+
+![](mlm-8_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+
+---
+.pull-left[
+
+```r
+mlm.1 %&gt;%
+  spread_draws(b_Intercept, r_ID[ID, term]) %&gt;%
+   median_qi(person_I = b_Intercept + r_ID) %&gt;%
+  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+.pull-right[
+![](mlm-8_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
+]
+
+
+---
+## level 1 predictors
+
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+`$$\mu_i  = \beta_{0[i]} + \beta_{1[i]}$$` 
+
+`$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu}, \sigma_0)$$`
+`$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
+`$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$`
+`$$\beta_{1[j]} \sim {\operatorname{Normal}(0, 1.5)}$$`
+`$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+
+---
+
+
+```r
+get_prior(CON ~ 1 + time + (1|ID), data = mlm)
+```
+
+```
+##                   prior     class      coef group resp dpar nlpar bound
+##                  (flat)         b                                      
+##                  (flat)         b      time                            
+##  student_t(3, 0.2, 2.5) Intercept                                      
+##    student_t(3, 0, 2.5)        sd                                      
+##    student_t(3, 0, 2.5)        sd              ID                      
+##    student_t(3, 0, 2.5)        sd Intercept    ID                      
+##    student_t(3, 0, 2.5)     sigma                                      
+##        source
+##       default
+##  (vectorized)
+##       default
+##       default
+##  (vectorized)
+##  (vectorized)
+##       default
+```
+
+
+---
+
+```r
+mlm.3 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(normal(0, 1.5), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      file = "mlm.3",
+      data = mlm)
+```
+
+
+---
+
+
+```r
+summary(mlm.3)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + time + (1 | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.06      0.01     0.05     0.07 1.00     3864     6442
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.21 1.00     6798     8732
+## time         -0.00      0.00    -0.01     0.00 1.00    15626    10446
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00     6994     9850
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+```r
+posterior_summary(mlm.3)
+```
+
+```
+##                          Estimate    Est.Error          Q2.5         Q97.5
+## b_Intercept          1.939491e-01  0.007712813  1.788109e-01  2.090448e-01
+## b_time              -2.642287e-03  0.002176003 -6.909670e-03  1.616261e-03
+## sd_ID__Intercept     5.648218e-02  0.005555062  4.631710e-02  6.808702e-02
+## sigma                4.735422e-02  0.002895873  4.205904e-02  5.346657e-02
+## r_ID[6,Intercept]    7.419034e-03  0.026240830 -4.421253e-02  5.883781e-02
+## r_ID[29,Intercept]  -4.281891e-02  0.029574351 -1.005269e-01  1.435889e-02
+## r_ID[34,Intercept]  -5.498115e-02  0.029995393 -1.141749e-01  2.472175e-03
+## r_ID[36,Intercept]  -2.058204e-02  0.028741851 -7.875911e-02  3.440857e-02
+## r_ID[37,Intercept]   3.054760e-03  0.026067248 -4.796698e-02  5.400242e-02
+## r_ID[48,Intercept]   2.968242e-02  0.025528236 -2.060562e-02  7.969536e-02
+## r_ID[53,Intercept]   5.737521e-03  0.029794989 -5.269650e-02  6.457783e-02
+## r_ID[54,Intercept]   4.990931e-02  0.025605859 -7.535016e-04  9.985095e-02
+## r_ID[58,Intercept]   3.826777e-02  0.025206984 -1.165739e-02  8.833354e-02
+## r_ID[61,Intercept]  -6.910434e-02  0.030122640 -1.280314e-01 -9.803132e-03
+## r_ID[66,Intercept]   4.218234e-02  0.025566201 -8.205590e-03  9.223098e-02
+## r_ID[67,Intercept]   1.213707e-02  0.022560708 -3.135299e-02  5.606810e-02
+## r_ID[69,Intercept]   1.267375e-02  0.029682988 -4.528781e-02  7.131019e-02
+## r_ID[71,Intercept]  -1.048244e-01  0.025830795 -1.560961e-01 -5.320942e-02
+## r_ID[74,Intercept]   1.405001e-02  0.025613809 -3.612866e-02  6.437617e-02
+## r_ID[75,Intercept]   5.947353e-02  0.029339243  2.252762e-03  1.166773e-01
+## r_ID[76,Intercept]  -7.289485e-02  0.025201875 -1.226560e-01 -2.308109e-02
+## r_ID[78,Intercept]   4.722298e-02  0.025352916 -2.594173e-03  9.665651e-02
+## r_ID[79,Intercept]  -4.290080e-02  0.029037911 -1.000820e-01  1.425582e-02
+## r_ID[80,Intercept]  -3.326979e-02  0.029776480 -9.207528e-02  2.589812e-02
+## r_ID[81,Intercept]   4.443395e-02  0.025247278 -5.782848e-03  9.412126e-02
+## r_ID[82,Intercept]   1.195515e-01  0.023340931  7.343634e-02  1.656569e-01
+## r_ID[85,Intercept]  -2.662763e-02  0.029322802 -8.386757e-02  3.148573e-02
+## r_ID[86,Intercept]  -5.644405e-02  0.029841378 -1.143562e-01  1.283583e-03
+## r_ID[87,Intercept]  -5.912488e-02  0.029723806 -1.178597e-01 -8.786936e-04
+## r_ID[89,Intercept]  -4.494892e-02  0.025297918 -9.381081e-02  4.890164e-03
+## r_ID[91,Intercept]  -1.491748e-02  0.025086231 -6.405805e-02  3.463879e-02
+## r_ID[92,Intercept]   1.004498e-02  0.024973618 -3.948330e-02  5.937632e-02
+## r_ID[93,Intercept]   5.059425e-02  0.024698570  2.733473e-03  9.962189e-02
+## r_ID[94,Intercept]  -5.853860e-02  0.025390268 -1.079600e-01 -8.802196e-03
+## r_ID[96,Intercept]   2.856292e-02  0.029095955 -2.898379e-02  8.654900e-02
+## r_ID[97,Intercept]   4.937818e-02  0.022921443  4.544126e-03  9.373475e-02
+## r_ID[98,Intercept]  -4.266123e-02  0.022824896 -8.764356e-02  2.297863e-03
+## r_ID[99,Intercept]  -6.711240e-03  0.022497758 -5.106227e-02  3.803031e-02
+## r_ID[101,Intercept]  4.402368e-02  0.025470304 -6.251097e-03  9.363846e-02
+## r_ID[102,Intercept] -1.714759e-03  0.022292199 -4.565683e-02  4.154442e-02
+## r_ID[103,Intercept] -2.847326e-02  0.029259488 -8.632192e-02  2.837154e-02
+## r_ID[104,Intercept] -1.347371e-02  0.028843993 -7.021944e-02  4.302141e-02
+## r_ID[105,Intercept] -2.308073e-02  0.025169412 -7.317021e-02  2.625219e-02
+## r_ID[106,Intercept]  5.860497e-03  0.025255127 -4.425990e-02  5.620021e-02
+## r_ID[110,Intercept] -6.368177e-03  0.025263303 -5.613311e-02  4.375126e-02
+## r_ID[112,Intercept] -7.793198e-02  0.025159754 -1.273173e-01 -2.781575e-02
+## r_ID[114,Intercept] -4.652203e-02  0.025210266 -9.601784e-02  3.358688e-03
+## r_ID[115,Intercept] -3.973242e-02  0.024830549 -8.876090e-02  9.805139e-03
+## r_ID[116,Intercept] -3.764837e-02  0.025397419 -8.693952e-02  1.227513e-02
+## r_ID[120,Intercept]  1.177870e-01  0.029913401  5.828233e-02  1.759775e-01
+## r_ID[122,Intercept] -1.668847e-02  0.025162501 -6.598338e-02  3.262030e-02
+## r_ID[125,Intercept]  3.784595e-03  0.025152112 -4.572776e-02  5.344738e-02
+## r_ID[127,Intercept]  2.905972e-02  0.025305439 -2.026780e-02  7.883765e-02
+## r_ID[129,Intercept] -4.601959e-02  0.028933012 -1.033473e-01  1.025853e-02
+## r_ID[135,Intercept]  8.639082e-02  0.025673739  3.569700e-02  1.357685e-01
+## r_ID[136,Intercept]  8.143516e-02  0.026117936  2.945684e-02  1.323153e-01
+## r_ID[137,Intercept]  7.383084e-02  0.030134019  1.451772e-02  1.330866e-01
+## r_ID[140,Intercept] -4.825924e-02  0.029282022 -1.052051e-01  8.776869e-03
+## r_ID[141,Intercept]  9.262969e-04  0.028907942 -5.621326e-02  5.831094e-02
+## r_ID[142,Intercept] -9.052725e-03  0.028898741 -6.552209e-02  4.840018e-02
+## r_ID[143,Intercept]  8.747789e-02  0.030067293  2.962939e-02  1.471431e-01
+## r_ID[144,Intercept] -1.225620e-02  0.029860824 -7.068427e-02  4.744754e-02
+## r_ID[146,Intercept]  1.432312e-02  0.029239258 -4.413521e-02  7.140959e-02
+## r_ID[149,Intercept]  2.796893e-02  0.029052486 -2.860185e-02  8.541854e-02
+## r_ID[150,Intercept]  8.211556e-03  0.028904843 -4.852721e-02  6.524207e-02
+## r_ID[152,Intercept]  2.235345e-02  0.028868218 -3.325636e-02  7.927920e-02
+## r_ID[153,Intercept] -3.227535e-02  0.029402165 -9.010739e-02  2.505443e-02
+## r_ID[155,Intercept] -3.450623e-02  0.029036127 -9.060752e-02  2.277626e-02
+## r_ID[156,Intercept] -4.373203e-02  0.025576809 -9.345720e-02  6.389130e-03
+## r_ID[159,Intercept] -5.043936e-02  0.029307514 -1.081919e-01  5.818591e-03
+## r_ID[160,Intercept] -1.030455e-02  0.029348246 -6.799906e-02  4.736803e-02
+## r_ID[162,Intercept]  1.633952e-01  0.026561506  1.103707e-01  2.142611e-01
+## r_ID[163,Intercept] -4.222599e-02  0.028785142 -9.823470e-02  1.413631e-02
+## r_ID[165,Intercept]  4.144897e-03  0.029641698 -5.380074e-02  6.243871e-02
+## r_ID[167,Intercept] -4.295627e-02  0.029393037 -1.015411e-01  1.419215e-02
+## r_ID[169,Intercept]  4.019178e-02  0.029486832 -1.794578e-02  9.734342e-02
+## r_ID[171,Intercept]  2.768589e-02  0.029225463 -2.928291e-02  8.517501e-02
+## r_ID[174,Intercept]  5.407465e-02  0.029397228 -3.621611e-03  1.122678e-01
+## r_ID[182,Intercept] -2.573701e-03  0.028634580 -5.808321e-02  5.292612e-02
+## r_ID[187,Intercept] -9.220195e-02  0.029793212 -1.502808e-01 -3.421022e-02
+## r_ID[189,Intercept]  2.328387e-02  0.029196015 -3.451657e-02  8.171869e-02
+## r_ID[190,Intercept] -4.728372e-02  0.028971572 -1.038431e-01  9.256861e-03
+## r_ID[193,Intercept]  1.157554e-02  0.029514800 -4.641967e-02  6.982759e-02
+## r_ID[194,Intercept] -5.168505e-02  0.029712163 -1.099540e-01  7.363872e-03
+## r_ID[201,Intercept] -2.259154e-03  0.029082865 -5.938735e-02  5.522874e-02
+## r_ID[204,Intercept]  7.120945e-02  0.029640853  1.258974e-02  1.291972e-01
+## r_ID[205,Intercept]  1.728636e-03  0.029244414 -5.574343e-02  5.873253e-02
+## r_ID[208,Intercept]  1.079736e-02  0.028846113 -4.521759e-02  6.721135e-02
+## r_ID[209,Intercept]  1.683880e-02  0.029185751 -4.006676e-02  7.381735e-02
+## r_ID[211,Intercept] -3.759777e-02  0.029271666 -9.375741e-02  1.961463e-02
+## r_ID[214,Intercept]  6.349577e-02  0.029579373  5.765230e-03  1.213980e-01
+## r_ID[219,Intercept]  3.061013e-02  0.029496630 -2.788235e-02  8.795262e-02
+## r_ID[222,Intercept] -3.928325e-02  0.028991450 -9.603424e-02  1.699590e-02
+## r_ID[223,Intercept] -1.657205e-02  0.029024543 -7.367882e-02  4.121445e-02
+## r_ID[229,Intercept] -3.660571e-02  0.029579187 -9.431552e-02  2.120114e-02
+## prior_Intercept     -1.572604e-02  1.494112832 -2.907301e+00  2.920120e+00
+## prior_b              7.486540e-04  1.493062151 -2.946380e+00  2.898942e+00
+## prior_sigma          1.017570e+00  1.012476231  2.507605e-02  3.704261e+00
+## prior_sd_ID          1.186040e+00  0.895411893  5.039146e-02  3.339957e+00
+## lp__                 2.298706e+02 11.261722359  2.065848e+02  2.504778e+02
+```
+
+---
+
+
+```r
+pp_check(mlm.3)
+```
+
+```
+## Using 10 posterior draws for ppc type 'dens_overlay' by default.
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+
+
+---
+
+
+```r
+plot(mlm.3)
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
+
+---
+
+
+
+---
+
+
+
+---
+## Mr. P
+aka multilevel regression with poststratification
+
+One of the biggest problems with psych data is that it is unrepresentative. Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+
+https://www.monicaalexander.com/posts/2019-08-07-mrp/
+https://bookdown.org/content/4857/models-with-memory.html#summary-bonus-post-stratification-in-an-example
+
+
+---
+
+```r
+mrp &lt;-load("mrp.rds")
+mrp
+```
+
+
+```r
+head(d)
+```
+
+
+```r
+head(cell_counts)
+```
+
+---
+
+
+
+```r
+mlm.mrp &lt;-
+  brm(family = binomial,
+      kept_name | trials(1) ~ 1 + (1 | age_group) + (1 | decade_married) + (1 | educ_group) + (1 | state_name),
+      prior = c(prior(normal(-1, 1), class = Intercept),
+                prior(exponential(1), class = sd)),
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      control = list(adapt_delta = .98),
+      data = d,
+      file = "mlm.mrp")
+```
+
+
+---
+
+
+
+
+---
+
+
+```r
+age_prop &lt;- 
+  cell_counts %&gt;% 
+  group_by(age_group) %&gt;% 
+  mutate(prop = n / sum(n)) %&gt;% 
+  ungroup()
+
+age_prop
+```
+
+
+---
+.small[
+
+```r
+p &lt;- 
+  add_predicted_draws(mlm.mrp, newdata = age_prop %&gt;% 
+                        filter(age_group &gt; 20, 
+                               age_group &lt; 80, 
+                               decade_married &gt; 1969),
+                      allow_new_levels = T)
+p
+```
+]
+
+6,058 census categories * 4,000 samples = 24,232,000
+
+---
+
+If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights, which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
+
+`$$\frac{\sum_i N_i p_i}{\sum_i N_i}$$`
+
+---
+
+
+```r
+p &lt;-
+  p %&gt;% 
+  group_by(age_group, .draw) %&gt;% 
+  summarise(kept_name_predict = sum(.prediction * prop)) %&gt;% 
+  group_by(age_group) %&gt;% 
+  mean_qi(kept_name_predict)
+
+p
+```
+
+
+
+---
+.pull-left[
+
+]
+
+.pull-right[The survey has an over-sample of highly educated women, who are more likely to keep their name, hence the regularization of MLM]
+
+---
+### Not limited to surveys
+
+Example (using brms) with experimental data -- can you generalize from your sample of undergraduates to other undergraduates at your university, let alone undergraduates in general, let alone young adults, to say nothing about the population of humans. 
+https://arxiv.org/pdf/1906.11323.pdf
+
+
+---
+## Random slopes
+
+.pull-left[
+1. Modeling the joint population of intercepts and slopes, which means by modeling their covariance. We will use joint multivariate Gaussian distribution b/c it is max entropy distribution
+
+2. Involves lots of interactions
+]
+.pull-right[
+Level 1:
+`$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
+Level 2: 
+`$${\beta}_{0j} = \gamma_{00} + \gamma_{01}G_{j} +   U_{0j}$$`  
+`$${\beta}_{1j} = \gamma_{10} + \gamma_{11}G_{j} + U_{1j}$$`
+
+`$$\begin{pmatrix} {U}_{0j} \\ {U}_{1j} \end{pmatrix}
+\sim \mathcal{N} \begin{pmatrix} 
+  0,      \tau_{00}^{2} &amp; \tau_{01}\\ 
+  0,  \tau_{01} &amp; \tau_{10}^{2}
+\end{pmatrix}$$`
+
+
+
+]
+
+---
+## Random slopes
+
+.pull-left[.tiny[
+`$$y_i \sim \text{Normal}(\mu, \sigma)$$` 
+`$$\mu_i = \beta_{0j} + \beta_{1j}X_{ij}$$`
+`$$(\beta_{0j}, \beta_{1j}) \sim \text{MVNormal}  ([\beta_0, \beta_1], \Sigma)$$`
+
+
+`$$\Sigma = 
+\left(\begin{array}{cc}
+\sigma_{\beta_0}&amp;0\\
+0&amp;\sigma_{\beta_1}
+\end{array}\right)R
+\left(\begin{array}{cc}
+\sigma_{\beta_0}&amp;0\\
+0&amp;\sigma_{\beta_1}
+\end{array}\right)$$`
+`$$\beta_0 \sim \text{Normal}(0, 1)$$`
+
+`$$\beta_1 \sim \text{Normal}(0, 1)$$`
+`$$\sigma_{\beta_0} \sim \text{Exponential}(1)$$`
+`$$\sigma_{\beta_1} \sim \text{Exponential}(1)$$`
+`$$\sigma \sim \text{Exponential}(1)$$`
+`$$R \sim \text{LKJcorr(2)}$$`
+
+]]
+
+.pull-right[
+where Σ is the covariance matrix 
+`$$\Sigma = 
+\left(\begin{array}{cc}
+\sigma^2_{\beta_0}&amp;\sigma_{\beta_0}\sigma_{\beta_1}\rho\\
+\sigma_{\beta_0}\sigma_{\beta_1}\rho&amp;\sigma^2_{\beta_1}
+\end{array}\right)$$`
+
+and R is the correlation matrix R = `\(\begin{bmatrix} 1 &amp; \rho \\ \rho &amp; 1 \end{bmatrix}\)`.
+
+With more random effects, this matrix expands.
+
+
+
+]
+
+
+---
+## lkj
+.pull-left[Our regularizing prior for correlation matrices. Has one parameter to tune the potential associations. 
+]
+
+.pull-right[
+![](mlm-8_files/figure-html/unnamed-chunk-73-1.png)&lt;!-- --&gt;
+
+]
+
+
+---
+
+
+```r
+get_prior(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      data = mlm)
+```
+
+```
+##                   prior     class      coef group resp dpar nlpar bound
+##                  (flat)         b                                      
+##                  (flat)         b      time                            
+##                  lkj(1)       cor                                      
+##                  lkj(1)       cor              ID                      
+##  student_t(3, 0.2, 2.5) Intercept                                      
+##    student_t(3, 0, 2.5)        sd                                      
+##    student_t(3, 0, 2.5)        sd              ID                      
+##    student_t(3, 0, 2.5)        sd Intercept    ID                      
+##    student_t(3, 0, 2.5)        sd      time    ID                      
+##    student_t(3, 0, 2.5)     sigma                                      
+##        source
+##       default
+##  (vectorized)
+##       default
+##  (vectorized)
+##       default
+##       default
+##  (vectorized)
+##  (vectorized)
+##  (vectorized)
+##       default
+```
+
+6 parameters we are estimating
+
+---
+
+
+```r
+mlm.4 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(normal(0, 1.5), class = sd, coef = Intercept, group = ID), 
+                prior(normal(0, 1.5), class = sd, coef = time, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.4",
+      data = mlm)
+```
+
+```
+## Compiling Stan program...
+```
+
+```
+## Trying to compile a simple C file
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
+## Start sampling
+```
+
+```
+## Warning: There were 76 divergent transitions after warmup. See
+## https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+## to find out why this is a problem and how to eliminate them.
+```
+
+```
+## Warning: Examine the pairs() plot to diagnose sampling problems
+```
+
+
+---
+
+
+```r
+summary(mlm.4)
+```
+
+```
+## Warning: There were 76 divergent transitions after warmup. Increasing
+## adapt_delta above 0.8 may help. See http://mc-stan.org/misc/
+## warnings.html#divergent-transitions-after-warmup
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + time + (1 + time | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)           0.06      0.01     0.05     0.07 1.00     2794     3889
+## sd(time)                0.00      0.00     0.00     0.01 1.00      846      598
+## cor(Intercept,time)    -0.09      0.40    -0.77     0.72 1.00     6391     6214
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.21 1.00     2070     2360
+## time         -0.00      0.00    -0.01     0.00 1.00     4965     3550
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00     2813     1970
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+![](mlm-8_files/figure-html/unnamed-chunk-77-1.png)&lt;!-- --&gt;
+
+---
+
+
+```
+## `summarise()` has grouped output by 'ID'. You can override using the `.groups`
+## argument.
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-78-1.png)&lt;!-- --&gt;
+
+
+---
+
+
+```r
+get_variables(mlm.4)
+```
+
+```
+##   [1] "b_Intercept"             "b_time"                 
+##   [3] "sd_ID__Intercept"        "sd_ID__time"            
+##   [5] "cor_ID__Intercept__time" "sigma"                  
+##   [7] "r_ID[6,Intercept]"       "r_ID[29,Intercept]"     
+##   [9] "r_ID[34,Intercept]"      "r_ID[36,Intercept]"     
+##  [11] "r_ID[37,Intercept]"      "r_ID[48,Intercept]"     
+##  [13] "r_ID[53,Intercept]"      "r_ID[54,Intercept]"     
+##  [15] "r_ID[58,Intercept]"      "r_ID[61,Intercept]"     
+##  [17] "r_ID[66,Intercept]"      "r_ID[67,Intercept]"     
+##  [19] "r_ID[69,Intercept]"      "r_ID[71,Intercept]"     
+##  [21] "r_ID[74,Intercept]"      "r_ID[75,Intercept]"     
+##  [23] "r_ID[76,Intercept]"      "r_ID[78,Intercept]"     
+##  [25] "r_ID[79,Intercept]"      "r_ID[80,Intercept]"     
+##  [27] "r_ID[81,Intercept]"      "r_ID[82,Intercept]"     
+##  [29] "r_ID[85,Intercept]"      "r_ID[86,Intercept]"     
+##  [31] "r_ID[87,Intercept]"      "r_ID[89,Intercept]"     
+##  [33] "r_ID[91,Intercept]"      "r_ID[92,Intercept]"     
+##  [35] "r_ID[93,Intercept]"      "r_ID[94,Intercept]"     
+##  [37] "r_ID[96,Intercept]"      "r_ID[97,Intercept]"     
+##  [39] "r_ID[98,Intercept]"      "r_ID[99,Intercept]"     
+##  [41] "r_ID[101,Intercept]"     "r_ID[102,Intercept]"    
+##  [43] "r_ID[103,Intercept]"     "r_ID[104,Intercept]"    
+##  [45] "r_ID[105,Intercept]"     "r_ID[106,Intercept]"    
+##  [47] "r_ID[110,Intercept]"     "r_ID[112,Intercept]"    
+##  [49] "r_ID[114,Intercept]"     "r_ID[115,Intercept]"    
+##  [51] "r_ID[116,Intercept]"     "r_ID[120,Intercept]"    
+##  [53] "r_ID[122,Intercept]"     "r_ID[125,Intercept]"    
+##  [55] "r_ID[127,Intercept]"     "r_ID[129,Intercept]"    
+##  [57] "r_ID[135,Intercept]"     "r_ID[136,Intercept]"    
+##  [59] "r_ID[137,Intercept]"     "r_ID[140,Intercept]"    
+##  [61] "r_ID[141,Intercept]"     "r_ID[142,Intercept]"    
+##  [63] "r_ID[143,Intercept]"     "r_ID[144,Intercept]"    
+##  [65] "r_ID[146,Intercept]"     "r_ID[149,Intercept]"    
+##  [67] "r_ID[150,Intercept]"     "r_ID[152,Intercept]"    
+##  [69] "r_ID[153,Intercept]"     "r_ID[155,Intercept]"    
+##  [71] "r_ID[156,Intercept]"     "r_ID[159,Intercept]"    
+##  [73] "r_ID[160,Intercept]"     "r_ID[162,Intercept]"    
+##  [75] "r_ID[163,Intercept]"     "r_ID[165,Intercept]"    
+##  [77] "r_ID[167,Intercept]"     "r_ID[169,Intercept]"    
+##  [79] "r_ID[171,Intercept]"     "r_ID[174,Intercept]"    
+##  [81] "r_ID[182,Intercept]"     "r_ID[187,Intercept]"    
+##  [83] "r_ID[189,Intercept]"     "r_ID[190,Intercept]"    
+##  [85] "r_ID[193,Intercept]"     "r_ID[194,Intercept]"    
+##  [87] "r_ID[201,Intercept]"     "r_ID[204,Intercept]"    
+##  [89] "r_ID[205,Intercept]"     "r_ID[208,Intercept]"    
+##  [91] "r_ID[209,Intercept]"     "r_ID[211,Intercept]"    
+##  [93] "r_ID[214,Intercept]"     "r_ID[219,Intercept]"    
+##  [95] "r_ID[222,Intercept]"     "r_ID[223,Intercept]"    
+##  [97] "r_ID[229,Intercept]"     "r_ID[6,time]"           
+##  [99] "r_ID[29,time]"           "r_ID[34,time]"          
+## [101] "r_ID[36,time]"           "r_ID[37,time]"          
+## [103] "r_ID[48,time]"           "r_ID[53,time]"          
+## [105] "r_ID[54,time]"           "r_ID[58,time]"          
+## [107] "r_ID[61,time]"           "r_ID[66,time]"          
+## [109] "r_ID[67,time]"           "r_ID[69,time]"          
+## [111] "r_ID[71,time]"           "r_ID[74,time]"          
+## [113] "r_ID[75,time]"           "r_ID[76,time]"          
+## [115] "r_ID[78,time]"           "r_ID[79,time]"          
+## [117] "r_ID[80,time]"           "r_ID[81,time]"          
+## [119] "r_ID[82,time]"           "r_ID[85,time]"          
+## [121] "r_ID[86,time]"           "r_ID[87,time]"          
+## [123] "r_ID[89,time]"           "r_ID[91,time]"          
+## [125] "r_ID[92,time]"           "r_ID[93,time]"          
+## [127] "r_ID[94,time]"           "r_ID[96,time]"          
+## [129] "r_ID[97,time]"           "r_ID[98,time]"          
+## [131] "r_ID[99,time]"           "r_ID[101,time]"         
+## [133] "r_ID[102,time]"          "r_ID[103,time]"         
+## [135] "r_ID[104,time]"          "r_ID[105,time]"         
+## [137] "r_ID[106,time]"          "r_ID[110,time]"         
+## [139] "r_ID[112,time]"          "r_ID[114,time]"         
+## [141] "r_ID[115,time]"          "r_ID[116,time]"         
+## [143] "r_ID[120,time]"          "r_ID[122,time]"         
+## [145] "r_ID[125,time]"          "r_ID[127,time]"         
+## [147] "r_ID[129,time]"          "r_ID[135,time]"         
+## [149] "r_ID[136,time]"          "r_ID[137,time]"         
+## [151] "r_ID[140,time]"          "r_ID[141,time]"         
+## [153] "r_ID[142,time]"          "r_ID[143,time]"         
+## [155] "r_ID[144,time]"          "r_ID[146,time]"         
+## [157] "r_ID[149,time]"          "r_ID[150,time]"         
+## [159] "r_ID[152,time]"          "r_ID[153,time]"         
+## [161] "r_ID[155,time]"          "r_ID[156,time]"         
+## [163] "r_ID[159,time]"          "r_ID[160,time]"         
+## [165] "r_ID[162,time]"          "r_ID[163,time]"         
+## [167] "r_ID[165,time]"          "r_ID[167,time]"         
+## [169] "r_ID[169,time]"          "r_ID[171,time]"         
+## [171] "r_ID[174,time]"          "r_ID[182,time]"         
+## [173] "r_ID[187,time]"          "r_ID[189,time]"         
+## [175] "r_ID[190,time]"          "r_ID[193,time]"         
+## [177] "r_ID[194,time]"          "r_ID[201,time]"         
+## [179] "r_ID[204,time]"          "r_ID[205,time]"         
+## [181] "r_ID[208,time]"          "r_ID[209,time]"         
+## [183] "r_ID[211,time]"          "r_ID[214,time]"         
+## [185] "r_ID[219,time]"          "r_ID[222,time]"         
+## [187] "r_ID[223,time]"          "r_ID[229,time]"         
+## [189] "lp__"                    "accept_stat__"          
+## [191] "stepsize__"              "treedepth__"            
+## [193] "n_leapfrog__"            "divergent__"            
+## [195] "energy__"
+```
+
+---
+
+
+```r
+mlm.4 %&gt;%
+  spread_draws(r_ID[ID,term]) 
+```
+
+```
+## # A tibble: 2,184,000 × 6
+## # Groups:   ID, term [182]
+##       ID term          r_ID .chain .iteration .draw
+##    &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;
+##  1     6 Intercept -0.0295       1          1     1
+##  2     6 Intercept  0.0729       1          2     2
+##  3     6 Intercept  0.0235       1          3     3
+##  4     6 Intercept  0.00862      1          4     4
+##  5     6 Intercept  0.00694      1          5     5
+##  6     6 Intercept -0.0274       1          6     6
+##  7     6 Intercept -0.0208       1          7     7
+##  8     6 Intercept  0.0284       1          8     8
+##  9     6 Intercept  0.0561       1          9     9
+## 10     6 Intercept  0.0238       1         10    10
+## # … with 2,183,990 more rows
+```
+
+---
+
+
+```r
+mlm.4 %&gt;%
+  spread_draws(b_time, r_ID[ID, term]) %&gt;%
+  filter(term == "time") %&gt;% 
+  mutate(person_t = b_time + r_ID) %&gt;% 
+ median_qi()
+```
+
+```
+## # A tibble: 91 × 14
+## # Groups:   ID [91]
+##       ID term    b_time b_time.lower b_time.upper     r_ID r_ID.lower r_ID.upper
+##    &lt;int&gt; &lt;chr&gt;    &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+##  1     6 time  -0.00286     -0.00724      0.00143  1.68e-5   -0.00983    0.00969
+##  2    29 time  -0.00286     -0.00724      0.00143 -3.37e-4   -0.0127     0.00815
+##  3    34 time  -0.00286     -0.00724      0.00143 -6.28e-4   -0.0147     0.00716
+##  4    36 time  -0.00286     -0.00724      0.00143  1.57e-4   -0.00833    0.0118 
+##  5    37 time  -0.00286     -0.00724      0.00143 -2.08e-4   -0.0116     0.00788
+##  6    48 time  -0.00286     -0.00724      0.00143 -1.91e-5   -0.0105     0.00902
+##  7    53 time  -0.00286     -0.00724      0.00143 -1.86e-4   -0.0119     0.00804
+##  8    54 time  -0.00286     -0.00724      0.00143  1.80e-4   -0.00837    0.0113 
+##  9    58 time  -0.00286     -0.00724      0.00143  5.68e-4   -0.00672    0.0154 
+## 10    61 time  -0.00286     -0.00724      0.00143 -1.28e-4   -0.0112     0.0101 
+## # … with 81 more rows, and 6 more variables: person_t &lt;dbl&gt;,
+## #   person_t.lower &lt;dbl&gt;, person_t.upper &lt;dbl&gt;, .width &lt;dbl&gt;, .point &lt;chr&gt;,
+## #   .interval &lt;chr&gt;
+```
+
+---
+.pull-left[
+
+```r
+mlm.4 %&gt;%
+  spread_draws(b_time, r_ID[ID, term]) %&gt;%
+  filter(term == "time") %&gt;% 
+  median_qi(person_t = b_time + r_ID) %&gt;%
+  ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval() + xlab("est") + ylab("ID")
+```
+]
+
+.pull-right[
+![](mlm-8_files/figure-html/unnamed-chunk-83-1.png)&lt;!-- --&gt;
+]
+
+---
+
+coef = fixef + raneff
+
+```r
+ranef(mlm.4)
+```
+
+```
+## $ID
+## , , Intercept
+## 
+##         Estimate  Est.Error          Q2.5         Q97.5
+## 6    0.007032090 0.03180004 -0.0554702641  0.0708512063
+## 29  -0.039131397 0.03411267 -0.1049182425  0.0286209230
+## 34  -0.047550890 0.03614359 -0.1156478098  0.0257998068
+## 36  -0.022790743 0.03047843 -0.0833615752  0.0365798986
+## 37   0.006637814 0.03133684 -0.0523624041  0.0709590467
+## 48   0.030631798 0.03133956 -0.0292662277  0.0927351658
+## 53   0.008509275 0.03359267 -0.0574726001  0.0764213412
+## 54   0.047811788 0.03006017 -0.0118531671  0.1070165180
+## 58   0.034456147 0.02736150 -0.0194935282  0.0880422474
+## 61  -0.067952407 0.03533981 -0.1388685304 -0.0003681100
+## 66   0.036008441 0.02768541 -0.0184856558  0.0896750435
+## 67   0.012113706 0.02558596 -0.0366068674  0.0626212240
+## 69   0.012839714 0.02970437 -0.0452879970  0.0710322737
+## 71  -0.103479430 0.02799394 -0.1583578806 -0.0485696173
+## 74   0.013001938 0.02745833 -0.0398081666  0.0671172525
+## 75   0.057864694 0.02986250 -0.0006419066  0.1154790955
+## 76  -0.073508533 0.02688474 -0.1270857176 -0.0212328616
+## 78   0.043522897 0.02713140 -0.0092341400  0.0971564610
+## 79  -0.045417030 0.03081466 -0.1072976334  0.0142411270
+## 80  -0.032657232 0.03308487 -0.0988873276  0.0335584932
+## 81   0.040021714 0.02754466 -0.0159950523  0.0925063031
+## 82   0.115326601 0.02559646  0.0645162961  0.1657033590
+## 85  -0.027545727 0.02954987 -0.0850521587  0.0301331438
+## 86  -0.057692978 0.02943503 -0.1156415012 -0.0005755610
+## 87  -0.058862363 0.02955763 -0.1175031554 -0.0002990115
+## 89  -0.046897771 0.02511793 -0.0957948981  0.0031738654
+## 91  -0.015690958 0.02586395 -0.0655657249  0.0354463924
+## 92   0.009326901 0.02582367 -0.0420411142  0.0599389972
+## 93   0.052525953 0.02693623  0.0007961089  0.1067813742
+## 94  -0.058920073 0.02596569 -0.1111969399 -0.0089607939
+## 96   0.028295543 0.02968385 -0.0296537406  0.0875079584
+## 97   0.048252566 0.02348267  0.0019297531  0.0945015257
+## 98  -0.039900833 0.02387570 -0.0863195918  0.0068685063
+## 99  -0.007793788 0.02368016 -0.0544844723  0.0387162563
+## 101  0.043579633 0.02577154 -0.0071675882  0.0940544604
+## 102 -0.001899073 0.02329404 -0.0476521428  0.0446132972
+## 103 -0.029034238 0.02905266 -0.0861632526  0.0285251208
+## 104 -0.013971626 0.02982053 -0.0723159166  0.0449377166
+## 105 -0.023634813 0.02479119 -0.0722308403  0.0253117240
+## 106  0.005286326 0.02575037 -0.0452898090  0.0551663631
+## 110 -0.004290490 0.02677938 -0.0560911619  0.0489559221
+## 112 -0.080691763 0.02597839 -0.1315576646 -0.0295549456
+## 114 -0.048594093 0.02534555 -0.0987168464  0.0002619832
+## 115 -0.042507674 0.02618473 -0.0944186171  0.0084134293
+## 116 -0.039856653 0.02624656 -0.0906435688  0.0112538621
+## 120  0.118853457 0.03023836  0.0587390031  0.1783233909
+## 122 -0.018643219 0.02674626 -0.0741649506  0.0327337510
+## 125  0.003104822 0.02595437 -0.0478858462  0.0545333702
+## 127  0.029340479 0.02570198 -0.0208100950  0.0801981127
+## 129 -0.047510396 0.02945784 -0.1042748109  0.0100533015
+## 135  0.084588682 0.02641769  0.0323906061  0.1364187093
+## 136  0.083019999 0.02696131  0.0309114454  0.1359202646
+## 137  0.074039388 0.02960991  0.0163276534  0.1328631644
+## 140 -0.049510648 0.02982800 -0.1075956778  0.0102270019
+## 141 -0.001792734 0.02916652 -0.0596257907  0.0543946428
+## 142 -0.009531275 0.02965018 -0.0675846468  0.0486438378
+## 143  0.087460559 0.02967186  0.0291289590  0.1452260992
+## 144 -0.014936850 0.02983294 -0.0734043865  0.0436499317
+## 146  0.013465817 0.03018877 -0.0465983586  0.0725471012
+## 149  0.028523578 0.02993869 -0.0303488584  0.0874428656
+## 150  0.007413901 0.02948315 -0.0499070572  0.0656738825
+## 152  0.022348745 0.02957153 -0.0363954695  0.0806294641
+## 153 -0.030537602 0.02989684 -0.0886891191  0.0292155853
+## 155 -0.035761821 0.03001483 -0.0935070852  0.0235486270
+## 156 -0.043404308 0.02655909 -0.0947515105  0.0100223323
+## 159 -0.051721825 0.02975038 -0.1100352645  0.0075649370
+## 160 -0.013484356 0.03018357 -0.0738594033  0.0445608341
+## 162  0.166744519 0.02850421  0.1116355435  0.2238113905
+## 163 -0.041561955 0.03060426 -0.1022158095  0.0184920792
+## 165  0.005903939 0.02948072 -0.0510336892  0.0649141149
+## 167 -0.043255484 0.03075034 -0.1045183040  0.0177750753
+## 169  0.039958010 0.02991014 -0.0192166738  0.0984195408
+## 171  0.028988490 0.03005054 -0.0306038557  0.0890536384
+## 174  0.055164221 0.02996189 -0.0050991344  0.1150514038
+## 182 -0.003816643 0.03010322 -0.0629022955  0.0540190308
+## 187 -0.093251234 0.03029186 -0.1529992532 -0.0345135480
+## 189  0.020343541 0.02971587 -0.0394325148  0.0780735038
+## 190 -0.046477628 0.02996875 -0.1053150746  0.0117867929
+## 193  0.012924706 0.02948019 -0.0453627665  0.0705659380
+## 194 -0.051180494 0.03022968 -0.1107383359  0.0084950596
+## 201 -0.002950039 0.03017212 -0.0629763745  0.0564972365
+## 204  0.073730299 0.03010899  0.0152782898  0.1323898168
+## 205  0.002521054 0.02949479 -0.0548147823  0.0612683934
+## 208  0.007950486 0.03054352 -0.0534347175  0.0677647739
+## 209  0.014853038 0.03001943 -0.0436294338  0.0722164275
+## 211 -0.036715637 0.02951558 -0.0946731529  0.0219001170
+## 214  0.063894073 0.03029430  0.0045394292  0.1248826080
+## 219  0.028944880 0.03009647 -0.0301044610  0.0877248794
+## 222 -0.041822283 0.03025439 -0.1019367464  0.0175432968
+## 223 -0.014732913 0.02992517 -0.0734695787  0.0438006320
+## 229 -0.034499502 0.03003393 -0.0934638581  0.0245964717
+## 
+## , , time
+## 
+##          Estimate   Est.Error         Q2.5       Q97.5
+## 6    6.010314e-05 0.004419947 -0.009832995 0.009687424
+## 29  -1.090615e-03 0.004850918 -0.012729872 0.008147644
+## 34  -1.699630e-03 0.005095745 -0.014676497 0.007163408
+## 36   6.991601e-04 0.004729920 -0.008327235 0.011758454
+## 37  -8.194405e-04 0.004447838 -0.011644011 0.007883766
+## 48  -2.645697e-04 0.004573087 -0.010534813 0.009017937
+## 53  -7.632212e-04 0.004500545 -0.011868533 0.008039106
+## 54   6.334783e-04 0.004582338 -0.008374947 0.011349012
+## 58   1.740434e-03 0.005138411 -0.006717485 0.015381215
+## 61  -3.249512e-04 0.004799919 -0.011222038 0.010092098
+## 66   2.303021e-03 0.004741206 -0.004908665 0.014462855
+## 67  -4.907693e-05 0.004232447 -0.009466253 0.009366428
+## 69  -5.413282e-04 0.004580439 -0.011391546 0.009151429
+## 71  -9.108518e-04 0.005748756 -0.014456233 0.009968012
+## 74   4.367289e-04 0.004042683 -0.007929828 0.009803834
+## 75   1.421024e-03 0.005185538 -0.007668926 0.014698753
+## 76   5.457847e-05 0.005272343 -0.011530855 0.011932516
+## 78   1.387216e-03 0.004363638 -0.006302908 0.012401512
+## 79   9.021309e-04 0.005008660 -0.008278450 0.013179738
+## 80  -4.179028e-04 0.004295849 -0.010271996 0.008521716
+## 81   1.590892e-03 0.004483212 -0.005755793 0.012856326
+## 82   1.623495e-03 0.005105826 -0.007659517 0.013891145
+## 85   4.937680e-04 0.005003730 -0.009462668 0.012465211
+## 86   7.052923e-04 0.005440082 -0.009465548 0.014508752
+## 87  -1.458294e-03 0.005564090 -0.015316146 0.008308716
+## 89   8.959811e-04 0.005229134 -0.008776760 0.014720183
+## 91  -9.931181e-05 0.004750587 -0.010548600 0.010283127
+## 92  -1.157167e-04 0.004572388 -0.010181155 0.010153223
+## 93  -1.139412e-03 0.004990684 -0.013874099 0.007858121
+## 94  -3.778756e-04 0.005133161 -0.012683325 0.010206392
+## 96   3.753713e-04 0.005086148 -0.009576361 0.012834102
+## 97   6.594863e-04 0.004913287 -0.008754528 0.012770551
+## 98  -2.033992e-03 0.005349992 -0.016347168 0.006580452
+## 99   4.648733e-04 0.004826585 -0.009300150 0.012434837
+## 101  2.752231e-04 0.004871975 -0.010145914 0.011331558
+## 102 -1.718001e-04 0.004496817 -0.010185984 0.009602449
+## 103  1.032745e-04 0.004800656 -0.010070441 0.011081479
+## 104 -5.340417e-05 0.004968837 -0.011099222 0.010862114
+## 105 -2.195678e-04 0.004797335 -0.010676838 0.010248567
+## 106 -1.569646e-04 0.004564426 -0.010419649 0.009884449
+## 110 -1.090635e-03 0.004626370 -0.012788451 0.007413617
+## 112  1.030868e-03 0.005098529 -0.008417323 0.013521630
+## 114  1.046884e-03 0.004872264 -0.007874154 0.013289634
+## 115  1.815437e-03 0.005306679 -0.006695419 0.015885274
+## 116  1.439400e-03 0.005035825 -0.007130066 0.014283454
+## 120 -1.023747e-03 0.006262485 -0.015658510 0.010895952
+## 122  7.088859e-04 0.005118808 -0.008879680 0.012921372
+## 125  3.687396e-04 0.004881212 -0.009577372 0.012102816
+## 127 -6.175338e-04 0.004662874 -0.011730744 0.008833942
+## 129  4.858953e-04 0.005232458 -0.010075381 0.012772929
+## 135  1.315708e-03 0.005457619 -0.008580395 0.014604868
+## 136 -1.024185e-03 0.005456156 -0.013866550 0.008714416
+## 137 -6.083165e-04 0.005441037 -0.013408111 0.010488177
+## 140  2.816545e-04 0.005175945 -0.010417550 0.012328673
+## 141  1.318490e-03 0.004861173 -0.007123685 0.013574227
+## 142  5.059037e-05 0.004773482 -0.010434315 0.010913393
+## 143 -4.225859e-05 0.005448704 -0.012013696 0.011966939
+## 144  9.319187e-04 0.004707790 -0.007632757 0.013127837
+## 146  7.188749e-04 0.004861107 -0.008809028 0.012251942
+## 149 -6.656767e-04 0.004643266 -0.011888119 0.008564456
+## 150  4.750857e-04 0.004786569 -0.009432335 0.011879726
+## 152 -7.679259e-04 0.005100358 -0.013562151 0.009164098
+## 153 -1.245186e-03 0.004783185 -0.013383690 0.007266202
+## 155  4.816568e-04 0.004828301 -0.009363760 0.012006836
+## 156 -9.954806e-04 0.004900972 -0.012825369 0.008105255
+## 159  4.997144e-04 0.005275282 -0.010305630 0.013325515
+## 160  1.561236e-03 0.005051847 -0.006860439 0.014495809
+## 162 -2.381572e-03 0.007132303 -0.020364104 0.009745393
+## 163 -2.162413e-04 0.004987682 -0.011446929 0.010101617
+## 165 -9.627465e-04 0.004777384 -0.012801025 0.008267942
+## 167 -6.251961e-04 0.004960509 -0.012378518 0.009424372
+## 169 -1.906230e-04 0.004732864 -0.010712866 0.009935003
+## 171 -7.189904e-04 0.004794246 -0.012221226 0.008736795
+## 174 -9.376270e-04 0.004944960 -0.013139009 0.008147678
+## 182  6.306101e-04 0.005035711 -0.009160003 0.012632784
+## 187 -3.422356e-05 0.005222129 -0.011331328 0.011530822
+## 189  1.642309e-03 0.005303151 -0.007050268 0.015735957
+## 190 -1.131373e-03 0.005152569 -0.014239672 0.008199883
+## 193 -9.121878e-04 0.004562276 -0.012295353 0.007512592
+## 194 -6.758859e-04 0.004751381 -0.011993581 0.008638152
+## 201  4.328670e-04 0.004613777 -0.009253656 0.011461667
+## 204 -1.404786e-03 0.005399716 -0.014900370 0.008072425
+## 205 -6.617579e-04 0.004626679 -0.011983250 0.008607588
+## 208  1.738977e-03 0.005350798 -0.006724015 0.015403387
+## 209  1.270853e-03 0.005059188 -0.007915569 0.014338524
+## 211 -1.225229e-03 0.004874310 -0.013518133 0.007582483
+## 214 -4.685257e-04 0.004948127 -0.012025706 0.009477341
+## 219  9.885494e-04 0.004717402 -0.007788048 0.012755181
+## 222  1.309889e-03 0.005106561 -0.007527350 0.014760755
+## 223 -2.116362e-03 0.005338315 -0.015987938 0.006037035
+## 229 -1.790086e-03 0.005148905 -0.015826582 0.006303768
+```
+
+---
+coef = fixef + raneff
+
+```r
+coef(mlm.4)
+```
+
+```
+## $ID
+## , , Intercept
+## 
+##       Estimate  Est.Error       Q2.5     Q97.5
+## 6   0.20171989 0.03251059 0.13750312 0.2673435
+## 29  0.15555640 0.03473815 0.08819594 0.2252001
+## 34  0.14713691 0.03685170 0.07787664 0.2238560
+## 36  0.17189706 0.03045724 0.11233354 0.2318760
+## 37  0.20132561 0.03194382 0.14149057 0.2667105
+## 48  0.22531960 0.03179806 0.16462181 0.2898051
+## 53  0.20319707 0.03409726 0.13665573 0.2722312
+## 54  0.24249959 0.03036796 0.18364338 0.3013958
+## 58  0.22914395 0.02717073 0.17483027 0.2820754
+## 61  0.12673539 0.03597283 0.05406747 0.1956006
+## 66  0.23069624 0.02749256 0.17545958 0.2843383
+## 67  0.20680150 0.02526305 0.15771299 0.2566998
+## 69  0.20752751 0.02947034 0.14983587 0.2650431
+## 71  0.09120837 0.02802703 0.03708610 0.1463433
+## 74  0.20768974 0.02723170 0.15538189 0.2609062
+## 75  0.25255249 0.02967433 0.19487187 0.3100971
+## 76  0.12117927 0.02666513 0.06822421 0.1734233
+## 78  0.23821070 0.02698533 0.18367662 0.2917616
+## 79  0.14927077 0.03086764 0.08747484 0.2081556
+## 80  0.16203057 0.03335846 0.09484525 0.2278213
+## 81  0.23470951 0.02716919 0.18066896 0.2864635
+## 82  0.31001440 0.02512747 0.25919002 0.3590173
+## 85  0.16714207 0.02907127 0.10996526 0.2245896
+## 86  0.13699482 0.02920833 0.08015999 0.1934243
+## 87  0.13582544 0.02929440 0.07811053 0.1933450
+## 89  0.14779003 0.02468520 0.10013478 0.1962227
+## 91  0.17899684 0.02523439 0.12968097 0.2290708
+## 92  0.20401470 0.02535042 0.15402492 0.2544512
+## 93  0.24721375 0.02657827 0.19613036 0.2997618
+## 94  0.13576773 0.02564757 0.08536643 0.1873409
+## 96  0.22298334 0.02920111 0.16628545 0.2812910
+## 97  0.24294037 0.02282948 0.19774820 0.2878161
+## 98  0.15478697 0.02343546 0.10917191 0.2006923
+## 99  0.18689401 0.02307430 0.14235067 0.2326283
+## 101 0.23826743 0.02543629 0.18789314 0.2878176
+## 102 0.19278873 0.02275220 0.14824651 0.2374513
+## 103 0.16565356 0.02850885 0.11014366 0.2216405
+## 104 0.18071617 0.02916423 0.12321623 0.2381710
+## 105 0.17105299 0.02416875 0.12382342 0.2188940
+## 106 0.19997412 0.02532293 0.14978719 0.2494271
+## 110 0.19039731 0.02659031 0.13861292 0.2424776
+## 112 0.11399604 0.02549469 0.06435440 0.1641027
+## 114 0.14609371 0.02487223 0.09626912 0.1947035
+## 115 0.15218012 0.02562156 0.10191224 0.2018302
+## 116 0.15483115 0.02582830 0.10392287 0.2052645
+## 120 0.31354126 0.02993661 0.25375058 0.3726479
+## 122 0.17604458 0.02605886 0.12187735 0.2265629
+## 125 0.19779262 0.02551462 0.14741503 0.2482364
+## 127 0.22402828 0.02518847 0.17484179 0.2731817
+## 129 0.14717740 0.02895833 0.09162746 0.2050315
+## 135 0.27927648 0.02591151 0.22804502 0.3296874
+## 136 0.27770780 0.02646762 0.22653644 0.3295660
+## 137 0.26872719 0.02922749 0.21120277 0.3263484
+## 140 0.14517715 0.02927288 0.08789323 0.2024329
+## 141 0.19289506 0.02882150 0.13584784 0.2492869
+## 142 0.18515652 0.02945760 0.12609507 0.2435695
+## 143 0.28214836 0.02934254 0.22402554 0.3393824
+## 144 0.17975095 0.02959928 0.12180859 0.2379770
+## 146 0.20815362 0.02986022 0.14954022 0.2666135
+## 149 0.22321138 0.02964664 0.16529993 0.2811923
+## 150 0.20210170 0.02923043 0.14503022 0.2597313
+## 152 0.21703654 0.02915277 0.15964906 0.2739909
+## 153 0.16415020 0.02969960 0.10600318 0.2235676
+## 155 0.15892598 0.02989898 0.10095248 0.2174839
+## 156 0.15128349 0.02606565 0.10138512 0.2035467
+## 159 0.14296597 0.02928070 0.08555370 0.2011268
+## 160 0.18120344 0.03006192 0.12041910 0.2394359
+## 162 0.36143232 0.02814263 0.30627371 0.4174293
+## 163 0.15312584 0.03043600 0.09285709 0.2130956
+## 165 0.20059174 0.02932864 0.14298880 0.2577966
+## 167 0.15143231 0.03034211 0.09120576 0.2112737
+## 169 0.23464581 0.02953953 0.17703578 0.2927537
+## 171 0.22367629 0.03001910 0.16413951 0.2840034
+## 174 0.24985202 0.03002647 0.19076708 0.3107176
+## 182 0.19087116 0.02960811 0.13288455 0.2484280
+## 187 0.10143656 0.03010749 0.04184754 0.1607680
+## 189 0.21503134 0.02931605 0.15692167 0.2713747
+## 190 0.14821017 0.02987817 0.08911770 0.2059073
+## 193 0.20761250 0.02926758 0.14949603 0.2644099
+## 194 0.14350731 0.03000586 0.08461529 0.2019691
+## 201 0.19173776 0.03006883 0.13301871 0.2507665
+## 204 0.26841810 0.03002119 0.20974087 0.3280914
+## 205 0.19720885 0.02924950 0.14096409 0.2546109
+## 208 0.20263828 0.03013446 0.14286700 0.2615889
+## 209 0.20954084 0.02975373 0.15220680 0.2667657
+## 211 0.15797216 0.02946397 0.10006136 0.2170193
+## 214 0.25858187 0.03027313 0.19866233 0.3199360
+## 219 0.22363268 0.02985182 0.16461710 0.2815493
+## 222 0.15286552 0.03018489 0.09325073 0.2122633
+## 223 0.17995489 0.02975563 0.12154453 0.2380129
+## 229 0.16018830 0.02976138 0.10187026 0.2181239
+## 
+## , , time
+## 
+##          Estimate   Est.Error         Q2.5       Q97.5
+## 6   -0.0027993324 0.004905349 -0.013456356 0.007335883
+## 29  -0.0039500505 0.005402552 -0.016753503 0.005893653
+## 34  -0.0045590657 0.005643229 -0.018765421 0.004812877
+## 36  -0.0021602754 0.005117437 -0.012110046 0.009108598
+## 37  -0.0036788760 0.004897145 -0.015208616 0.005036647
+## 48  -0.0031240053 0.004935497 -0.014134239 0.006609285
+## 53  -0.0036226567 0.004932615 -0.015515456 0.005335721
+## 54  -0.0022259573 0.004926215 -0.011908541 0.008683603
+## 58  -0.0011190011 0.005409692 -0.010406300 0.012227345
+## 61  -0.0031843868 0.005355366 -0.014763791 0.007778022
+## 66  -0.0005564144 0.004913169 -0.008572207 0.011461233
+## 67  -0.0029085125 0.004587238 -0.012947793 0.006251773
+## 69  -0.0034007637 0.005004082 -0.014861588 0.006396339
+## 71  -0.0037702873 0.006211459 -0.018068250 0.007886105
+## 74  -0.0024227067 0.004370027 -0.011490686 0.006989069
+## 75  -0.0014384111 0.005469330 -0.011339752 0.011642713
+## 76  -0.0028048570 0.005782966 -0.015309859 0.009296044
+## 78  -0.0014722195 0.004591232 -0.009713028 0.009250576
+## 79  -0.0019573047 0.005477896 -0.012375666 0.010663739
+## 80  -0.0032773383 0.004786246 -0.013779815 0.006127855
+## 81  -0.0012685439 0.004724624 -0.009475687 0.009986335
+## 82  -0.0012359408 0.005223581 -0.010862810 0.010791389
+## 85  -0.0023656675 0.005473320 -0.013280368 0.010033504
+## 86  -0.0021541432 0.005821751 -0.013318291 0.010963782
+## 87  -0.0043177294 0.006109065 -0.019382597 0.005925484
+## 89  -0.0019634544 0.005575404 -0.012569798 0.011293150
+## 91  -0.0029587473 0.005229815 -0.014304809 0.007566635
+## 92  -0.0029751522 0.004963082 -0.013693362 0.007276687
+## 93  -0.0039988474 0.005381842 -0.017276901 0.005340381
+## 94  -0.0032373111 0.005775697 -0.016707169 0.008230793
+## 96  -0.0024840642 0.005426426 -0.013277676 0.009715279
+## 97  -0.0021999492 0.005201204 -0.012164801 0.009753821
+## 98  -0.0048934279 0.005928300 -0.020211078 0.004477944
+## 99  -0.0023945622 0.005193404 -0.012830841 0.009248486
+## 101 -0.0025842124 0.005274683 -0.014032151 0.008463339
+## 102 -0.0030312356 0.004907363 -0.013635505 0.006734460
+## 103 -0.0027561610 0.005223272 -0.013652161 0.008208656
+## 104 -0.0029128397 0.005446875 -0.014819071 0.008223995
+## 105 -0.0030790034 0.005274521 -0.014784652 0.007684679
+## 106 -0.0030164001 0.004959952 -0.013672031 0.007026640
+## 110 -0.0039500708 0.005100215 -0.016351618 0.005027094
+## 112 -0.0018285676 0.005513244 -0.012401572 0.010846301
+## 114 -0.0018125519 0.005224027 -0.011665791 0.010353516
+## 115 -0.0010439981 0.005665306 -0.010913294 0.012666263
+## 116 -0.0014200352 0.005473439 -0.011098261 0.011533717
+## 120 -0.0038831824 0.006572868 -0.019559271 0.008327298
+## 122 -0.0021505496 0.005461083 -0.012762787 0.010423689
+## 125 -0.0024906959 0.005266069 -0.013343684 0.009274643
+## 127 -0.0034769693 0.005179762 -0.015287201 0.006312780
+## 129 -0.0023735402 0.005605486 -0.013626798 0.010060099
+## 135 -0.0015437277 0.005688629 -0.012228108 0.011621392
+## 136 -0.0038836204 0.005787722 -0.017169238 0.006193435
+## 137 -0.0034677521 0.005817381 -0.016821313 0.007905041
+## 140 -0.0025777810 0.005639977 -0.014169392 0.009603945
+## 141 -0.0015409452 0.005202568 -0.010695960 0.010864606
+## 142 -0.0028088452 0.005231592 -0.014170862 0.008285189
+## 143 -0.0029016941 0.005784348 -0.015567892 0.008955688
+## 144 -0.0019275168 0.005096412 -0.011410279 0.010150528
+## 146 -0.0021405606 0.005212765 -0.012317151 0.009844093
+## 149 -0.0035251122 0.005109418 -0.015344401 0.006045482
+## 150 -0.0023843498 0.005194129 -0.012994619 0.009348111
+## 152 -0.0036273615 0.005687341 -0.017336149 0.006756026
+## 153 -0.0041046217 0.005307082 -0.017279627 0.005172293
+## 155 -0.0023777787 0.005249682 -0.012800875 0.009458973
+## 156 -0.0038549161 0.005337491 -0.016400054 0.005601755
+## 159 -0.0023597211 0.005727347 -0.014175321 0.010467728
+## 160 -0.0012981993 0.005458560 -0.010688116 0.011815105
+## 162 -0.0052410072 0.007418274 -0.023713406 0.007215036
+## 163 -0.0030756769 0.005596814 -0.015503251 0.007831577
+## 165 -0.0038221820 0.005251677 -0.016306237 0.005694388
+## 167 -0.0034846316 0.005476009 -0.016470237 0.007074291
+## 169 -0.0030500585 0.005082765 -0.014421020 0.007099047
+## 171 -0.0035784259 0.005235086 -0.015569756 0.005975172
+## 174 -0.0037970625 0.005392863 -0.016717687 0.005840061
+## 182 -0.0022288255 0.005326022 -0.012461038 0.009549229
+## 187 -0.0028936591 0.005759224 -0.015440758 0.009091483
+## 189 -0.0012171264 0.005551421 -0.010618566 0.012727530
+## 190 -0.0039908081 0.005704278 -0.017859743 0.005976018
+## 193 -0.0037716233 0.005134838 -0.016076025 0.005470812
+## 194 -0.0035353214 0.005312363 -0.015963528 0.006408822
+## 201 -0.0024265685 0.005041287 -0.012749822 0.009001278
+## 204 -0.0042642218 0.005851914 -0.018967549 0.005449723
+## 205 -0.0035211934 0.005105904 -0.015599355 0.006137623
+## 208 -0.0011204586 0.005549109 -0.010355993 0.012383228
+## 209 -0.0015885822 0.005336846 -0.011385610 0.011047505
+## 211 -0.0040846645 0.005398367 -0.017022163 0.005401300
+## 214 -0.0033279612 0.005403123 -0.015781400 0.007022285
+## 219 -0.0018708861 0.005101129 -0.011603864 0.009991378
+## 222 -0.0015495467 0.005532939 -0.011229314 0.012015204
+## 223 -0.0049757978 0.005860947 -0.020034164 0.004104961
+## 229 -0.0046495214 0.005703865 -0.019369913 0.004475755
+```
+
+---
+
+```r
+mlm.5 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(gamma(3, .1), class = sd, coef = Intercept, group = ID), 
+                prior(gamma(3, .1), class = sd, coef = time, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.5",
+      data = mlm)
+```
+
+```
+## Compiling Stan program...
+```
+
+```
+## Trying to compile a simple C file
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
+## Start sampling
+```
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-87-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+summary(mlm.5)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: CON ~ 1 + time + (1 + time | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)           0.06      0.01     0.05     0.08 1.00     3740     5788
+## sd(time)                0.01      0.00     0.00     0.02 1.00     1818     3795
+## cor(Intercept,time)    -0.25      0.30    -0.73     0.45 1.00     6746     6667
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.19      0.01     0.18     0.21 1.00     4829     7133
+## time         -0.00      0.00    -0.01     0.00 1.00    12133    10094
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.05      0.00     0.04     0.05 1.00     3578     4618
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+
+![](mlm-8_files/figure-html/unnamed-chunk-89-1.png)&lt;!-- --&gt;
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
