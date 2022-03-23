@@ -150,7 +150,7 @@ Notice on the subscript of X that these predictors vary across group (j) and wit
 
 ---
 
-Level 2 takes the parameters at level 1 and decomposes them into a fixed component ($\gamma$) that reflects the average and, if desired, the individual deviations around that fixed effect (U).
+Level 2 takes the parameters at level 1 and decomposes them into a fixed component ( $\gamma$ ) that reflects the average and, if desired, the individual deviations around that fixed effect (U).
 
 level 1
 $${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$
@@ -220,8 +220,8 @@ $${\beta}_{1j} = \gamma_{10} + U_{1j}$$
 ]
 
 Combined
-  $${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + U_{0j} + U_{1j}(Time_{ij}) + \varepsilon_{ij}$$
-  $${Y}_{ij} = [\gamma_{00} + \gamma_{01}G_{j}+ U_{0j}]  + [(\gamma_{10}  + U_{1j})(Time_{ij})] + \varepsilon_{ij}$$
+  $${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + U_{0j} + U_{1j}(X_{ij}) + \varepsilon_{ij}$$
+  $${Y}_{ij} = [\gamma_{00} + \gamma_{01}G_{j}+ U_{0j}]  + [(\gamma_{10}  + U_{1j})(X_{ij})] + \varepsilon_{ij}$$
 
 ---
 ## Cross level interactions
@@ -235,9 +235,9 @@ $${\beta}_{1j} = \gamma_{10} + \gamma_{11}G_{j} + U_{1j}$$
 ]
 
 Combined
-  $${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + \gamma_{11}(G_{j}*Time_{ij}) +  U_{0j} + U_{1j}(Time_{ij}) + \varepsilon_{ij}$$
+  $${Y}_{ij} = \gamma_{00} + \gamma_{01}G_{j}+  \gamma_{10} (X_{ij}) + \gamma_{11}(G_{j}*X{ij}) +  U_{0j} + U_{1j}(X{ij}) + \varepsilon_{ij}$$
 
-$${Y}_{ij} = [\gamma_{00} + U_{0j} +\gamma_{01}G_{j}] + [(\gamma_{10}  + \gamma_{11}G_{j}+  U_{1j})(Time_{ij})] + \varepsilon_{ij}$$
+$${Y}_{ij} = [\gamma_{00} + U_{0j} +\gamma_{01}G_{j}] + [(\gamma_{10}  + \gamma_{11}G_{j}+  U_{1j})(X{ij})] + \varepsilon_{ij}$$
 
 ---
 ## Centering
@@ -373,8 +373,6 @@ Regression inception. MLM is multiple simple regressions jammed together into a 
 $${Y}_{ij} = \beta_{0j}  + \beta_{NEWDVj}X_{ij} + \varepsilon_{ij}$$
 The subscript NEWDVj indicates that people have different values of the regression coefficient. That vector of values can then be predicted, just like a normal, simple regression equation. 
 
-level 2
-$${\beta}_{0j} = \gamma_{00} + U_{0j}$$  
 $${\beta}_{NEWDVj} = \gamma_{10} + U_{1j}$$  
 
 
@@ -408,7 +406,7 @@ ggplot(mlm, aes(x = week, y = SMN7)) + geom_point() + stat_smooth(method="lm") +
 Combine levels into one model
 
 L1
-$$Y_{ti} = \beta_{0i} + \beta_{1i}X_{ti} + \varepsilon_{ti}$$
+$$Y_{ij} = \beta_{0j} + \beta_{1i}X_{ij} + \varepsilon_{ij}$$
 The subscript i means that people can have different values for $\beta_{0}$ and $\beta_{1}$
 
 
@@ -416,31 +414,31 @@ The subscript i means that people can have different values for $\beta_{0}$ and 
 ### Level 1 coefficient becomes the DV for level 2
 
 L1
-$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+$$Y_{ij} = \beta_{0j} + \beta_{1i}Study_{ij} + \varepsilon_{ij}$$
       
 L2
-$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$
-$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$
+$$\beta_{0j} = \gamma_{00} +\gamma_{01}Age_i+ U_{0j}$$
+$$\beta_{1j} = \gamma_{10} +\gamma_{11}Age_j+ U_{1j}$$
 Our B0 coefficient is the intercept, and is interpreted when our predictors = 0. People differ on this effect, seen with the i subscript. We can ask questions (with simple regressions) about that random variable. 
 
 ---
-$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+$$Y_{ij} = \beta_{0j} + \beta_{1j}Study_{ij} + \varepsilon_{ij}$$
       
-$$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$
-$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$
-There is some average effect ( $\gamma_{00}$ ; fixed effect) that people vary around like an intercept. You can put in predictors (e.g., Age) and there is person specific residual ( $U_{0i}$ ). 
+$$\beta_{0j} = \gamma_{00} +\gamma_{01}Age_j+ U_{0j}$$
+$$\beta_{1j} = \gamma_{10} +\gamma_{11}Age_j+ U_{1j}$$
+There is some average effect ( $\gamma_{00}$ ; fixed effect) that people vary around like an intercept. You can put in predictors (e.g., Age) and there is person specific residual ( $U_{0j}$ ). 
 
 ---
 ### Residuals and random effects 
 
-L1: $$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+L1: $$Y_{ij} = \beta_{0j} + \beta_{1i}Study_{ij} + \varepsilon_{ij}$$
       
-L2: $$\beta_{0i} = \gamma_{00} +\gamma_{01}Age_i+ U_{0i}$$
-$$\beta_{1i} = \gamma_{10} +\gamma_{11}Age_i+ U_{1i}$$
+L2: $$\beta_{0j} = \gamma_{00} +\gamma_{01}Age_j+ U_{0j}$$
+$$\beta_{1j} = \gamma_{10} +\gamma_{11}Age_j+ U_{1j}$$
 
-Together a person's intercept ( $\beta_{0i}$ ) or slope ( $\beta_{1i}$ ) is made up of the fixed effect, any regression coefficients and $U_{0i}$ and $U_{1i}$ reflect deviations from the fixed effect (plus any predictors). 
+Together a person's intercept ( $\beta_{0j}$ ) or slope ( $\beta_{1j}$ ) is made up of the fixed effect, any regression coefficients and $U_{0j}$ and $U_{1i}$ reflect deviations from the fixed effect (plus any predictors). 
 
-Josh's test score $\beta_{0i} = 10$ = avg score ( $\gamma_{00} = 5$ ) + age effect ( $\gamma_{01} = -2$ ) + random effect ( $U_{0i} = 7$ )
+Josh's test score $\beta_{0j} = 10$ = avg score ( $\gamma_{00} = 5$ ) + age effect ( $\gamma_{01} = -2$ ) + random effect ( $U_{0j} = 7$ )
 
 
 ---
@@ -467,12 +465,12 @@ To the extent that we can put variance into different "piles" we will have more 
 
 Fit a simple model that does not include study time.  
 L1  
-$$Y_{t i} = \beta_{0i} +  \varepsilon_{ti}$$
+$$Y_{ij} = \beta_{0j} +  \varepsilon_{ij}$$
       
 L2
-$$\beta_{0i} = \gamma_{00} + U_{0i}$$
+$$\beta_{0j} = \gamma_{00} + U_{0j}$$
 Combined 
-$$Y_{t i} =  \gamma_{00} + U_{0i} +  \varepsilon_{ti}$$
+$$Y_{ ij} =  \gamma_{00} + U_{0j} +  \varepsilon_{ij}$$
       
 ---
 People differ in the average effect
@@ -500,13 +498,13 @@ g2
 Fit a model that includes study time. 
 
 L1
-$$Y_{t i} = \beta_{0i} + \beta_{1i}Study_{ti} + \varepsilon_{ti}$$
+$$Y_{ij} = \beta_{0j} + \beta_{1j}Study_{ij} + \varepsilon_{ij}$$
       
 L2
-$$\beta_{0i} = \gamma_{00} + U_{0i}$$
-$$\beta_{1i} = \gamma_{10} + U_{1i}$$
+$$\beta_{0j} = \gamma_{00} + U_{0j}$$
+$$\beta_{1j} = \gamma_{10} + U_{1j}$$
 Combined 
-$$Y_{t i} =  \gamma_{00} +  \gamma_{10}Study_{ti} + U_{0i} + U_{1i}Study_{ti} + \varepsilon_{ti}$$
+$$Y_{ij} =  \gamma_{00} +  \gamma_{10}Study_{ij} + U_{0j} + U_{1j}Study_{ij} + \varepsilon_{ij}$$
 
 ---
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
@@ -527,7 +525,7 @@ By fitting random intercept (people differ on their average score) and random sl
 
 For standard regression, we think of error as existing in one big bucket called $\varepsilon$ . Everything that we do not know goes into that bucket, from measurement error to unmeasured important factors. 
 
-For MLMs we will be breaking up unexplained variance ( $\varepsilon$ ) into multiple buckets ( $U_0$ + $U_1$ + $e_{ti}$ and potentially more).
+For MLMs we will be breaking up unexplained variance ( $\varepsilon$ ) into multiple buckets ( $U_0$ + $U_1$ + $e_{ij}$ and potentially more).
 
 
 ---
@@ -549,16 +547,16 @@ We do this in standard regression where we make predictions based on values not 
 
 
 L1
-$$Y_{ti} = \beta_{0i} +  \varepsilon_{ti}$$
+$$Y_{ij} = \beta_{0j} +  \varepsilon_{ij}$$
 L2
-$$\beta_{0} = \gamma_{00} + U_{0i}$$
+$$\beta_{0} = \gamma_{00} + U_{0j}$$
  
-Where does $U_{0i}$ come from? If we calculated each by hand, through taking the average test score for each person i and subtracting that from the grand mean test score, would that equal $U_{0i}$ ?
+Where does $U_{0j}$ come from? If we calculated each by hand, through taking the average test score for each person i and subtracting that from the grand mean test score, would that equal $U_{0j}$ ?
  
 ---
 ## Complete, partial and no pooling
 
-Complete pooling assumes everyone is the same, with $U_{0i}$ being zero for everyone. $Y_{t i} =  \gamma_{00} +  \varepsilon_{ti}$ 
+Complete pooling assumes everyone is the same, with $U_{0j}$ being zero for everyone. $Y_{ij} =  \gamma_{00} +  \varepsilon_{ij}$ 
 
 This is standard ANOVA type model. Everyone who is in a group is thought to be the same. Why do scores differ within a group? Error. Everyone is equally exchangable. 
 
@@ -595,7 +593,7 @@ ggplot(mlm, aes(x = week, y = SMN7, group = ID)) + geom_line() +  geom_point() +
 ---
 Partial pooling aka shrinkage
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 library(viridis)
 ggplot(mlm, aes(x = week, y = SMN7, group = ID, colour = ID)) + stat_smooth(method = "lm", se = FALSE, alpha = .5) +scale_color_viridis()+  ylab("test score") + xlab("study amount") + geom_point()
 ```
@@ -604,15 +602,18 @@ ggplot(mlm, aes(x = week, y = SMN7, group = ID, colour = ID)) + stat_smooth(meth
 ---
 ## 5. Parameters that depend on other parameters
 
-How do we figure out the amount of pooling? The extent of shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. We are going to learn the prior based on the data. This is known as a hyperprior
+.pull-left[ The extent of shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. This is known as a hyperprior
+]
 
+.pull-right[
 $$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
-$$\mu_i  = \beta_{0[i]}$$ 
+$$\mu_i  = \beta_{0[j]}$$ 
 
 $$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
 $${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
 $$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
 $$\sigma \sim {\operatorname{Exponential}(1)}$$
+]
 
 ---
 ## Hyperprior
@@ -1012,7 +1013,7 @@ $$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$
 $$\sigma \sim {\operatorname{Exponential}(1)}$$
 ]
 
-Half normal can turn on/off shrinkage. Setting SD to zero says everyone is the same (complete). Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+SD of random effect can turn on/off shrinkage. Setting SD to zero says everyone is the same. Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
 
 ---
 
@@ -1140,28 +1141,126 @@ mlm.1 %>%
 
 
 
+---
+set prior for random effect to almost zero. 
+```{r}
 
-
+mlm.1p <- 
+  brm(family = gaussian,
+      CON ~ 1 + (1 | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, .00001), class = sd), 
+                prior(exponential(1), class = sigma)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = "yes",
+      file = "mlm.1p",
+      data = mlm)
+```
 
 
 ---
-## priors for priors
 
-The extent we do the shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. Also known as hyperpriors
+```{r, echo = FALSE}
+summary(mlm.1p)
+```
 
-$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
-$$\mu_i  = \beta_{0[i]}$$ 
-
-$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
-$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
-$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
-$$\sigma \sim {\operatorname{Exponential}(1)}$$
 
 ---
+
+.pull-left[
+```{r, echo = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+  mutate(person_I = b_Intercept + r_ID) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = person_I), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "partial pooling") +
+  geom_hline(yintercept =0.1849846)
+
+```
+]
+
+.pull-right[
 
 ```{r, echo = FALSE, message = FALSE}
-library(brms)
+mlm.1p %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+  mutate(person_I = b_Intercept + r_ID) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = person_I), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "complete pooling") +
+  geom_hline(yintercept =0.1849846)
+
 ```
+]
+
+---
+
+set SD prior for no pooling
+
+```{r}
+
+mlm.1p2 <- 
+  brm(family = gaussian,
+      CON ~ 1 + (1 | ID),
+      prior = c(prior(normal(0, 5), class = Intercept),
+                prior(normal(250, 1), class = sd), 
+                prior(exponential(.1), class = sigma)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      data = mlm)
+```
+
+---
+```{r}
+summary(mlm.1p2)
+```
+
+---
+
+.pull-left[
+```{r, echo = FALSE, message = FALSE}
+mlm.1 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+  mutate(person_I = b_Intercept + r_ID) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = person_I), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "partial pooling") +
+  geom_hline(yintercept =0.1849846)
+
+```
+]
+
+.pull-right[
+
+```{r, echo = FALSE, message = FALSE}
+mlm.1p2 %>%
+  spread_draws(b_Intercept, r_ID[ID, term]) %>%
+  mutate(person_I = b_Intercept + r_ID) %>%
+  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
+ median_qi() %>% 
+ggplot(aes(x = ID)) +
+  geom_point(aes(y = person_I), color = "orange2") +
+  geom_point(aes(y = CON), shape = 1) +
+  labs(title =  
+  "(almost) no pooling") +
+  geom_hline(yintercept =0.1849846)
+
+```
+
+
+---
 
 
 ```{r}
@@ -1659,14 +1758,20 @@ mlm.1 %>%
 ---
 ## level 1 predictors
 
+.small[
 $$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$
-$$\mu_i  = \beta_{0[i]} + \beta_{1[i]}$$ 
+$$\mu_i  = \beta_{0[j]} + \beta_{1[j]}Time_{ij}$$ 
 
 $$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu}, \sigma_0)$$
 $${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
 $$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
 $$\beta_{1[j]} \sim {\operatorname{Normal}(0, 1.5)}$$
 $$\sigma \sim {\operatorname{Exponential}(1)}$$
+]
+
+---
+
+Notice how the slope variable was not a hyper prior. What does that mean? That means it is not random. People can still differ, but only based on the equation we set up for it. That is, this is there are fixef effects based on different gammas, but not Us to represent random variation. To do so we would need a parameter for that, and we dont have it. 
 
 ---
 
@@ -1703,201 +1808,6 @@ summary(mlm.3)
 ```{r}
 posterior_summary(mlm.3)
 ```
-
----
-
-```{r}
-pp_check(mlm.3)
-```
-
-
----
-
-```{r}
-plot(mlm.3)
-```
-
----
-
-
-
----
-
-
-
----
-## Mr. P
-aka multilevel regression with poststratification
-
-One of the biggest problems with psych data is that it is unrepresentative. Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
-
-https://www.monicaalexander.com/posts/2019-08-07-mrp/
-https://bookdown.org/content/4857/models-with-memory.html#summary-bonus-post-stratification-in-an-example
-
-
----
-```{r, eval = FALSE}
-mrp <-load("mrp.rds")
-mrp
-```
-
-```{r, eval = FALSE}
-head(d)
-```
-
-```{r, eval = FALSE}
-head(cell_counts)
-```
-
----
-
-
-```{r, eval = FALSE}
-mlm.mrp <-
-  brm(family = binomial,
-      kept_name | trials(1) ~ 1 + (1 | age_group) + (1 | decade_married) + (1 | educ_group) + (1 | state_name),
-      prior = c(prior(normal(-1, 1), class = Intercept),
-                prior(exponential(1), class = sd)),
-      iter = 2000, warmup = 1000, chains = 4, cores = 4,
-      control = list(adapt_delta = .98),
-      data = d,
-      file = "mlm.mrp")
-```
-
-
----
-
-```{r, eval = FALSE,echo = FALSE}
-posterior_samples(mlm.mrp) %>% 
-  select(starts_with("sd_")) %>% 
-  set_names(str_c("sigma[", c("age", "decade~married", "education", "state"), "]")) %>% 
-  pivot_longer(everything()) %>% 
-  group_by(name) %>%
-  median_qi(.width = seq(from = .70, to = .95, by = .1)) %>%
-  
-  ggplot(aes(x = value, xmin = .lower, xmax = .upper, y = reorder(name, value))) +
-  geom_interval(aes(alpha = .width), color = "orange3") +
-  scale_y_discrete(labels = ggplot2:::parse_safe) +
-  scale_alpha_continuous("CI width", range = c(.7, .15)) +
-  xlim(0, NA) +
-  theme(axis.text.y = element_text(hjust = 0),
-        panel.grid.major.y = element_blank())
-```
-
-
----
-
-```{r, eval = FALSE}
-age_prop <- 
-  cell_counts %>% 
-  group_by(age_group) %>% 
-  mutate(prop = n / sum(n)) %>% 
-  ungroup()
-
-age_prop
-```
-
-
----
-.small[
-```{r, eval = FALSE}
-p <- 
-  add_predicted_draws(mlm.mrp, newdata = age_prop %>% 
-                        filter(age_group > 20, 
-                               age_group < 80, 
-                               decade_married > 1969),
-                      allow_new_levels = T)
-p
-```
-]
-
-6,058 census categories * 4,000 samples = 24,232,000
-
----
-
-If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights, which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
-
-$$\frac{\sum_i N_i p_i}{\sum_i N_i}$$
-
----
-
-```{r, eval = FALSE}
-p <-
-  p %>% 
-  group_by(age_group, .draw) %>% 
-  summarise(kept_name_predict = sum(.prediction * prop)) %>% 
-  group_by(age_group) %>% 
-  mean_qi(kept_name_predict)
-
-p
-```
-
-
-
----
-.pull-left[
-```{r, eval = FALSE, echo = FALSE, message = FALSE}
-levels <- c("raw data", "multilevel", "MRP")
-
-p1 <-
-  # compute the proportions from the data
-  d %>% 
-  group_by(age_group, kept_name) %>%
-  summarise(n = n()) %>% 
-  group_by(age_group) %>% 
-  mutate(prop = n/sum(n),
-         type = factor("raw data", levels = levels)) %>% 
-  filter(kept_name == 1, age_group < 80, age_group > 20) %>%
-
-  # plot!
-  ggplot(aes(x = prop, y = age_group)) + 
-  geom_point() +
-  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) 
-
-
-nd <- distinct(d, age_group) %>% arrange(age_group)
-
-p2 <-
-  fitted(mlm.mrp,
-         re_formula = ~ (1 | age_group),
-         newdata = nd) %>% 
-  data.frame() %>% 
-  bind_cols(nd) %>% 
-  mutate(prop = Estimate,
-         type = factor("multilevel", levels = levels)) %>% 
-  
-  ggplot(aes(x = prop, xmin = Q2.5, xmax = Q97.5, y = age_group)) + 
-  geom_pointrange(color = "blue2", size = 0.8, fatten = 2) +
-  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
-  scale_y_discrete(labels = NULL) +
-  facet_wrap(~type)
-
-
-p3 <-
-  p %>%
-  mutate(type = factor("MRP", levels = levels)) %>% 
-
-  ggplot(aes(x = kept_name_predict, xmin = .lower, xmax = .upper, y = age_group)) + 
-  geom_pointrange(color = "orange2", size = 0.8, fatten = 2) +
-  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
-  scale_y_discrete(labels = NULL) +
-  facet_wrap(~type)
-
-# combine!
-(p1 | p2 | p3) +
-  plot_annotation(title = "Proportion of women keeping name after marriage, by age",
-                  subtitle = "Proportions are on the x-axis and age groups are on the y-axis.")
-
-```
-]
-
-.pull-right[The survey has an over-sample of highly educated women, who are more likely to keep their name, hence the regularization of MLM]
-
----
-### Not limited to surveys
-
-Example (using brms) with experimental data -- can you generalize from your sample of undergraduates to other undergraduates at your university, let alone undergraduates in general, let alone young adults, to say nothing about the population of humans. 
-https://arxiv.org/pdf/1906.11323.pdf
 
 
 ---
@@ -2218,5 +2128,183 @@ mlm.5 %>%
   ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
   geom_pointinterval() + xlab("est") + ylab("ID")
 ```
+
+
+---
+
+
+---
+## Mr. P
+aka multilevel regression with poststratification
+
+One of the biggest problems with psych data is that it is unrepresentative. Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+
+https://www.monicaalexander.com/posts/2019-08-07-mrp/
+https://bookdown.org/content/4857/models-with-memory.html#summary-bonus-post-stratification-in-an-example
+
+
+---
+```{r, eval = FALSE}
+mrp <-load("mrp.rds")
+mrp
+```
+
+```{r, eval = FALSE}
+head(d)
+```
+
+```{r, eval = FALSE}
+head(cell_counts)
+```
+
+---
+
+
+```{r, eval = FALSE}
+mlm.mrp <-
+  brm(family = binomial,
+      kept_name | trials(1) ~ 1 + (1 | age_group) + (1 | decade_married) + (1 | educ_group) + (1 | state_name),
+      prior = c(prior(normal(-1, 1), class = Intercept),
+                prior(exponential(1), class = sd)),
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      control = list(adapt_delta = .98),
+      data = d,
+      file = "mlm.mrp")
+```
+
+
+---
+
+```{r, eval = FALSE,echo = FALSE}
+posterior_samples(mlm.mrp) %>% 
+  select(starts_with("sd_")) %>% 
+  set_names(str_c("sigma[", c("age", "decade~married", "education", "state"), "]")) %>% 
+  pivot_longer(everything()) %>% 
+  group_by(name) %>%
+  median_qi(.width = seq(from = .70, to = .95, by = .1)) %>%
+  
+  ggplot(aes(x = value, xmin = .lower, xmax = .upper, y = reorder(name, value))) +
+  geom_interval(aes(alpha = .width), color = "orange3") +
+  scale_y_discrete(labels = ggplot2:::parse_safe) +
+  scale_alpha_continuous("CI width", range = c(.7, .15)) +
+  xlim(0, NA) +
+  theme(axis.text.y = element_text(hjust = 0),
+        panel.grid.major.y = element_blank())
+```
+
+
+---
+
+```{r, eval = FALSE}
+age_prop <- 
+  cell_counts %>% 
+  group_by(age_group) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  ungroup()
+
+age_prop
+```
+
+
+---
+.small[
+```{r, eval = FALSE}
+p <- 
+  add_predicted_draws(mlm.mrp, newdata = age_prop %>% 
+                        filter(age_group > 20, 
+                               age_group < 80, 
+                               decade_married > 1969),
+                      allow_new_levels = T)
+p
+```
+]
+
+6,058 census categories * 4,000 samples = 24,232,000
+
+---
+
+If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights, which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
+
+$$\frac{\sum_i N_i p_i}{\sum_i N_i}$$
+
+---
+
+```{r, eval = FALSE}
+p <-
+  p %>% 
+  group_by(age_group, .draw) %>% 
+  summarise(kept_name_predict = sum(.prediction * prop)) %>% 
+  group_by(age_group) %>% 
+  mean_qi(kept_name_predict)
+
+p
+```
+
+
+
+---
+.pull-left[
+```{r, eval = FALSE, echo = FALSE, message = FALSE}
+levels <- c("raw data", "multilevel", "MRP")
+
+p1 <-
+  # compute the proportions from the data
+  d %>% 
+  group_by(age_group, kept_name) %>%
+  summarise(n = n()) %>% 
+  group_by(age_group) %>% 
+  mutate(prop = n/sum(n),
+         type = factor("raw data", levels = levels)) %>% 
+  filter(kept_name == 1, age_group < 80, age_group > 20) %>%
+
+  # plot!
+  ggplot(aes(x = prop, y = age_group)) + 
+  geom_point() +
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) 
+
+
+nd <- distinct(d, age_group) %>% arrange(age_group)
+
+p2 <-
+  fitted(mlm.mrp,
+         re_formula = ~ (1 | age_group),
+         newdata = nd) %>% 
+  data.frame() %>% 
+  bind_cols(nd) %>% 
+  mutate(prop = Estimate,
+         type = factor("multilevel", levels = levels)) %>% 
+  
+  ggplot(aes(x = prop, xmin = Q2.5, xmax = Q97.5, y = age_group)) + 
+  geom_pointrange(color = "blue2", size = 0.8, fatten = 2) +
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
+  scale_y_discrete(labels = NULL) +
+  facet_wrap(~type)
+
+
+p3 <-
+  p %>%
+  mutate(type = factor("MRP", levels = levels)) %>% 
+
+  ggplot(aes(x = kept_name_predict, xmin = .lower, xmax = .upper, y = age_group)) + 
+  geom_pointrange(color = "orange2", size = 0.8, fatten = 2) +
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
+  scale_y_discrete(labels = NULL) +
+  facet_wrap(~type)
+
+# combine!
+(p1 | p2 | p3) +
+  plot_annotation(title = "Proportion of women keeping name after marriage, by age",
+                  subtitle = "Proportions are on the x-axis and age groups are on the y-axis.")
+
+```
+]
+
+.pull-right[The survey has an over-sample of highly educated women, who are more likely to keep their name, hence the regularization of MLM]
+
+---
+### Not limited to surveys
+
+Example (using brms) with experimental data -- can you generalize from your sample of undergraduates to other undergraduates at your university, let alone undergraduates in general, let alone young adults, to say nothing about the population of humans. 
+https://arxiv.org/pdf/1906.11323.pdf
 
 
