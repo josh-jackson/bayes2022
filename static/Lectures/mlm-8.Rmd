@@ -938,7 +938,7 @@ mlm.1 <-
       file = "mlm.1")
 ```
 
-If you think about parameters you are estimating the number of priors are simple. But in terms of what those priors represent, they are providing a prior on a prior. The intercept and the SD are both providing estimates of means. We could directly 
+If you think about parameters you are estimating the number of priors are simple. But in terms of what those priors represent, they are providing a prior on a prior. The intercept and the SD are both providing estimates of means. We could model this 1 parameter (anova or index coded) or 2 (mlm) 
 
 ---
 
@@ -975,15 +975,9 @@ loo_compare(mlm.1, mlm.2, criterion = "loo")
 ---
 Notice how the intercept is the same in each of these models. Even the CIs. Conceptually they are different though.  The intercept is directly modeled in the standard regression. In the MLM it is better thought of as the map of the distribution of random effects. 
 
-The population is larger than what we have. This is true for almost anything we do. We sample paradigms, we sample people, we usually never have a full population under our study. 
+The population is larger than what we have. This is true for almost anything we do. We sample paradigms, we sample people, we usually never have a full population under our study. Don't we want to model that variation? 
 
----
-```{r, echo = FALSE, warning = FALSE}
 
-mlm %>%
-  sample_n_of(8, ID) %>% 
-ggplot(aes(x = week, y = CON, group = ID)) + geom_point(aes(color = factor(ID))) + stat_smooth(aes(color = factor(ID)), method = "lm", formula=y~1, se = FALSE) + xlab("X") + ylab("Y") + theme(legend.position = "none")
-```
 
 ---
 
@@ -1285,20 +1279,17 @@ layout <- c(
 
 
 ---
+With mlm we treated means as coming from a population of means. And thus there was a best guess of the mean (intercept) and variation around that guess (SD). With anova we ignored the variation. But we could, in bayes, still examine that variation. Lets fit an index model, where each person gets a mean. 
 
 ```{r}
-mlm$ID <- as.factor(mlm$ID)
+mlm$ID.f <- as.factor(mlm$ID)
 mlm.id <- 
   brm(family = gaussian,
-      CON ~ 0 + ID ,
+      CON ~ 0 + ID.f ,
       iter = 4000, warmup = 1000, chains = 2, cores = 4,
       data = mlm, 
       file = "mlm.id")
 
-```
-
-```{r, echo = FALSE}
-mlm$ID <- as.numeric(mlm$ID)
 ```
 
 
@@ -1312,12 +1303,13 @@ summary(mlm.id)
 
 ```{r}
 posterior_samples(mlm.id) %>% 
-  pivot_longer(b_ID6:b_ID229, names_to="ID") %>% 
+  pivot_longer(b_ID.f1:b_ID.f91, names_to="ID") %>% 
   summarise(mean=mean(value), sd=sd(value))
 ```
 
 
 ]
+
 
 .pull-right[
 
@@ -1325,8 +1317,8 @@ posterior_samples(mlm.id) %>%
 library(posterior)
 posterior::summarise_draws(mlm.1)
 ```
-
 ]
+
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
@@ -1349,7 +1341,7 @@ $$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$
 $$\sigma \sim {\operatorname{Exponential}(1)}$$
 ]
 
-SD of random effect can turn on/off shrinkage. Setting SD to zero says everyone is the same. Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+$\sigma_0$ can turn on/off/adjust shrinkage. Setting SD to zero says everyone is the same. Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. We use our prior of $\sigma_0$ plus our data to get an estimate of the prior for $\beta_{0[j]}$. This is how we accurately partial pool. 
 
 ---
 
@@ -1551,6 +1543,7 @@ mlm.1p2 <-
                 prior(normal(250, 1), class = sd), 
                 prior(exponential(.1), class = sigma)),
       iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.1p2",
       data = mlm)
 ```
 

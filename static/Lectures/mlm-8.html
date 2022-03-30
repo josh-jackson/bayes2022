@@ -537,7 +537,7 @@ mlm.1 &lt;-
       file = "mlm.1")
 ```
 
-If you think about parameters you are estimating the number of priors are simple. But in terms of what those priors represent, they are providing a prior on a prior. The intercept and the SD are both providing estimates of means. We could directly 
+If you think about parameters you are estimating the number of priors are simple. But in terms of what those priors represent, they are providing a prior on a prior. The intercept and the SD are both providing estimates of means. We could model this 1 parameter (anova or index coded) or 2 (mlm) 
 
 ---
 
@@ -631,10 +631,9 @@ loo_compare(mlm.1, mlm.2, criterion = "loo")
 ---
 Notice how the intercept is the same in each of these models. Even the CIs. Conceptually they are different though.  The intercept is directly modeled in the standard regression. In the MLM it is better thought of as the map of the distribution of random effects. 
 
-The population is larger than what we have. This is true for almost anything we do. We sample paradigms, we sample people, we usually never have a full population under our study. 
+The population is larger than what we have. This is true for almost anything we do. We sample paradigms, we sample people, we usually never have a full population under our study. Don't we want to model that variation? 
 
----
-![](mlm-8_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+
 
 ---
 
@@ -650,23 +649,22 @@ This line indicates we have varying intercepts that vary over individual j. Much
 ---
 ### Parameters that depend on parameters
 
-![](mlm-8_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
 
 
 ---
+With mlm we treated means as coming from a population of means. And thus there was a best guess of the mean (intercept) and variation around that guess (SD). With anova we ignored the variation. But we could, in bayes, still examine that variation. Lets fit an index model, where each person gets a mean. 
 
 
 ```r
-mlm$ID &lt;- as.factor(mlm$ID)
+mlm$ID.f &lt;- as.factor(mlm$ID)
 mlm.id &lt;- 
   brm(family = gaussian,
-      CON ~ 0 + ID ,
+      CON ~ 0 + ID.f ,
       iter = 4000, warmup = 1000, chains = 2, cores = 4,
       data = mlm, 
       file = "mlm.id")
 ```
-
-
 
 
 ---
@@ -678,108 +676,108 @@ summary(mlm.id)
 ```
 ##  Family: gaussian 
 ##   Links: mu = identity; sigma = identity 
-## Formula: CON ~ 0 + ID 
+## Formula: CON ~ 0 + ID.f 
 ##    Data: mlm (Number of observations: 225) 
 ##   Draws: 2 chains, each with iter = 4000; warmup = 1000; thin = 1;
 ##          total post-warmup draws = 6000
 ## 
 ## Population-Level Effects: 
-##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## ID6       0.19      0.03     0.14     0.24 1.00     9756     4329
-## ID29      0.12      0.03     0.06     0.19 1.00     9623     4593
-## ID34      0.11      0.03     0.04     0.17 1.00     8464     4476
-## ID36      0.16      0.03     0.09     0.22 1.00     9085     4431
-## ID37      0.19      0.03     0.13     0.24 1.00     9381     4131
-## ID48      0.22      0.03     0.16     0.27 1.00    11448     4429
-## ID53      0.19      0.03     0.12     0.26 1.00     9948     4437
-## ID54      0.25      0.03     0.19     0.30 1.00     8258     4086
-## ID58      0.24      0.03     0.18     0.29 1.00     9259     4341
-## ID61      0.09      0.03     0.02     0.16 1.00     8025     3933
-## ID66      0.24      0.03     0.18     0.29 1.00     9656     4246
-## ID67      0.20      0.02     0.15     0.25 1.00    10556     3857
-## ID69      0.21      0.03     0.14     0.27 1.00     9595     4092
-## ID71      0.06      0.03     0.00     0.11 1.00     9011     3791
-## ID74      0.20      0.03     0.15     0.26 1.00     8344     4075
-## ID75      0.27      0.03     0.20     0.34 1.00     9484     4059
-## ID76      0.10      0.03     0.04     0.15 1.00    10018     4105
-## ID78      0.24      0.03     0.19     0.30 1.00     9066     4316
-## ID79      0.13      0.03     0.06     0.20 1.00     8655     4253
-## ID80      0.14      0.03     0.07     0.20 1.00     9781     4457
-## ID81      0.24      0.03     0.19     0.29 1.00    10453     4525
-## ID82      0.33      0.02     0.28     0.37 1.00     9198     4534
-## ID85      0.16      0.03     0.09     0.22 1.00     8761     4112
-## ID86      0.12      0.03     0.05     0.18 1.00     9873     4527
-## ID87      0.11      0.03     0.05     0.18 1.00     9121     4010
-## ID89      0.14      0.03     0.08     0.19 1.00     8739     3938
-## ID91      0.17      0.03     0.12     0.23 1.00     9247     4346
-## ID92      0.20      0.03     0.15     0.25 1.00     9669     3564
-## ID93      0.25      0.03     0.20     0.31 1.00     8696     4302
-## ID94      0.12      0.03     0.06     0.17 1.00     8972     3825
-## ID96      0.23      0.03     0.17     0.30 1.00    11320     4263
-## ID97      0.25      0.02     0.20     0.29 1.00     7908     4385
-## ID98      0.14      0.02     0.09     0.19 1.00     9343     4192
-## ID99      0.18      0.02     0.13     0.23 1.00    10134     4446
-## ID101     0.24      0.03     0.19     0.30 1.00    11504     4602
-## ID102     0.19      0.02     0.14     0.24 1.00     9275     4207
-## ID103     0.15      0.03     0.09     0.22 1.00     9366     4337
-## ID104     0.17      0.03     0.11     0.24 1.00    12121     4133
-## ID105     0.16      0.03     0.11     0.22 1.00    10431     4736
-## ID106     0.20      0.03     0.14     0.25 1.00     9675     3807
-## ID110     0.18      0.03     0.13     0.24 1.00     8561     4094
-## ID112     0.09      0.03     0.04     0.15 1.00     7795     5024
-## ID114     0.13      0.03     0.08     0.19 1.00     9418     4747
-## ID115     0.14      0.03     0.09     0.19 1.00    10326     3710
-## ID116     0.14      0.03     0.09     0.20 1.00    11237     4753
-## ID120     0.35      0.03     0.29     0.42 1.00     9510     4499
-## ID122     0.17      0.03     0.12     0.22 1.00     7902     4399
-## ID125     0.20      0.03     0.14     0.25 1.00     9757     4720
-## ID127     0.23      0.03     0.17     0.28 1.00     9183     4164
-## ID129     0.13      0.03     0.06     0.20 1.00     8150     4217
-## ID135     0.30      0.03     0.24     0.35 1.00    10376     4097
-## ID136     0.29      0.03     0.24     0.35 1.00     9597     4471
-## ID137     0.29      0.03     0.23     0.36 1.00     9658     4363
-## ID140     0.13      0.03     0.06     0.20 1.00    10885     4256
-## ID141     0.19      0.03     0.13     0.26 1.00    11001     4091
-## ID142     0.18      0.03     0.11     0.24 1.00     7744     3923
-## ID143     0.31      0.03     0.25     0.38 1.00    10577     4421
-## ID144     0.17      0.03     0.11     0.24 1.00     9150     3964
-## ID146     0.21      0.03     0.15     0.28 1.00     8507     4855
-## ID149     0.23      0.03     0.16     0.30 1.00     8993     4243
-## ID150     0.20      0.03     0.14     0.27 1.00    10439     4587
-## ID152     0.22      0.03     0.16     0.29 1.00    10202     4274
-## ID153     0.15      0.03     0.08     0.21 1.00     8844     4434
-## ID155     0.14      0.03     0.08     0.21 1.00     9809     4031
-## ID156     0.14      0.03     0.08     0.19 1.00    10562     4176
-## ID159     0.12      0.03     0.06     0.19 1.00     8896     4269
-## ID160     0.18      0.03     0.11     0.24 1.00    10881     4057
-## ID162     0.39      0.03     0.34     0.45 1.00    10637     4778
-## ID163     0.13      0.03     0.06     0.20 1.00     9058     3921
-## ID165     0.20      0.03     0.13     0.26 1.00    10273     4257
-## ID167     0.13      0.03     0.07     0.20 1.00    11803     4477
-## ID169     0.24      0.03     0.18     0.31 1.00     8768     4738
-## ID171     0.23      0.03     0.16     0.29 1.00     9736     4470
-## ID174     0.26      0.03     0.20     0.33 1.00     8227     4011
-## ID182     0.19      0.03     0.12     0.25 1.00     8784     4227
-## ID187     0.06      0.03     0.00     0.13 1.00     9057     4452
-## ID189     0.22      0.03     0.16     0.29 1.00    10136     4313
-## ID190     0.13      0.03     0.06     0.19 1.00     9793     4210
-## ID193     0.21      0.03     0.14     0.27 1.00     8972     4000
-## ID194     0.12      0.03     0.05     0.18 1.00    10890     3985
-## ID201     0.19      0.03     0.12     0.25 1.00    10954     4583
-## ID204     0.29      0.03     0.22     0.35 1.00    10346     3932
-## ID205     0.19      0.03     0.13     0.26 1.00     9581     4670
-## ID208     0.20      0.03     0.14     0.27 1.00    10438     4304
-## ID209     0.21      0.03     0.15     0.28 1.00     8479     4350
-## ID211     0.14      0.03     0.07     0.21 1.00    10213     3856
-## ID214     0.28      0.03     0.21     0.34 1.00     8606     4718
-## ID219     0.23      0.03     0.16     0.30 1.00    10506     4169
-## ID222     0.14      0.03     0.07     0.20 1.00     8852     4262
-## ID223     0.17      0.03     0.10     0.23 1.00     8230     4196
-## ID229     0.14      0.03     0.07     0.21 1.00     9013     4126
+##        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## ID.f1      0.19      0.03     0.14     0.24 1.00     9149     4248
+## ID.f2      0.12      0.03     0.06     0.19 1.00    10578     4514
+## ID.f3      0.11      0.03     0.04     0.17 1.00     9716     4345
+## ID.f4      0.16      0.03     0.09     0.22 1.00     9080     3882
+## ID.f5      0.19      0.03     0.13     0.24 1.00    10182     4551
+## ID.f6      0.22      0.03     0.17     0.27 1.00     9363     4520
+## ID.f7      0.19      0.03     0.12     0.26 1.00     8921     4189
+## ID.f8      0.24      0.03     0.19     0.30 1.00     8911     4238
+## ID.f9      0.24      0.03     0.18     0.29 1.00     9216     4184
+## ID.f10     0.09      0.03     0.02     0.15 1.00    10343     4460
+## ID.f11     0.24      0.03     0.18     0.29 1.00     9829     4546
+## ID.f12     0.20      0.02     0.15     0.25 1.00     9427     4773
+## ID.f13     0.21      0.03     0.14     0.28 1.00     8570     4082
+## ID.f14     0.06      0.03     0.01     0.11 1.00     9282     4112
+## ID.f15     0.20      0.03     0.15     0.26 1.00    10182     4184
+## ID.f16     0.27      0.03     0.21     0.34 1.00     8820     4192
+## ID.f17     0.10      0.03     0.04     0.15 1.00     8955     3502
+## ID.f18     0.24      0.03     0.19     0.30 1.00     9825     4437
+## ID.f19     0.13      0.03     0.07     0.19 1.00    11061     4532
+## ID.f20     0.14      0.04     0.07     0.21 1.00    10119     3950
+## ID.f21     0.24      0.03     0.19     0.29 1.00     9561     3999
+## ID.f22     0.33      0.02     0.28     0.38 1.00     9975     3930
+## ID.f23     0.16      0.03     0.09     0.22 1.00     8760     4313
+## ID.f24     0.12      0.03     0.05     0.18 1.00    10082     4448
+## ID.f25     0.11      0.03     0.04     0.18 1.00    11097     4024
+## ID.f26     0.13      0.03     0.08     0.19 1.00     9539     4345
+## ID.f27     0.17      0.03     0.12     0.23 1.00    10158     4158
+## ID.f28     0.20      0.03     0.15     0.26 1.00    10796     4328
+## ID.f29     0.25      0.03     0.20     0.31 1.00    11627     4101
+## ID.f30     0.12      0.03     0.06     0.17 1.00    11410     4080
+## ID.f31     0.23      0.03     0.17     0.30 1.00    11296     3900
+## ID.f32     0.25      0.02     0.20     0.29 1.00    10910     4273
+## ID.f33     0.14      0.02     0.09     0.19 1.00    10344     3762
+## ID.f34     0.18      0.02     0.14     0.23 1.00     9784     4604
+## ID.f35     0.24      0.03     0.19     0.30 1.00     9133     4698
+## ID.f36     0.19      0.02     0.14     0.23 1.00    10945     4411
+## ID.f37     0.15      0.03     0.09     0.22 1.00    10028     4412
+## ID.f38     0.17      0.03     0.11     0.24 1.00    10353     3741
+## ID.f39     0.16      0.03     0.11     0.22 1.00    10612     4154
+## ID.f40     0.20      0.03     0.14     0.25 1.00     8997     4269
+## ID.f41     0.18      0.03     0.13     0.23 1.00    10446     4113
+## ID.f42     0.09      0.03     0.04     0.15 1.00    10449     4278
+## ID.f43     0.13      0.03     0.08     0.19 1.00     9609     4311
+## ID.f44     0.14      0.03     0.09     0.19 1.00    10194     4197
+## ID.f45     0.14      0.03     0.09     0.20 1.00    10245     4018
+## ID.f46     0.35      0.03     0.29     0.42 1.00    11088     4221
+## ID.f47     0.17      0.03     0.12     0.22 1.00    10894     4518
+## ID.f48     0.19      0.03     0.14     0.25 1.00     9786     4231
+## ID.f49     0.23      0.03     0.17     0.28 1.00     8626     4704
+## ID.f50     0.13      0.03     0.06     0.20 1.00     9366     4412
+## ID.f51     0.30      0.03     0.24     0.35 1.00    10477     3990
+## ID.f52     0.29      0.03     0.24     0.34 1.00    10001     4756
+## ID.f53     0.29      0.03     0.23     0.36 1.00    10814     4138
+## ID.f54     0.13      0.03     0.06     0.19 1.00     9717     4335
+## ID.f55     0.19      0.03     0.12     0.26 1.00     9740     4461
+## ID.f56     0.18      0.03     0.11     0.24 1.00     9653     4192
+## ID.f57     0.31      0.03     0.24     0.38 1.00     9709     4434
+## ID.f58     0.17      0.03     0.11     0.24 1.00     9123     4390
+## ID.f59     0.21      0.03     0.15     0.28 1.00    10246     4540
+## ID.f60     0.23      0.03     0.16     0.29 1.00     9013     4694
+## ID.f61     0.20      0.03     0.14     0.27 1.00    10252     4274
+## ID.f62     0.22      0.03     0.16     0.29 1.00     9984     4288
+## ID.f63     0.15      0.03     0.08     0.21 1.00    10331     4220
+## ID.f64     0.14      0.03     0.08     0.21 1.00     9219     4474
+## ID.f65     0.14      0.03     0.08     0.19 1.00     9259     4203
+## ID.f66     0.12      0.03     0.06     0.19 1.00    10333     4329
+## ID.f67     0.18      0.03     0.11     0.24 1.00     9795     4125
+## ID.f68     0.39      0.03     0.34     0.45 1.00     8678     4604
+## ID.f69     0.13      0.03     0.07     0.20 1.00     9379     4079
+## ID.f70     0.20      0.03     0.13     0.26 1.00    10958     4334
+## ID.f71     0.13      0.03     0.06     0.20 1.00    10414     3652
+## ID.f72     0.24      0.03     0.18     0.31 1.00    10749     3810
+## ID.f73     0.23      0.03     0.16     0.29 1.00     8643     4112
+## ID.f74     0.26      0.03     0.20     0.33 1.00     9423     4269
+## ID.f75     0.19      0.03     0.12     0.25 1.00     9737     4216
+## ID.f76     0.07      0.03    -0.00     0.13 1.00    10149     4179
+## ID.f77     0.22      0.03     0.16     0.29 1.00     9729     4480
+## ID.f78     0.13      0.03     0.06     0.19 1.00     9969     4206
+## ID.f79     0.21      0.03     0.14     0.27 1.00     9714     4128
+## ID.f80     0.12      0.03     0.05     0.19 1.00     8871     4209
+## ID.f81     0.19      0.03     0.12     0.26 1.00     9797     4224
+## ID.f82     0.29      0.03     0.22     0.35 1.00    10851     4297
+## ID.f83     0.19      0.03     0.13     0.26 1.00     9923     4022
+## ID.f84     0.20      0.03     0.14     0.27 1.00    10501     4388
+## ID.f85     0.21      0.03     0.15     0.28 1.00     9972     3782
+## ID.f86     0.14      0.03     0.07     0.20 1.00    10534     4191
+## ID.f87     0.28      0.03     0.21     0.34 1.00    10632     4259
+## ID.f88     0.23      0.03     0.16     0.30 1.00     8634     3956
+## ID.f89     0.14      0.03     0.07     0.20 1.00    10624     3844
+## ID.f90     0.17      0.03     0.10     0.23 1.00     8587     3923
+## ID.f91     0.14      0.03     0.07     0.20 1.00     9932     3972
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     0.05      0.00     0.04     0.05 1.00     2866     4115
+## sigma     0.05      0.00     0.04     0.05 1.00     3642     3888
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -792,7 +790,7 @@ summary(mlm.id)
 
 ```r
 posterior_samples(mlm.id) %&gt;% 
-  pivot_longer(b_ID6:b_ID229, names_to="ID") %&gt;% 
+  pivot_longer(b_ID.f1:b_ID.f91, names_to="ID") %&gt;% 
   summarise(mean=mean(value), sd=sd(value))
 ```
 
@@ -810,6 +808,7 @@ posterior_samples(mlm.id) %&gt;%
 
 
 ]
+
 
 .pull-right[
 
@@ -835,8 +834,8 @@ posterior::summarise_draws(mlm.1)
 ## 10 r_ID[53,In…  3.85e-4  1.95e-4 0.0297  0.0297  -0.0485  4.94e-2  1.00   32232.
 ## # … with 88 more rows, and 1 more variable: ess_tail &lt;dbl&gt;
 ```
-
 ]
+
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
@@ -859,7 +858,7 @@ Well we set up the prior for values we are not directly estimating. We are inste
 `$$\sigma \sim {\operatorname{Exponential}(1)}$$`
 ]
 
-SD of random effect can turn on/off shrinkage. Setting SD to zero says everyone is the same. Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
+`\(\sigma_0\)` can turn on/off/adjust shrinkage. Setting SD to zero says everyone is the same. Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. We use our prior of `\(\sigma_0\)` plus our data to get an estimate of the prior for `\(\beta_{0[j]}\)`. This is how we accurately partial pool. 
 
 ---
 
@@ -1050,12 +1049,7 @@ ggplot(aes(x = ID)) +
 ]
 
 .pull-right[
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
-![](mlm-8_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1113,12 +1107,7 @@ mlm.1 %&gt;%
 
 ---
 
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
-![](mlm-8_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
 
 ---
 .pull-left[
@@ -1133,7 +1122,7 @@ mlm.1 %&gt;%
 ]
 
 .pull-right[
-![](mlm-8_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -1194,22 +1183,12 @@ mlm.1p &lt;-
 ---
 
 .pull-left[
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
-![](mlm-8_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
 
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
-![](mlm-8_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1225,70 +1204,8 @@ mlm.1p2 &lt;-
                 prior(normal(250, 1), class = sd), 
                 prior(exponential(.1), class = sigma)),
       iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.1p2",
       data = mlm)
-```
-
-```
-## Compiling Stan program...
-```
-
-```
-## Trying to compile a simple C file
-```
-
-```
-## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
-## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
-## In file included from &lt;built-in&gt;:1:
-## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
-## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
-## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
-## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
-## namespace Eigen {
-## ^
-## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
-## namespace Eigen {
-##                ^
-##                ;
-## In file included from &lt;built-in&gt;:1:
-## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
-## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
-## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
-## #include &lt;complex&gt;
-##          ^~~~~~~~~
-## 3 errors generated.
-## make: *** [foo.o] Error 1
-```
-
-```
-## Start sampling
-```
-
-```
-## Warning: There were 25 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
-## https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
-```
-
-```
-## Warning: Examine the pairs() plot to diagnose sampling problems
-```
-
-```
-## Warning: The largest R-hat is 2.08, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 ---
@@ -1314,15 +1231,15 @@ summary(mlm.1p2)
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 91) 
 ##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sd(Intercept)   249.59      0.97   247.64   251.49 1.02      130      324
+## sd(Intercept)   187.43    108.18     0.06   251.62 1.58        7       28
 ## 
 ## Population-Level Effects: 
 ##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept     0.03      1.90    -3.18     2.89 2.07        5       11
+## Intercept     1.14      1.07    -0.28     2.38 2.53        5       16
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     0.05      0.00     0.04     0.05 1.11       27       52
+## sigma     0.05      0.00     0.04     0.05 1.06       48      133
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -1332,17 +1249,17 @@ summary(mlm.1p2)
 ---
 
 .pull-left[
+![](mlm-8_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
 
 ```
 ## Warning: Removed 64 rows containing missing values (geom_point).
 ```
 
-![](mlm-8_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
-]
-
-.pull-right[
-
-![](mlm-8_files/figure-html/unnamed-chunk-52-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -1453,7 +1370,7 @@ loo_compare(mlm.1, mlm.2, criterion = "loo")
 
 
 ---
-![](mlm-8_files/figure-html/unnamed-chunk-58-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -1639,12 +1556,7 @@ ggplot(aes(x = ID)) +
 ]
 
 .pull-right[
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
-![](mlm-8_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1702,12 +1614,7 @@ mlm.1 %&gt;%
 
 ---
 
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
-![](mlm-8_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 
 ---
 .pull-left[
@@ -1722,7 +1629,7 @@ mlm.1 %&gt;%
 ]
 
 .pull-right[
-![](mlm-8_files/figure-html/unnamed-chunk-69-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -2009,7 +1916,7 @@ With more random effects, this matrix expands.
 ]
 
 .pull-right[
-![](mlm-8_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-72-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -2113,7 +2020,7 @@ summary(mlm.4)
 
 ---
 
-![](mlm-8_files/figure-html/unnamed-chunk-78-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2123,7 +2030,7 @@ summary(mlm.4)
 ## argument.
 ```
 
-![](mlm-8_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-77-1.png)&lt;!-- --&gt;
 
 
 ---
@@ -2305,7 +2212,7 @@ mlm.4 %&gt;%
 ]
 
 .pull-right[
-![](mlm-8_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-82-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -2727,7 +2634,7 @@ mlm.5 &lt;-
 ```
 
 ---
-![](mlm-8_files/figure-html/unnamed-chunk-88-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-86-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2767,7 +2674,7 @@ summary(mlm.5)
 ---
 
 
-![](mlm-8_files/figure-html/unnamed-chunk-90-1.png)&lt;!-- --&gt;
+![](mlm-8_files/figure-html/unnamed-chunk-88-1.png)&lt;!-- --&gt;
 
 
 ---
