@@ -484,10 +484,14 @@ Partial pooling aka shrinkage
 ---
 ## 5. Parameters that depend on other parameters
 
-.pull-left[ The extent of shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. This is known as a hyperprior
+.pull-left[ 
+
+The extent of shrinkage depends on a few things (eg number of observations per group) but also depends on our priors. This is known as a hyperprior
+
 ]
 
 .pull-right[
+
 `$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
 `$$\mu_i  = \beta_{0[j]}$$` 
 
@@ -495,7 +499,9 @@ Partial pooling aka shrinkage
 `$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
 `$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$`
 `$$\sigma \sim {\operatorname{Exponential}(1)}$$`
+
 ]
+
 
 ---
 ## Hyperprior
@@ -785,6 +791,7 @@ summary(mlm.id)
 ```
 
 ---
+
 .pull-left[
 
 
@@ -834,8 +841,9 @@ posterior::summarise_draws(mlm.1)
 ## 10 r_ID[53,In…  3.85e-4  1.95e-4 0.0297  0.0297  -0.0485  4.94e-2  1.00   32232.
 ## # … with 88 more rows, and 1 more variable: ess_tail &lt;dbl&gt;
 ```
-]
 
+
+]
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
@@ -1250,16 +1258,14 @@ summary(mlm.1p2)
 
 .pull-left[
 ![](mlm-8_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
+
 ]
 
 .pull-right[
 
-
-```
-## Warning: Removed 64 rows containing missing values (geom_point).
-```
-
 ![](mlm-8_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
+
+]
 
 
 ---
@@ -1374,9 +1380,8 @@ loo_compare(mlm.1, mlm.2, criterion = "loo")
 
 ---
 
-When we have these priors it indicates that we have some 
-`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$`
-`$$\mu_i  = \beta_{0[i]}$$` 
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_{i}, \sigma)$$`
+`$$\mu_i  = \beta_{0[j]}$$` 
 This line indicates we have varying intercepts. Much like going from level 1 -&gt; 2, we do priors on that parameter. Indicates that there is a distribution FOR EACH PERSON/GROUP. The distribution needs a prior. 
 `$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
 `$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
@@ -1389,9 +1394,9 @@ This line indicates we have varying intercepts. Much like going from level 1 -&g
 ###  Shrinkage towards mean 
 
 .small[
-`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$`
 
-`$$\mu_i  = \beta_{0[i]}$$` 
+`$$\mu_i  = \beta_{0[j]}$$` 
 
 `$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$`
 `$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$`
@@ -1637,7 +1642,7 @@ mlm.1 %&gt;%
 ## level 1 predictors
 
 .small[
-`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma_i)$$`
+`$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$`
 `$$\mu_i  = \beta_{0[j]} + \beta_{1[j]}Time_{ij}$$` 
 
 `$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu}, \sigma_0)$$`
@@ -1848,6 +1853,7 @@ posterior_summary(mlm.3)
 
 2. Involves lots of interactions
 ]
+
 .pull-right[
 Level 1:
 `$${Y}_{ij} = \beta_{0j}  + \beta_{1j}X_{ij} + \varepsilon_{ij}$$`
@@ -1955,7 +1961,6 @@ get_prior(family = gaussian,
 ##       default
 ```
 
-6 parameters we are estimating
 
 ---
 
