@@ -1298,6 +1298,13 @@ mlm.id <-
 
 ```
 
+---
+
+This is similar to a "fixed effect" model, something that is popular in econometrics. It, in contrast to the random effect model, does not model random effects. 
+
+Why do we want to model random effects? Variance decomposition which leads to increased power. 
+
+Also, 1. we can include group/cluster level predictors, which fixed effect cannot. 2. it makes an assumption about whether the clusters are random or not. Psych they are almost always random (people, site, orgs) whereas for econometrics they aren't (country, state).    
 
 ---
 ```{r}
@@ -1306,26 +1313,24 @@ summary(mlm.id)
 
 ---
 
-.pull-left[
 
-```{r}
+```{r, warning = FALSE}
 posterior_samples(mlm.id) %>% 
   pivot_longer(b_ID.f1:b_ID.f91, names_to="ID") %>% 
   summarise(mean=mean(value), sd=sd(value))
 ```
 
 
-]
 
 
-.pull-right[
+---
 
 ```{r, message = FALSE, warning = FALSE}
 library(posterior)
 posterior::summarise_draws(mlm.1)
 ```
 
-]
+
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
@@ -1368,7 +1373,7 @@ get_variables(mlm.1)
 
 ---
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 mlm.1 %>%
   spread_draws(r_ID[ID, term]) 
 ```
@@ -1376,7 +1381,7 @@ mlm.1 %>%
 
 ---
 
-```{r}
+```{r, warning = FALSE}
 mlm.1 %>%
   spread_draws(r_ID[ID]) 
 ```
@@ -1419,6 +1424,13 @@ ggplot(aes(x = ID)) +
     
 ```
 ]
+
+---
+Think back to {lme4} and `ranef` `coef` and `fixef` functions. 
+
+What do each of these describe? 
+
+What scale is our random effects (typically) in? 
 
 ---
 
@@ -1586,7 +1598,7 @@ mlm.1p2 %>%
   spread_draws(b_Intercept, r_ID[ID, term]) %>%
   mutate(person_I = b_Intercept + r_ID) %>%
   left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
- median_qi() %>% 
+ mean_qi() %>% 
 ggplot(aes(x = ID)) +
   geom_point(aes(y = person_I), color = "orange2") +
   geom_point(aes(y = CON), shape = 1) +
@@ -1597,17 +1609,6 @@ ggplot(aes(x = ID)) +
 ```
 
 ]
-
-
----
-
-
-
-
-
-
-
-
 
 
 
@@ -1629,7 +1630,7 @@ $$\sigma \sim {\operatorname{Exponential}(1)}$$
 
 ---
 
-Notice how the slope variable was not a hyper prior. What does that mean? That means it is not random. People can still differ, but only based on the equation we set up for it. That is, this is there are fixef effects based on different gammas, but not Us to represent random variation. To do so we would need a parameter for that, and we dont have it. 
+Notice how the slope variable was not a hyper prior. What does that mean? That means it is not random. People can still differ, but only based on the equation we set up for it. That is, there are fixed effects based on different gammas, but not Us to represent random variation. To do so we would need a parameter for that, and we dont have it. 
 
 ---
 

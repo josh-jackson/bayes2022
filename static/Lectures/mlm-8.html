@@ -672,6 +672,13 @@ mlm.id &lt;-
       file = "mlm.id")
 ```
 
+---
+
+This is similar to a "fixed effect" model, something that is popular in econometrics. It, in contrast to the random effect model, does not model random effects. 
+
+Why do we want to model random effects? Variance decomposition which leads to increased power. 
+
+Also, 1. we can include group/cluster level predictors, which fixed effect cannot. 2. it makes an assumption about whether the clusters are random or not. Psych they are almost always random (people, site, orgs) whereas for econometrics they aren't (country, state).    
 
 ---
 
@@ -792,18 +799,12 @@ summary(mlm.id)
 
 ---
 
-.pull-left[
 
 
 ```r
 posterior_samples(mlm.id) %&gt;% 
   pivot_longer(b_ID.f1:b_ID.f91, names_to="ID") %&gt;% 
   summarise(mean=mean(value), sd=sd(value))
-```
-
-```
-## Warning: Method 'posterior_samples' is deprecated. Please see ?as_draws for
-## recommended alternatives.
 ```
 
 ```
@@ -814,10 +815,9 @@ posterior_samples(mlm.id) %&gt;%
 ```
 
 
-]
 
 
-.pull-right[
+---
 
 
 ```r
@@ -842,7 +842,7 @@ posterior::summarise_draws(mlm.1)
 ## # … with 88 more rows, and 1 more variable: ess_tail &lt;dbl&gt;
 ```
 
-]
+
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
@@ -958,13 +958,6 @@ mlm.1 %&gt;%
 ```
 
 ```
-## Warning: `gather_()` was deprecated in tidyr 1.2.0.
-## Please use `gather()` instead.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
-```
-
-```
 ## # A tibble: 1,456,000 × 6
 ## # Groups:   ID, term [91]
 ##       ID term          r_ID .chain .iteration .draw
@@ -989,11 +982,6 @@ mlm.1 %&gt;%
 ```r
 mlm.1 %&gt;%
   spread_draws(r_ID[ID]) 
-```
-
-```
-## Warning: Expected 1 pieces. Additional pieces discarded in 91 rows [1, 2, 3, 4,
-## 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
 ```
 
 ```
@@ -1058,6 +1046,13 @@ ggplot(aes(x = ID)) +
 .pull-right[
 ![](mlm-8_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
 ]
+
+---
+Think back to {lme4} and `ranef` `coef` and `fixef` functions. 
+
+What do each of these describe? 
+
+What scale is our random effects (typically) in? 
 
 ---
 
@@ -1238,15 +1233,15 @@ summary(mlm.1p2)
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 91) 
 ##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sd(Intercept)   187.43    108.18     0.06   251.62 1.58        7       28
+## sd(Intercept)   249.58      0.91   247.69   251.24 1.03       86      292
 ## 
 ## Population-Level Effects: 
 ##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept     1.14      1.07    -0.28     2.38 2.53        5       16
+## Intercept     1.20      3.47    -2.41    11.51 3.04        5       11
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     0.05      0.00     0.04     0.05 1.06       48      133
+## sigma     0.05      0.00     0.04     0.05 1.22       14       43
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -1265,17 +1260,6 @@ summary(mlm.1p2)
 ![](mlm-8_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
 
 ]
-
-
----
-
-
-
-
-
-
-
-
 
 
 
@@ -1297,7 +1281,7 @@ summary(mlm.1p2)
 
 ---
 
-Notice how the slope variable was not a hyper prior. What does that mean? That means it is not random. People can still differ, but only based on the equation we set up for it. That is, this is there are fixef effects based on different gammas, but not Us to represent random variation. To do so we would need a parameter for that, and we dont have it. 
+Notice how the slope variable was not a hyper prior. What does that mean? That means it is not random. People can still differ, but only based on the equation we set up for it. That is, there are fixed effects based on different gammas, but not Us to represent random variation. To do so we would need a parameter for that, and we dont have it. 
 
 ---
 
