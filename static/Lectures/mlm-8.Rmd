@@ -1324,9 +1324,8 @@ posterior_samples(mlm.id) %>%
 library(posterior)
 posterior::summarise_draws(mlm.1)
 ```
-
-
 ]
+
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
@@ -1603,208 +1602,15 @@ ggplot(aes(x = ID)) +
 ---
 
 
-```{r}
-mlm.1 <- 
-  brm(family = gaussian,
-      CON ~ 1 + (1 | ID),
-      prior = c(prior(normal(0, 1.5), class = Intercept),
-                prior(normal(0, 1.5), class = sd), 
-                prior(exponential(1), class = sigma)),
-      iter = 5000, warmup = 1000, chains = 4, cores = 4,
-      sample_prior = "yes",
-      data = mlm, 
-      file = "mlm.1")
-```
-
----
-
-```{r}
-summary(mlm.1)
-```
-
----
-Notice we have one less paramter we are estimating. 
-```{r}
-mlm.2 <- 
-  brm(family = gaussian,
-      CON ~ 1 ,
-      prior = c(prior(normal(0, 1.5), class = Intercept),
-                prior(exponential(1), class = sigma)),
-      iter = 5000, warmup = 1000, chains = 4, cores = 4,
-      sample_prior = "yes",
-      data = mlm, 
-      file = "mlm.2")
-```
-
----
-```{r}
-summary(mlm.2)
-```
-
----
-```{r}
-mlm.1 <- add_criterion(mlm.1, "loo")
-mlm.2 <- add_criterion(mlm.2, "loo")
-loo_compare(mlm.1, mlm.2, criterion = "loo")
-```
-
-
----
-```{r, echo = FALSE, warning = FALSE}
-
-mlm %>%
-  sample_n_of(8, ID) %>% 
-ggplot(aes(x = week, y = CON, group = ID)) + geom_point(aes(color = factor(ID))) + stat_smooth(aes(color = factor(ID)), method = "lm", formula=y~1, se = FALSE) + xlab("X") + ylab("Y") + theme(legend.position = "none")
-```
-
----
-
-$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_{i}, \sigma)$$
-$$\mu_i  = \beta_{0[j]}$$ 
-This line indicates we have varying intercepts. Much like going from level 1 -> 2, we do priors on that parameter. Indicates that there is a distribution FOR EACH PERSON/GROUP. The distribution needs a prior. 
-$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
-$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
-$$\sigma_0 \sim {\operatorname{Exponential}(1)}$$
-$$\sigma \sim {\operatorname{Exponential}(1)}$$
 
 
 
----
-###  Shrinkage towards mean 
-
-.small[
-$$\text{y}_{ij}  \sim \operatorname{Normal}(\mu_i, \sigma)$$
-
-$$\mu_i  = \beta_{0[j]}$$ 
-
-$$\beta_{0[j]} \sim \operatorname{Normal}({\bar \mu},  \sigma_0)$$
-$${\bar \mu}  \sim {\operatorname{Normal}(0, 1.5)}$$
-
-$$\sigma_0 \sim {\operatorname{Normal}(0, 1.5)}$$
 
 
 
-$$\sigma \sim {\operatorname{Exponential}(1)}$$
-]
-
-Half normal can turn on/off shrinkage. Setting SD to zero says everyone is the same (complete). Infinite SD says all groups are unrelated (no pooling). In the middle gives you partial pooling. Remember, with MLE, you are using flat priors.   
-
----
-
-```{r}
-summary(mlm.1)
-```
 
 
 
----
-
-```{r}
-library(tidybayes)
-get_variables(mlm.1)
-```
-
-
----
-
-```{r}
-mlm.1 %>%
-  spread_draws(r_ID[ID, term]) 
-```
-16000 samples (4 chains * 4k iterations) * 91 people
-
----
-
-```{r}
-mlm.1 %>%
-  spread_draws(r_ID[ID, term]) %>%
- median_qi()
-```
-
-
----
-.pull-left[
-```{r, eval = FALSE, message = FALSE}
-mlm.1 %>%
-  spread_draws(r_ID[ID, term]) %>%
-  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
- median_qi() %>% 
-ggplot(aes(x = ID)) +
-  geom_point(aes(y = r_ID), color = "orange2") +
-  geom_point(aes(y = CON), shape = 1) 
-    
-```
-]
-
-.pull-right[
-```{r, echo = FALSE, message = FALSE}
-mlm.1 %>%
-  spread_draws(r_ID[ID, term]) %>%
-  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
- median_qi() %>% 
-ggplot(aes(x = ID)) +
-  geom_point(aes(y = r_ID), color = "orange2") +
-  geom_point(aes(y = CON), shape = 1) +
-  labs(title =  
-  "orange is model based, black circles are observed means")
-
-    
-```
-]
-
----
-
-```{r}
-mlm.1 %>%
-  spread_draws(b_Intercept, r_ID[ID, term]) 
-
-```
-
----
-
-```{r}
-mlm.1 %>%
-  spread_draws(b_Intercept, r_ID[ID, term]) %>% 
-   mutate(person_I = b_Intercept + r_ID) 
-```
-
----
-
-```{r, echo = FALSE, message = FALSE}
-mlm.1 %>%
-  spread_draws(b_Intercept, r_ID[ID, term]) %>%
-  mutate(person_I = b_Intercept + r_ID) %>%
-  left_join(mlm %>% select (ID, CON) %>% group_by(ID) %>%  mutate(CON = mean(CON))) %>% 
- median_qi() %>% 
-ggplot(aes(x = ID)) +
-  geom_point(aes(y = person_I), color = "orange2") +
-  geom_point(aes(y = CON), shape = 1) +
-  labs(title =  
-  "orange is model based, black circles are observed means") +
-  geom_hline(yintercept =0.1849846)
-
-```
-
----
-.pull-left[
-```{r, eval = FALSE}
-mlm.1 %>%
-  spread_draws(b_Intercept, r_ID[ID, term]) %>%
-   median_qi(person_I = b_Intercept + r_ID) %>%
-  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
-  geom_pointinterval() + xlab("est") + ylab("ID")
-```
-]
-
-.pull-right[
-```{r, echo = FALSE}
-mlm.1 %>%
-  spread_draws(b_Intercept, r_ID[ID, term]) %>%
-   median_qi(person_I = b_Intercept + r_ID) %>%
-  ggplot(aes( y = reorder(ID, person_I), x = person_I, xmin = .lower, xmax = .upper)) +
-  geom_pointinterval() + xlab("est") + ylab("ID")
-```
-]
 
 
 ---
