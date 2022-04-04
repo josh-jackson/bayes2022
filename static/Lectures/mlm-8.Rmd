@@ -1324,8 +1324,8 @@ posterior_samples(mlm.id) %>%
 library(posterior)
 posterior::summarise_draws(mlm.1)
 ```
-]
 
+]
 
 ---
 What does it mean that we are learning from our data? Or that the priors are based on our data? 
