@@ -2249,24 +2249,541 @@ coef(mlm.4)
 ```
 
 ---
+New example
+
+
+```r
+library(readr)
+esm &lt;- read_csv("~/Downloads/esm_w1_RENAMED.csv")
+```
+
+```
+## New names:
+## * `` -&gt; ...1
+```
+
+```
+## Rows: 11540 Columns: 89
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: ","
+## chr  (3): esm.startDateTime.w1, esm.endDateTime.w1, esm.OR.w1
+## dbl (84): ...1, esm.IDnum.w1, esm.PRO01.w1, esm.PRO02.w1, esm.PRO03.w1, esm....
+## lgl  (2): esm.ST14.w1, esm.ST15.w1
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+```
+
+```r
+esm
+```
+
+```
+## # A tibble: 11,540 × 89
+##     ...1 esm.IDnum.w1 esm.PRO01.w1 esm.PRO02.w1 esm.PRO03.w1 esm.startDateTime.…
+##    &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;              
+##  1     1        10549           17            1            1 12/22/13 12:00     
+##  2     2        10547           57            1            1 12/20/13 12:01     
+##  3     3        10547           57            1            1 12/19/13 12:19     
+##  4     4        10539           51            1            1 12/18/13 13:48     
+##  5     5        10547           57            1            1 12/18/13 12:24     
+##  6     6        10549           17            1            1 12/17/13 13:19     
+##  7     7        10539           51            1            1 12/17/13 13:02     
+##  8     8        10549           17            1            1 12/16/13 12:31     
+##  9     9        10547           57            1            1 12/16/13 12:09     
+## 10    10        10526           36            1            1 12/16/13 12:01     
+## # … with 11,530 more rows, and 83 more variables: esm.PRO04.w1 &lt;dbl&gt;,
+## #   esm.PRO05.w1 &lt;dbl&gt;, esm.PRO06.w1 &lt;dbl&gt;, esm.PRO07.w1 &lt;dbl&gt;,
+## #   esm.endDateTime.w1 &lt;chr&gt;, esm.OR.w1 &lt;chr&gt;, esm.NQ11.w1 &lt;dbl&gt;,
+## #   esm.NQ12.w1 &lt;dbl&gt;, esm.EXT.w1 &lt;dbl&gt;, esm.AGR.w1 &lt;dbl&gt;, esm.CON.w1 &lt;dbl&gt;,
+## #   esm.NEU.w1 &lt;dbl&gt;, `esm.NQ11+1.w1` &lt;dbl&gt;, `esm.NQ12+1.w1` &lt;dbl&gt;,
+## #   `esm.EXT+1.w1` &lt;dbl&gt;, `esm.AGR+1.w1` &lt;dbl&gt;, `esm.CON+1.w1` &lt;dbl&gt;,
+## #   `esm.NEU+1.w1` &lt;dbl&gt;, esm.NQ01.w1 &lt;dbl&gt;, esm.BFI37.w1 &lt;dbl&gt;, …
+```
+
+
+
+----
+
+
+```r
+esm$PA &lt;- esm$esm.NQ11.w1
+esm$W.other &lt;- esm$esm.ST04.w1
+esm$ID &lt;- esm$esm.IDnum.w1
+
+library(lme4)
+```
+
+```
+## Loading required package: Matrix
+```
+
+```
+## 
+## Attaching package: 'Matrix'
+```
+
+```
+## The following objects are masked from 'package:tidyr':
+## 
+##     expand, pack, unpack
+```
+
+```
+## 
+## Attaching package: 'lme4'
+```
+
+```
+## The following object is masked from 'package:brms':
+## 
+##     ngrps
+```
+
+```r
+test &lt;- lmer(PA ~ 1 + W.other  + (1 + W.other  | ID), data = esm )
+```
+  
+
+---
+
+
+```r
+summary(test)
+```
+
+```
+## Linear mixed model fit by REML ['lmerMod']
+## Formula: PA ~ 1 + W.other + (1 + W.other | ID)
+##    Data: esm
+## 
+## REML criterion at convergence: 24523.2
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.5746 -0.6263  0.0180  0.6978  2.8135 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr 
+##  ID       (Intercept) 0.25954  0.5094        
+##           W.other     0.03266  0.1807   -0.56
+##  Residual             0.72255  0.8500        
+## Number of obs: 9461, groups:  ID, 364
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  3.15230    0.03538   89.09
+## W.other      0.31802    0.02612   12.18
+## 
+## Correlation of Fixed Effects:
+##         (Intr)
+## W.other -0.686
+```
+
+
+---
+  
 
 ```r
 mlm.5 &lt;- 
   brm(family = gaussian,
-      CON ~ 1 + time + (1 + time | ID),
-      prior = c(prior(normal(0, 1.5), class = Intercept),
-                prior(normal(0, 1.5), class = b),
-                prior(gamma(3, .1), class = sd, coef = Intercept, group = ID), 
-                prior(gamma(3, .1), class = sd, coef = time, group = ID), 
+      PA ~ 1 + W.other  + (1 + W.other  | ID),
+      prior = c(prior(normal(0, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(normal(10, 1), class = sd, coef = Intercept, group = ID), 
+                prior(normal(10, 1), class = sd, coef = W.other, group = ID), 
                 prior(exponential(1), class = sigma),
-                prior(lkj(2), class = cor)),
+                prior(lkj(10), class = cor)),
       iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = TRUE,
       file = "mlm.5",
-      data = mlm)
+      data = esm)
 ```
 
+
 ---
-![](mlm-8_files/figure-html/unnamed-chunk-69-1.png)&lt;!-- --&gt;
+747 parameters in our posterior 
+
+```r
+get_variables(mlm.5)
+```
+
+```
+##   [1] "b_Intercept"                "b_W.other"                 
+##   [3] "sd_ID__Intercept"           "sd_ID__W.other"            
+##   [5] "cor_ID__Intercept__W.other" "sigma"                     
+##   [7] "r_ID[81,Intercept]"         "r_ID[86,Intercept]"        
+##   [9] "r_ID[87,Intercept]"         "r_ID[88,Intercept]"        
+##  [11] "r_ID[89,Intercept]"         "r_ID[90,Intercept]"        
+##  [13] "r_ID[91,Intercept]"         "r_ID[92,Intercept]"        
+##  [15] "r_ID[93,Intercept]"         "r_ID[94,Intercept]"        
+##  [17] "r_ID[95,Intercept]"         "r_ID[97,Intercept]"        
+##  [19] "r_ID[98,Intercept]"         "r_ID[100,Intercept]"       
+##  [21] "r_ID[101,Intercept]"        "r_ID[102,Intercept]"       
+##  [23] "r_ID[104,Intercept]"        "r_ID[10105,Intercept]"     
+##  [25] "r_ID[10106,Intercept]"      "r_ID[10107,Intercept]"     
+##  [27] "r_ID[10108,Intercept]"      "r_ID[10109,Intercept]"     
+##  [29] "r_ID[10110,Intercept]"      "r_ID[10111,Intercept]"     
+##  [31] "r_ID[10112,Intercept]"      "r_ID[10113,Intercept]"     
+##  [33] "r_ID[10114,Intercept]"      "r_ID[10116,Intercept]"     
+##  [35] "r_ID[10117,Intercept]"      "r_ID[10118,Intercept]"     
+##  [37] "r_ID[10121,Intercept]"      "r_ID[10122,Intercept]"     
+##  [39] "r_ID[10123,Intercept]"      "r_ID[10124,Intercept]"     
+##  [41] "r_ID[10125,Intercept]"      "r_ID[10126,Intercept]"     
+##  [43] "r_ID[10127,Intercept]"      "r_ID[10128,Intercept]"     
+##  [45] "r_ID[10129,Intercept]"      "r_ID[10130,Intercept]"     
+##  [47] "r_ID[10131,Intercept]"      "r_ID[10132,Intercept]"     
+##  [49] "r_ID[10133,Intercept]"      "r_ID[10134,Intercept]"     
+##  [51] "r_ID[10136,Intercept]"      "r_ID[10137,Intercept]"     
+##  [53] "r_ID[10138,Intercept]"      "r_ID[10139,Intercept]"     
+##  [55] "r_ID[10141,Intercept]"      "r_ID[10143,Intercept]"     
+##  [57] "r_ID[10144,Intercept]"      "r_ID[10145,Intercept]"     
+##  [59] "r_ID[10147,Intercept]"      "r_ID[10148,Intercept]"     
+##  [61] "r_ID[10149,Intercept]"      "r_ID[10150,Intercept]"     
+##  [63] "r_ID[10151,Intercept]"      "r_ID[10153,Intercept]"     
+##  [65] "r_ID[10154,Intercept]"      "r_ID[10155,Intercept]"     
+##  [67] "r_ID[10157,Intercept]"      "r_ID[10158,Intercept]"     
+##  [69] "r_ID[10159,Intercept]"      "r_ID[10160,Intercept]"     
+##  [71] "r_ID[10161,Intercept]"      "r_ID[10162,Intercept]"     
+##  [73] "r_ID[10164,Intercept]"      "r_ID[10166,Intercept]"     
+##  [75] "r_ID[10167,Intercept]"      "r_ID[10171,Intercept]"     
+##  [77] "r_ID[10172,Intercept]"      "r_ID[10173,Intercept]"     
+##  [79] "r_ID[10174,Intercept]"      "r_ID[10175,Intercept]"     
+##  [81] "r_ID[10176,Intercept]"      "r_ID[10177,Intercept]"     
+##  [83] "r_ID[10178,Intercept]"      "r_ID[10180,Intercept]"     
+##  [85] "r_ID[10181,Intercept]"      "r_ID[10184,Intercept]"     
+##  [87] "r_ID[10185,Intercept]"      "r_ID[10186,Intercept]"     
+##  [89] "r_ID[10187,Intercept]"      "r_ID[10188,Intercept]"     
+##  [91] "r_ID[10190,Intercept]"      "r_ID[10192,Intercept]"     
+##  [93] "r_ID[10193,Intercept]"      "r_ID[10194,Intercept]"     
+##  [95] "r_ID[10195,Intercept]"      "r_ID[10196,Intercept]"     
+##  [97] "r_ID[10197,Intercept]"      "r_ID[10198,Intercept]"     
+##  [99] "r_ID[10199,Intercept]"      "r_ID[10200,Intercept]"     
+## [101] "r_ID[10201,Intercept]"      "r_ID[10202,Intercept]"     
+## [103] "r_ID[10203,Intercept]"      "r_ID[10204,Intercept]"     
+## [105] "r_ID[10205,Intercept]"      "r_ID[10206,Intercept]"     
+## [107] "r_ID[10207,Intercept]"      "r_ID[10208,Intercept]"     
+## [109] "r_ID[10210,Intercept]"      "r_ID[10211,Intercept]"     
+## [111] "r_ID[10212,Intercept]"      "r_ID[10213,Intercept]"     
+## [113] "r_ID[10214,Intercept]"      "r_ID[10215,Intercept]"     
+## [115] "r_ID[10216,Intercept]"      "r_ID[10217,Intercept]"     
+## [117] "r_ID[10219,Intercept]"      "r_ID[10220,Intercept]"     
+## [119] "r_ID[10221,Intercept]"      "r_ID[10222,Intercept]"     
+## [121] "r_ID[10223,Intercept]"      "r_ID[10226,Intercept]"     
+## [123] "r_ID[10227,Intercept]"      "r_ID[10228,Intercept]"     
+## [125] "r_ID[10229,Intercept]"      "r_ID[10230,Intercept]"     
+## [127] "r_ID[10231,Intercept]"      "r_ID[10232,Intercept]"     
+## [129] "r_ID[10233,Intercept]"      "r_ID[10234,Intercept]"     
+## [131] "r_ID[10236,Intercept]"      "r_ID[10237,Intercept]"     
+## [133] "r_ID[10238,Intercept]"      "r_ID[10239,Intercept]"     
+## [135] "r_ID[10240,Intercept]"      "r_ID[10241,Intercept]"     
+## [137] "r_ID[10242,Intercept]"      "r_ID[10243,Intercept]"     
+## [139] "r_ID[10244,Intercept]"      "r_ID[10245,Intercept]"     
+## [141] "r_ID[10247,Intercept]"      "r_ID[10248,Intercept]"     
+## [143] "r_ID[10249,Intercept]"      "r_ID[10250,Intercept]"     
+## [145] "r_ID[10251,Intercept]"      "r_ID[10253,Intercept]"     
+## [147] "r_ID[10255,Intercept]"      "r_ID[10256,Intercept]"     
+## [149] "r_ID[10258,Intercept]"      "r_ID[10259,Intercept]"     
+## [151] "r_ID[10260,Intercept]"      "r_ID[10266,Intercept]"     
+## [153] "r_ID[10267,Intercept]"      "r_ID[10268,Intercept]"     
+## [155] "r_ID[10269,Intercept]"      "r_ID[10270,Intercept]"     
+## [157] "r_ID[10271,Intercept]"      "r_ID[10272,Intercept]"     
+## [159] "r_ID[10273,Intercept]"      "r_ID[10274,Intercept]"     
+## [161] "r_ID[10275,Intercept]"      "r_ID[10276,Intercept]"     
+## [163] "r_ID[10277,Intercept]"      "r_ID[10280,Intercept]"     
+## [165] "r_ID[10281,Intercept]"      "r_ID[10285,Intercept]"     
+## [167] "r_ID[10286,Intercept]"      "r_ID[10287,Intercept]"     
+## [169] "r_ID[10288,Intercept]"      "r_ID[10289,Intercept]"     
+## [171] "r_ID[10290,Intercept]"      "r_ID[10291,Intercept]"     
+## [173] "r_ID[10292,Intercept]"      "r_ID[10293,Intercept]"     
+## [175] "r_ID[10294,Intercept]"      "r_ID[10295,Intercept]"     
+## [177] "r_ID[10296,Intercept]"      "r_ID[10299,Intercept]"     
+## [179] "r_ID[10301,Intercept]"      "r_ID[10304,Intercept]"     
+## [181] "r_ID[10305,Intercept]"      "r_ID[10308,Intercept]"     
+## [183] "r_ID[10309,Intercept]"      "r_ID[10310,Intercept]"     
+## [185] "r_ID[10311,Intercept]"      "r_ID[10312,Intercept]"     
+## [187] "r_ID[10313,Intercept]"      "r_ID[10314,Intercept]"     
+## [189] "r_ID[10315,Intercept]"      "r_ID[10316,Intercept]"     
+## [191] "r_ID[10317,Intercept]"      "r_ID[10318,Intercept]"     
+## [193] "r_ID[10319,Intercept]"      "r_ID[10320,Intercept]"     
+## [195] "r_ID[10322,Intercept]"      "r_ID[10323,Intercept]"     
+## [197] "r_ID[10324,Intercept]"      "r_ID[10325,Intercept]"     
+## [199] "r_ID[10326,Intercept]"      "r_ID[10327,Intercept]"     
+## [201] "r_ID[10328,Intercept]"      "r_ID[10329,Intercept]"     
+## [203] "r_ID[10330,Intercept]"      "r_ID[10331,Intercept]"     
+## [205] "r_ID[10332,Intercept]"      "r_ID[10333,Intercept]"     
+## [207] "r_ID[10335,Intercept]"      "r_ID[10336,Intercept]"     
+## [209] "r_ID[10337,Intercept]"      "r_ID[10338,Intercept]"     
+## [211] "r_ID[10340,Intercept]"      "r_ID[10341,Intercept]"     
+## [213] "r_ID[10342,Intercept]"      "r_ID[10343,Intercept]"     
+## [215] "r_ID[10345,Intercept]"      "r_ID[10347,Intercept]"     
+## [217] "r_ID[10348,Intercept]"      "r_ID[10349,Intercept]"     
+## [219] "r_ID[10350,Intercept]"      "r_ID[10351,Intercept]"     
+## [221] "r_ID[10352,Intercept]"      "r_ID[10353,Intercept]"     
+## [223] "r_ID[10354,Intercept]"      "r_ID[10357,Intercept]"     
+## [225] "r_ID[10358,Intercept]"      "r_ID[10359,Intercept]"     
+## [227] "r_ID[10360,Intercept]"      "r_ID[10361,Intercept]"     
+## [229] "r_ID[10363,Intercept]"      "r_ID[10364,Intercept]"     
+## [231] "r_ID[10365,Intercept]"      "r_ID[10366,Intercept]"     
+## [233] "r_ID[10367,Intercept]"      "r_ID[10368,Intercept]"     
+## [235] "r_ID[10369,Intercept]"      "r_ID[10370,Intercept]"     
+## [237] "r_ID[10371,Intercept]"      "r_ID[10372,Intercept]"     
+## [239] "r_ID[10373,Intercept]"      "r_ID[10374,Intercept]"     
+## [241] "r_ID[10378,Intercept]"      "r_ID[10379,Intercept]"     
+## [243] "r_ID[10380,Intercept]"      "r_ID[10381,Intercept]"     
+## [245] "r_ID[10382,Intercept]"      "r_ID[10383,Intercept]"     
+## [247] "r_ID[10384,Intercept]"      "r_ID[10386,Intercept]"     
+## [249] "r_ID[10388,Intercept]"      "r_ID[10389,Intercept]"     
+## [251] "r_ID[10390,Intercept]"      "r_ID[10391,Intercept]"     
+## [253] "r_ID[10392,Intercept]"      "r_ID[10394,Intercept]"     
+## [255] "r_ID[10397,Intercept]"      "r_ID[10398,Intercept]"     
+## [257] "r_ID[10399,Intercept]"      "r_ID[10402,Intercept]"     
+## [259] "r_ID[10404,Intercept]"      "r_ID[10407,Intercept]"     
+## [261] "r_ID[10408,Intercept]"      "r_ID[10409,Intercept]"     
+## [263] "r_ID[10411,Intercept]"      "r_ID[10412,Intercept]"     
+## [265] "r_ID[10413,Intercept]"      "r_ID[10414,Intercept]"     
+## [267] "r_ID[10415,Intercept]"      "r_ID[10418,Intercept]"     
+## [269] "r_ID[10421,Intercept]"      "r_ID[10422,Intercept]"     
+## [271] "r_ID[10423,Intercept]"      "r_ID[10426,Intercept]"     
+## [273] "r_ID[10427,Intercept]"      "r_ID[10428,Intercept]"     
+## [275] "r_ID[10429,Intercept]"      "r_ID[10431,Intercept]"     
+## [277] "r_ID[10432,Intercept]"      "r_ID[10433,Intercept]"     
+## [279] "r_ID[10434,Intercept]"      "r_ID[10435,Intercept]"     
+## [281] "r_ID[10436,Intercept]"      "r_ID[10437,Intercept]"     
+## [283] "r_ID[10438,Intercept]"      "r_ID[10439,Intercept]"     
+## [285] "r_ID[10440,Intercept]"      "r_ID[10441,Intercept]"     
+## [287] "r_ID[10442,Intercept]"      "r_ID[10444,Intercept]"     
+## [289] "r_ID[10445,Intercept]"      "r_ID[10447,Intercept]"     
+## [291] "r_ID[10448,Intercept]"      "r_ID[10449,Intercept]"     
+## [293] "r_ID[10450,Intercept]"      "r_ID[10451,Intercept]"     
+## [295] "r_ID[10452,Intercept]"      "r_ID[10453,Intercept]"     
+## [297] "r_ID[10454,Intercept]"      "r_ID[10455,Intercept]"     
+## [299] "r_ID[10456,Intercept]"      "r_ID[10457,Intercept]"     
+## [301] "r_ID[10459,Intercept]"      "r_ID[10460,Intercept]"     
+## [303] "r_ID[10461,Intercept]"      "r_ID[10462,Intercept]"     
+## [305] "r_ID[10463,Intercept]"      "r_ID[10465,Intercept]"     
+## [307] "r_ID[10466,Intercept]"      "r_ID[10469,Intercept]"     
+## [309] "r_ID[10470,Intercept]"      "r_ID[10471,Intercept]"     
+## [311] "r_ID[10472,Intercept]"      "r_ID[10473,Intercept]"     
+## [313] "r_ID[10474,Intercept]"      "r_ID[10475,Intercept]"     
+## [315] "r_ID[10476,Intercept]"      "r_ID[10477,Intercept]"     
+## [317] "r_ID[10479,Intercept]"      "r_ID[10480,Intercept]"     
+## [319] "r_ID[10481,Intercept]"      "r_ID[10483,Intercept]"     
+## [321] "r_ID[10484,Intercept]"      "r_ID[10485,Intercept]"     
+## [323] "r_ID[10486,Intercept]"      "r_ID[10487,Intercept]"     
+## [325] "r_ID[10488,Intercept]"      "r_ID[10490,Intercept]"     
+## [327] "r_ID[10492,Intercept]"      "r_ID[10493,Intercept]"     
+## [329] "r_ID[10494,Intercept]"      "r_ID[10495,Intercept]"     
+## [331] "r_ID[10496,Intercept]"      "r_ID[10497,Intercept]"     
+## [333] "r_ID[10498,Intercept]"      "r_ID[10500,Intercept]"     
+## [335] "r_ID[10503,Intercept]"      "r_ID[10506,Intercept]"     
+## [337] "r_ID[10508,Intercept]"      "r_ID[10509,Intercept]"     
+## [339] "r_ID[10510,Intercept]"      "r_ID[10511,Intercept]"     
+## [341] "r_ID[10512,Intercept]"      "r_ID[10513,Intercept]"     
+## [343] "r_ID[10515,Intercept]"      "r_ID[10516,Intercept]"     
+## [345] "r_ID[10517,Intercept]"      "r_ID[10518,Intercept]"     
+## [347] "r_ID[10522,Intercept]"      "r_ID[10523,Intercept]"     
+## [349] "r_ID[10524,Intercept]"      "r_ID[10525,Intercept]"     
+## [351] "r_ID[10526,Intercept]"      "r_ID[10528,Intercept]"     
+## [353] "r_ID[10529,Intercept]"      "r_ID[10530,Intercept]"     
+## [355] "r_ID[10532,Intercept]"      "r_ID[10533,Intercept]"     
+## [357] "r_ID[10535,Intercept]"      "r_ID[10536,Intercept]"     
+## [359] "r_ID[10537,Intercept]"      "r_ID[10538,Intercept]"     
+## [361] "r_ID[10539,Intercept]"      "r_ID[10540,Intercept]"     
+## [363] "r_ID[10541,Intercept]"      "r_ID[10542,Intercept]"     
+## [365] "r_ID[10543,Intercept]"      "r_ID[10544,Intercept]"     
+## [367] "r_ID[10545,Intercept]"      "r_ID[10547,Intercept]"     
+## [369] "r_ID[10549,Intercept]"      "r_ID[10550,Intercept]"     
+## [371] "r_ID[81,W.other]"           "r_ID[86,W.other]"          
+## [373] "r_ID[87,W.other]"           "r_ID[88,W.other]"          
+## [375] "r_ID[89,W.other]"           "r_ID[90,W.other]"          
+## [377] "r_ID[91,W.other]"           "r_ID[92,W.other]"          
+## [379] "r_ID[93,W.other]"           "r_ID[94,W.other]"          
+## [381] "r_ID[95,W.other]"           "r_ID[97,W.other]"          
+## [383] "r_ID[98,W.other]"           "r_ID[100,W.other]"         
+## [385] "r_ID[101,W.other]"          "r_ID[102,W.other]"         
+## [387] "r_ID[104,W.other]"          "r_ID[10105,W.other]"       
+## [389] "r_ID[10106,W.other]"        "r_ID[10107,W.other]"       
+## [391] "r_ID[10108,W.other]"        "r_ID[10109,W.other]"       
+## [393] "r_ID[10110,W.other]"        "r_ID[10111,W.other]"       
+## [395] "r_ID[10112,W.other]"        "r_ID[10113,W.other]"       
+## [397] "r_ID[10114,W.other]"        "r_ID[10116,W.other]"       
+## [399] "r_ID[10117,W.other]"        "r_ID[10118,W.other]"       
+## [401] "r_ID[10121,W.other]"        "r_ID[10122,W.other]"       
+## [403] "r_ID[10123,W.other]"        "r_ID[10124,W.other]"       
+## [405] "r_ID[10125,W.other]"        "r_ID[10126,W.other]"       
+## [407] "r_ID[10127,W.other]"        "r_ID[10128,W.other]"       
+## [409] "r_ID[10129,W.other]"        "r_ID[10130,W.other]"       
+## [411] "r_ID[10131,W.other]"        "r_ID[10132,W.other]"       
+## [413] "r_ID[10133,W.other]"        "r_ID[10134,W.other]"       
+## [415] "r_ID[10136,W.other]"        "r_ID[10137,W.other]"       
+## [417] "r_ID[10138,W.other]"        "r_ID[10139,W.other]"       
+## [419] "r_ID[10141,W.other]"        "r_ID[10143,W.other]"       
+## [421] "r_ID[10144,W.other]"        "r_ID[10145,W.other]"       
+## [423] "r_ID[10147,W.other]"        "r_ID[10148,W.other]"       
+## [425] "r_ID[10149,W.other]"        "r_ID[10150,W.other]"       
+## [427] "r_ID[10151,W.other]"        "r_ID[10153,W.other]"       
+## [429] "r_ID[10154,W.other]"        "r_ID[10155,W.other]"       
+## [431] "r_ID[10157,W.other]"        "r_ID[10158,W.other]"       
+## [433] "r_ID[10159,W.other]"        "r_ID[10160,W.other]"       
+## [435] "r_ID[10161,W.other]"        "r_ID[10162,W.other]"       
+## [437] "r_ID[10164,W.other]"        "r_ID[10166,W.other]"       
+## [439] "r_ID[10167,W.other]"        "r_ID[10171,W.other]"       
+## [441] "r_ID[10172,W.other]"        "r_ID[10173,W.other]"       
+## [443] "r_ID[10174,W.other]"        "r_ID[10175,W.other]"       
+## [445] "r_ID[10176,W.other]"        "r_ID[10177,W.other]"       
+## [447] "r_ID[10178,W.other]"        "r_ID[10180,W.other]"       
+## [449] "r_ID[10181,W.other]"        "r_ID[10184,W.other]"       
+## [451] "r_ID[10185,W.other]"        "r_ID[10186,W.other]"       
+## [453] "r_ID[10187,W.other]"        "r_ID[10188,W.other]"       
+## [455] "r_ID[10190,W.other]"        "r_ID[10192,W.other]"       
+## [457] "r_ID[10193,W.other]"        "r_ID[10194,W.other]"       
+## [459] "r_ID[10195,W.other]"        "r_ID[10196,W.other]"       
+## [461] "r_ID[10197,W.other]"        "r_ID[10198,W.other]"       
+## [463] "r_ID[10199,W.other]"        "r_ID[10200,W.other]"       
+## [465] "r_ID[10201,W.other]"        "r_ID[10202,W.other]"       
+## [467] "r_ID[10203,W.other]"        "r_ID[10204,W.other]"       
+## [469] "r_ID[10205,W.other]"        "r_ID[10206,W.other]"       
+## [471] "r_ID[10207,W.other]"        "r_ID[10208,W.other]"       
+## [473] "r_ID[10210,W.other]"        "r_ID[10211,W.other]"       
+## [475] "r_ID[10212,W.other]"        "r_ID[10213,W.other]"       
+## [477] "r_ID[10214,W.other]"        "r_ID[10215,W.other]"       
+## [479] "r_ID[10216,W.other]"        "r_ID[10217,W.other]"       
+## [481] "r_ID[10219,W.other]"        "r_ID[10220,W.other]"       
+## [483] "r_ID[10221,W.other]"        "r_ID[10222,W.other]"       
+## [485] "r_ID[10223,W.other]"        "r_ID[10226,W.other]"       
+## [487] "r_ID[10227,W.other]"        "r_ID[10228,W.other]"       
+## [489] "r_ID[10229,W.other]"        "r_ID[10230,W.other]"       
+## [491] "r_ID[10231,W.other]"        "r_ID[10232,W.other]"       
+## [493] "r_ID[10233,W.other]"        "r_ID[10234,W.other]"       
+## [495] "r_ID[10236,W.other]"        "r_ID[10237,W.other]"       
+## [497] "r_ID[10238,W.other]"        "r_ID[10239,W.other]"       
+## [499] "r_ID[10240,W.other]"        "r_ID[10241,W.other]"       
+## [501] "r_ID[10242,W.other]"        "r_ID[10243,W.other]"       
+## [503] "r_ID[10244,W.other]"        "r_ID[10245,W.other]"       
+## [505] "r_ID[10247,W.other]"        "r_ID[10248,W.other]"       
+## [507] "r_ID[10249,W.other]"        "r_ID[10250,W.other]"       
+## [509] "r_ID[10251,W.other]"        "r_ID[10253,W.other]"       
+## [511] "r_ID[10255,W.other]"        "r_ID[10256,W.other]"       
+## [513] "r_ID[10258,W.other]"        "r_ID[10259,W.other]"       
+## [515] "r_ID[10260,W.other]"        "r_ID[10266,W.other]"       
+## [517] "r_ID[10267,W.other]"        "r_ID[10268,W.other]"       
+## [519] "r_ID[10269,W.other]"        "r_ID[10270,W.other]"       
+## [521] "r_ID[10271,W.other]"        "r_ID[10272,W.other]"       
+## [523] "r_ID[10273,W.other]"        "r_ID[10274,W.other]"       
+## [525] "r_ID[10275,W.other]"        "r_ID[10276,W.other]"       
+## [527] "r_ID[10277,W.other]"        "r_ID[10280,W.other]"       
+## [529] "r_ID[10281,W.other]"        "r_ID[10285,W.other]"       
+## [531] "r_ID[10286,W.other]"        "r_ID[10287,W.other]"       
+## [533] "r_ID[10288,W.other]"        "r_ID[10289,W.other]"       
+## [535] "r_ID[10290,W.other]"        "r_ID[10291,W.other]"       
+## [537] "r_ID[10292,W.other]"        "r_ID[10293,W.other]"       
+## [539] "r_ID[10294,W.other]"        "r_ID[10295,W.other]"       
+## [541] "r_ID[10296,W.other]"        "r_ID[10299,W.other]"       
+## [543] "r_ID[10301,W.other]"        "r_ID[10304,W.other]"       
+## [545] "r_ID[10305,W.other]"        "r_ID[10308,W.other]"       
+## [547] "r_ID[10309,W.other]"        "r_ID[10310,W.other]"       
+## [549] "r_ID[10311,W.other]"        "r_ID[10312,W.other]"       
+## [551] "r_ID[10313,W.other]"        "r_ID[10314,W.other]"       
+## [553] "r_ID[10315,W.other]"        "r_ID[10316,W.other]"       
+## [555] "r_ID[10317,W.other]"        "r_ID[10318,W.other]"       
+## [557] "r_ID[10319,W.other]"        "r_ID[10320,W.other]"       
+## [559] "r_ID[10322,W.other]"        "r_ID[10323,W.other]"       
+## [561] "r_ID[10324,W.other]"        "r_ID[10325,W.other]"       
+## [563] "r_ID[10326,W.other]"        "r_ID[10327,W.other]"       
+## [565] "r_ID[10328,W.other]"        "r_ID[10329,W.other]"       
+## [567] "r_ID[10330,W.other]"        "r_ID[10331,W.other]"       
+## [569] "r_ID[10332,W.other]"        "r_ID[10333,W.other]"       
+## [571] "r_ID[10335,W.other]"        "r_ID[10336,W.other]"       
+## [573] "r_ID[10337,W.other]"        "r_ID[10338,W.other]"       
+## [575] "r_ID[10340,W.other]"        "r_ID[10341,W.other]"       
+## [577] "r_ID[10342,W.other]"        "r_ID[10343,W.other]"       
+## [579] "r_ID[10345,W.other]"        "r_ID[10347,W.other]"       
+## [581] "r_ID[10348,W.other]"        "r_ID[10349,W.other]"       
+## [583] "r_ID[10350,W.other]"        "r_ID[10351,W.other]"       
+## [585] "r_ID[10352,W.other]"        "r_ID[10353,W.other]"       
+## [587] "r_ID[10354,W.other]"        "r_ID[10357,W.other]"       
+## [589] "r_ID[10358,W.other]"        "r_ID[10359,W.other]"       
+## [591] "r_ID[10360,W.other]"        "r_ID[10361,W.other]"       
+## [593] "r_ID[10363,W.other]"        "r_ID[10364,W.other]"       
+## [595] "r_ID[10365,W.other]"        "r_ID[10366,W.other]"       
+## [597] "r_ID[10367,W.other]"        "r_ID[10368,W.other]"       
+## [599] "r_ID[10369,W.other]"        "r_ID[10370,W.other]"       
+## [601] "r_ID[10371,W.other]"        "r_ID[10372,W.other]"       
+## [603] "r_ID[10373,W.other]"        "r_ID[10374,W.other]"       
+## [605] "r_ID[10378,W.other]"        "r_ID[10379,W.other]"       
+## [607] "r_ID[10380,W.other]"        "r_ID[10381,W.other]"       
+## [609] "r_ID[10382,W.other]"        "r_ID[10383,W.other]"       
+## [611] "r_ID[10384,W.other]"        "r_ID[10386,W.other]"       
+## [613] "r_ID[10388,W.other]"        "r_ID[10389,W.other]"       
+## [615] "r_ID[10390,W.other]"        "r_ID[10391,W.other]"       
+## [617] "r_ID[10392,W.other]"        "r_ID[10394,W.other]"       
+## [619] "r_ID[10397,W.other]"        "r_ID[10398,W.other]"       
+## [621] "r_ID[10399,W.other]"        "r_ID[10402,W.other]"       
+## [623] "r_ID[10404,W.other]"        "r_ID[10407,W.other]"       
+## [625] "r_ID[10408,W.other]"        "r_ID[10409,W.other]"       
+## [627] "r_ID[10411,W.other]"        "r_ID[10412,W.other]"       
+## [629] "r_ID[10413,W.other]"        "r_ID[10414,W.other]"       
+## [631] "r_ID[10415,W.other]"        "r_ID[10418,W.other]"       
+## [633] "r_ID[10421,W.other]"        "r_ID[10422,W.other]"       
+## [635] "r_ID[10423,W.other]"        "r_ID[10426,W.other]"       
+## [637] "r_ID[10427,W.other]"        "r_ID[10428,W.other]"       
+## [639] "r_ID[10429,W.other]"        "r_ID[10431,W.other]"       
+## [641] "r_ID[10432,W.other]"        "r_ID[10433,W.other]"       
+## [643] "r_ID[10434,W.other]"        "r_ID[10435,W.other]"       
+## [645] "r_ID[10436,W.other]"        "r_ID[10437,W.other]"       
+## [647] "r_ID[10438,W.other]"        "r_ID[10439,W.other]"       
+## [649] "r_ID[10440,W.other]"        "r_ID[10441,W.other]"       
+## [651] "r_ID[10442,W.other]"        "r_ID[10444,W.other]"       
+## [653] "r_ID[10445,W.other]"        "r_ID[10447,W.other]"       
+## [655] "r_ID[10448,W.other]"        "r_ID[10449,W.other]"       
+## [657] "r_ID[10450,W.other]"        "r_ID[10451,W.other]"       
+## [659] "r_ID[10452,W.other]"        "r_ID[10453,W.other]"       
+## [661] "r_ID[10454,W.other]"        "r_ID[10455,W.other]"       
+## [663] "r_ID[10456,W.other]"        "r_ID[10457,W.other]"       
+## [665] "r_ID[10459,W.other]"        "r_ID[10460,W.other]"       
+## [667] "r_ID[10461,W.other]"        "r_ID[10462,W.other]"       
+## [669] "r_ID[10463,W.other]"        "r_ID[10465,W.other]"       
+## [671] "r_ID[10466,W.other]"        "r_ID[10469,W.other]"       
+## [673] "r_ID[10470,W.other]"        "r_ID[10471,W.other]"       
+## [675] "r_ID[10472,W.other]"        "r_ID[10473,W.other]"       
+## [677] "r_ID[10474,W.other]"        "r_ID[10475,W.other]"       
+## [679] "r_ID[10476,W.other]"        "r_ID[10477,W.other]"       
+## [681] "r_ID[10479,W.other]"        "r_ID[10480,W.other]"       
+## [683] "r_ID[10481,W.other]"        "r_ID[10483,W.other]"       
+## [685] "r_ID[10484,W.other]"        "r_ID[10485,W.other]"       
+## [687] "r_ID[10486,W.other]"        "r_ID[10487,W.other]"       
+## [689] "r_ID[10488,W.other]"        "r_ID[10490,W.other]"       
+## [691] "r_ID[10492,W.other]"        "r_ID[10493,W.other]"       
+## [693] "r_ID[10494,W.other]"        "r_ID[10495,W.other]"       
+## [695] "r_ID[10496,W.other]"        "r_ID[10497,W.other]"       
+## [697] "r_ID[10498,W.other]"        "r_ID[10500,W.other]"       
+## [699] "r_ID[10503,W.other]"        "r_ID[10506,W.other]"       
+## [701] "r_ID[10508,W.other]"        "r_ID[10509,W.other]"       
+## [703] "r_ID[10510,W.other]"        "r_ID[10511,W.other]"       
+## [705] "r_ID[10512,W.other]"        "r_ID[10513,W.other]"       
+## [707] "r_ID[10515,W.other]"        "r_ID[10516,W.other]"       
+## [709] "r_ID[10517,W.other]"        "r_ID[10518,W.other]"       
+## [711] "r_ID[10522,W.other]"        "r_ID[10523,W.other]"       
+## [713] "r_ID[10524,W.other]"        "r_ID[10525,W.other]"       
+## [715] "r_ID[10526,W.other]"        "r_ID[10528,W.other]"       
+## [717] "r_ID[10529,W.other]"        "r_ID[10530,W.other]"       
+## [719] "r_ID[10532,W.other]"        "r_ID[10533,W.other]"       
+## [721] "r_ID[10535,W.other]"        "r_ID[10536,W.other]"       
+## [723] "r_ID[10537,W.other]"        "r_ID[10538,W.other]"       
+## [725] "r_ID[10539,W.other]"        "r_ID[10540,W.other]"       
+## [727] "r_ID[10541,W.other]"        "r_ID[10542,W.other]"       
+## [729] "r_ID[10543,W.other]"        "r_ID[10544,W.other]"       
+## [731] "r_ID[10545,W.other]"        "r_ID[10547,W.other]"       
+## [733] "r_ID[10549,W.other]"        "r_ID[10550,W.other]"       
+## [735] "prior_Intercept"            "prior_b"                   
+## [737] "prior_sigma"                "prior_sd_ID__Intercept"    
+## [739] "prior_sd_ID__W.other"       "prior_cor_ID"              
+## [741] "lp__"                       "accept_stat__"             
+## [743] "stepsize__"                 "treedepth__"               
+## [745] "n_leapfrog__"               "divergent__"               
+## [747] "energy__"
+```
 
 ---
 
@@ -2277,26 +2794,30 @@ summary(mlm.5)
 ```
 ##  Family: gaussian 
 ##   Links: mu = identity; sigma = identity 
-## Formula: CON ~ 1 + time + (1 + time | ID) 
-##    Data: mlm (Number of observations: 225) 
+## Formula: PA ~ 1 + W.other + (1 + W.other | ID) 
+##    Data: esm (Number of observations: 9461) 
 ##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
 ##          total post-warmup draws = 12000
 ## 
 ## Group-Level Effects: 
-## ~ID (Number of levels: 91) 
-##                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sd(Intercept)           0.06      0.01     0.05     0.08 1.00     3740     5788
-## sd(time)                0.01      0.00     0.00     0.02 1.00     1818     3795
-## cor(Intercept,time)    -0.25      0.30    -0.73     0.45 1.00     6746     6667
+## ~ID (Number of levels: 364) 
+##                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(Intercept)              0.50      0.03     0.44     0.56 1.00     3575
+## sd(W.other)                0.18      0.04     0.10     0.26 1.00     1129
+## cor(Intercept,W.other)    -0.43      0.11    -0.63    -0.19 1.00     7951
+##                        Tail_ESS
+## sd(Intercept)              6734
+## sd(W.other)                1497
+## cor(Intercept,W.other)     6106
 ## 
 ## Population-Level Effects: 
 ##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept     0.19      0.01     0.18     0.21 1.00     4829     7133
-## time         -0.00      0.00    -0.01     0.00 1.00    12133    10094
+## Intercept     3.15      0.03     3.08     3.22 1.00     4141     7179
+## W.other       0.32      0.03     0.27     0.37 1.00    12007     9550
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     0.05      0.00     0.04     0.05 1.00     3578     4618
+## sigma     0.85      0.01     0.84     0.86 1.00    18156     8391
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -2306,10 +2827,136 @@ summary(mlm.5)
 ---
 
 
-![](mlm-8_files/figure-html/unnamed-chunk-71-1.png)&lt;!-- --&gt;
+```
+## `summarise()` has grouped output by 'ID'. You can override using the `.groups`
+## argument.
+```
+
+```
+## Warning: Removed 52 rows containing missing values (geom_point).
+```
+
+```
+## Warning: Removed 52 row(s) containing missing values (geom_path).
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-74-1.png)&lt;!-- --&gt;
+
+---
+
+![](mlm-8_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
 
 
 ---
+
+
+```r
+esm &lt;- esm %&gt;% 
+group_by(ID) %&gt;% 
+mutate(W.other.pm = mean(`W.other`)) %&gt;% 
+ungroup() %&gt;% 
+filter(!is.na(W.other.pm)) %&gt;%   
+mutate(W.other.pc = W.other - W.other.pm) %&gt;% 
+mutate(W.other.gmc =W.other.pm  - mean (W.other.pm))
+```
+
+---
+
+
+```r
+mlm.6 &lt;- 
+  brm(family = gaussian,
+      PA ~ 1 + W.other.pc  +  W.other.gmc + (1 + W.other.pc  | ID),
+      prior = c(prior(normal(0, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(normal(10, 1), class = sd, coef = Intercept, group = ID), 
+                prior(normal(10, 1), class = sd, coef = W.other.pc, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(10), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.6",
+      data = esm)
+```
+
+---
+
+
+```r
+summary(mlm.6)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: PA ~ 1 + W.other.pc + W.other.gmc + (1 + W.other.pc | ID) 
+##    Data: esm (Number of observations: 8321) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 326) 
+##                           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(Intercept)                 0.46      0.02     0.41     0.50 1.00     2157
+## sd(W.other.pc)                0.20      0.04     0.11     0.27 1.00     2558
+## cor(Intercept,W.other.pc)    -0.25      0.13    -0.51     0.00 1.00     9315
+##                           Tail_ESS
+## sd(Intercept)                 4551
+## sd(W.other.pc)                2083
+## cor(Intercept,W.other.pc)     8967
+## 
+## Population-Level Effects: 
+##             Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept       3.40      0.03     3.34     3.46 1.00     1549     2944
+## W.other.pc      0.33      0.03     0.28     0.39 1.00     9903     9408
+## W.other.gmc     0.85      0.18     0.50     1.22 1.00     1840     3497
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.86      0.01     0.84     0.87 1.00    15432     8244
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+
+```
+## `summarise()` has grouped output by 'ID'. You can override using the `.groups`
+## argument.
+```
+
+```
+## Warning: Unknown or uninitialised column: `W.other.pc`.
+```
+
+```
+## Warning in min(x, na.rm = na.rm): no non-missing arguments to min; returning Inf
+```
+
+```
+## Warning in max(x, na.rm = na.rm): no non-missing arguments to max; returning
+## -Inf
+```
+
+```
+## Warning: Removed 50 rows containing missing values (geom_point).
+```
+
+```
+## Warning: Removed 50 row(s) containing missing values (geom_path).
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-79-1.png)&lt;!-- --&gt;
+
+---
+![](mlm-8_files/figure-html/unnamed-chunk-80-1.png)&lt;!-- --&gt;
+
+
+---
+
+
 
 
 ---

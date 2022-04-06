@@ -1751,7 +1751,7 @@ With more random effects, this matrix expands.
 library(forcats)
 
 expand.grid(
-  eta = 1:6,
+  eta = 1:8,
   K = 2:6
 ) %>%
   ggplot(aes(y = fct_rev(ordered(eta)), dist = "lkjcorr_marginal", arg1 = K, arg2 = eta)) +
@@ -1942,32 +1942,62 @@ coef(mlm.4)
 ```
 
 ---
+New example
+
 ```{r}
+library(readr)
+esm <- read_csv("~/Downloads/esm_w1_RENAMED.csv")
+esm
+```
+
+
+
+----
+
+```{r}
+
+esm$PA <- esm$esm.NQ11.w1
+esm$W.other <- esm$esm.ST04.w1
+esm$ID <- esm$esm.IDnum.w1
+
+library(lme4)
+test <- lmer(PA ~ 1 + W.other  + (1 + W.other  | ID), data = esm )
+
+```
+  
+
+---
+
+```{r}
+summary(test)
+```
+
+
+---
+  
+```{r} 
+ 
 mlm.5 <- 
   brm(family = gaussian,
-      CON ~ 1 + time + (1 + time | ID),
-      prior = c(prior(normal(0, 1.5), class = Intercept),
-                prior(normal(0, 1.5), class = b),
-                prior(gamma(3, .1), class = sd, coef = Intercept, group = ID), 
-                prior(gamma(3, .1), class = sd, coef = time, group = ID), 
+      PA ~ 1 + W.other  + (1 + W.other  | ID),
+      prior = c(prior(normal(0, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(normal(10, 1), class = sd, coef = Intercept, group = ID), 
+                prior(normal(10, 1), class = sd, coef = W.other, group = ID), 
                 prior(exponential(1), class = sigma),
-                prior(lkj(2), class = cor)),
+                prior(lkj(10), class = cor)),
       iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      sample_prior = TRUE,
       file = "mlm.5",
-      data = mlm)
+      data = esm)
       
 ```
 
+
 ---
-```{r, echo = FALSE}
-tibble(x = seq(from = 0, to = 110, by = .1)) %>% 
-  
-  ggplot(aes(x = x, ymin = 0, ymax = dgamma(x, 3, 0.1))) +
-  geom_ribbon(size = 0, fill = "grey") +
-  annotate(geom = "text", x = 14.25, y = 0.015, label = "'gamma'*(3*', '*0.1)", 
-           parse = T, color = "black", size = 4.25) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, 110)) +
-  scale_y_continuous(NULL, breaks = NULL, expand = expansion(mult = c(0, 0.05)))
+747 parameters in our posterior 
+```{r}
+get_variables(mlm.5)
 ```
 
 ---
@@ -1978,18 +2008,145 @@ summary(mlm.5)
 
 ---
 
+```{r, echo = FALSE}
+partially_pooled_params2 <-
+  coef(mlm.5)$ID [ , 1, 1:2] %>%
+  as_tibble(rownames = "ID") 
+
+
+un_pooled_params <-
+  esm %>%
+  filter((!is.na(PA))) %>% 
+  group_by(ID, W.other) %>%
+  summarise(mean = mean(PA)) %>%
+  do(tidy(lm(mean ~ W.other, data=.))) %>% 
+  ungroup() %>%  
+  select(ID, term, estimate) %>% 
+  pivot_wider(names_from = term, values_from = estimate) %>% 
+  mutate(Intercept = `(Intercept)`) %>% 
+  select(-`(Intercept)`) %>% 
+  mutate(ID = as.character(ID))
+
+params <-
+  # `bind_rows()` will stack the second tibble below the first
+  bind_rows(partially_pooled_params2, un_pooled_params) %>%
+  # index whether the estimates are pooled
+  mutate(pooled = rep(c("partially", "not"), each = nrow(.)/2)) 
+
+p2 <-
+  ggplot(data = params, aes(x = W.other, y = Intercept)) +
+  geom_point(aes(group = ID, color = pooled)) +
+  geom_line(aes(group = ID), size = 1/4) +
+  scale_color_manual("Pooled?",
+                     values = c("#80A0C7", "#A65141")) +
+  coord_cartesian(xlim = range(params$W.other),
+                  ylim = range(params$Intercept))
+p2
+```
+
+---
 
 ```{r, echo = FALSE}
 mlm.5 %>%
-  spread_draws(b_time, r_ID[ID, term]) %>%
-  filter(term == "time") %>% 
-  median_qi(person_t = b_time + r_ID) %>%
+  spread_draws(b_W.other, r_ID[ID, term]) %>%
+  filter(term == "W.other") %>% 
+  median_qi(person_t = b_W.other + r_ID) %>%
   ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
-  geom_pointinterval() + xlab("est") + ylab("ID")
+  geom_pointinterval(alpha = .1) + xlab("est")  + theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank())
 ```
 
 
 ---
+
+```{r}
+esm <- esm %>% 
+group_by(ID) %>% 
+mutate(W.other.pm = mean(`W.other`)) %>% 
+ungroup() %>% 
+filter(!is.na(W.other.pm)) %>%   
+mutate(W.other.pc = W.other - W.other.pm) %>% 
+mutate(W.other.gmc =W.other.pm  - mean (W.other.pm))
+```
+
+---
+
+```{r} 
+ 
+mlm.6 <- 
+  brm(family = gaussian,
+      PA ~ 1 + W.other.pc  +  W.other.gmc + (1 + W.other.pc  | ID),
+      prior = c(prior(normal(0, 5), class = Intercept),
+                prior(normal(0, 5), class = b),
+                prior(normal(10, 1), class = sd, coef = Intercept, group = ID), 
+                prior(normal(10, 1), class = sd, coef = W.other.pc, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(10), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.6",
+      data = esm)
+      
+```
+
+---
+
+```{r}
+summary(mlm.6)
+```
+
+---
+
+```{r, echo = FALSE}
+partially_pooled_params3 <-
+  coef(mlm.6)$ID [ , 1, 1:2] %>%
+  as_tibble(rownames = "ID") 
+
+
+un_pooled_params2 <-
+  esm %>%
+  filter((!is.na(PA))) %>% 
+  group_by(ID, W.other.pc) %>%
+  summarise(mean = mean(PA)) %>%
+  do(tidy(lm(mean ~ W.other.pc, data=.))) %>% 
+  ungroup() %>%  
+  select(ID, term, estimate) %>% 
+  pivot_wider(names_from = term, values_from = estimate) %>% 
+  mutate(Intercept = `(Intercept)`) %>% 
+  select(-`(Intercept)`) %>% 
+  mutate(ID = as.character(ID))
+
+params2 <-
+  # `bind_rows()` will stack the second tibble below the first
+  bind_rows(partially_pooled_params3, un_pooled_params2) %>%
+  # index whether the estimates are pooled
+  mutate(pooled = rep(c("partially", "not"), each = nrow(.)/2)) 
+
+p3 <-
+  ggplot(data = params2, aes(x = W.other.pc, y = Intercept)) +
+  geom_point(aes(group = ID, color = pooled)) +
+  geom_line(aes(group = ID), size = 1/4) +
+  scale_color_manual("Pooled?",
+                     values = c("#80A0C7", "#A65141")) +
+  coord_cartesian(xlim = range(params$W.other.pc),
+                  ylim = range(params$Intercept))
+p3
+```
+
+---
+```{r, echo = FALSE}
+mlm.6 %>%
+  spread_draws(b_W.other.pc, r_ID[ID, term]) %>%
+  filter(term == "W.other.pc") %>% 
+  median_qi(person_t = b_W.other.pc + r_ID) %>%
+  ggplot(aes( y = reorder(ID, person_t), x = person_t, xmin = .lower, xmax = .upper)) +
+  geom_pointinterval(alpha = .1) + xlab("est")  + theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank())
+```
+
+
+---
+
+
 
 
 ---
