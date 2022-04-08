@@ -2144,39 +2144,63 @@ mlm.6 %>%
 ```
 
 
+
 ---
+## Making predictions
 
+We often want to make predictions for different groups or individuals. The previous slide is one example. We made these predictions using/borrowing information from other individuals, through partial pooling. This improves our predictions. 
 
+Can we improve it further? Think about predictions in presidential races, or think about if we want to make some decision for a cancer drug. Do we stick with these standard MLM based predictions?  
 
 
 ---
 ## Mr. P
-aka multilevel regression with poststratification
+Improving predictions by incorporating outside (of the model) information. MRP = multilevel regression with poststratification
 
-One of the biggest problems with psych data is that it is unrepresentative. Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+One of the biggest problems with psych data is that it is unrepresentative. (Do you trust undergrads or adults off the street wanting to help science?) Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+
+---
+### Weighting vs postratifying 
+
+Weighting is done all the time with data. It gives more or less "weight" to observations that are over or under sampled. Some people "count" more than others in the service of getting data that represents some population.
+
+Poststratification is similar in that it weights the posterior samples rather than the observations. 
+
+Why is this preferred?  A few reasons, but mainly one can make generalization to new groups or groups with little data. Rather than weighting those specific individuals, partial pooling from other information will help with learning
+
+---
+
+What do we need? A reliable data source (such as a census) that gives us the population weights. Data can be re-weighted based on many different categories, not just one: for example, we could post-stratify based on age, education, state of residence, etc.
+
+
+---
+
+Estimating the proportion of heterosexual women who kept their maiden name after marriage. 
 
 https://www.monicaalexander.com/posts/2019-08-07-mrp/
 https://bookdown.org/content/4857/models-with-memory.html#summary-bonus-post-stratification-in-an-example
 
 
 ---
-```{r, eval = FALSE}
+```{r}
 mrp <-load("mrp.rds")
 mrp
 ```
 
-```{r, eval = FALSE}
-head(d)
+```{r}
+d
 ```
 
-```{r, eval = FALSE}
-head(cell_counts)
+---
+
+```{r, echo= FALSE}
+cell_counts
 ```
 
 ---
 
 
-```{r, eval = FALSE}
+```{r}
 mlm.mrp <-
   brm(family = binomial,
       kept_name | trials(1) ~ 1 + (1 | age_group) + (1 | decade_married) + (1 | educ_group) + (1 | state_name),
@@ -2191,7 +2215,14 @@ mlm.mrp <-
 
 ---
 
-```{r, eval = FALSE,echo = FALSE}
+```{r}
+summary(mlm.mrp)
+```
+
+
+---
+
+```{r,echo = FALSE}
 posterior_samples(mlm.mrp) %>% 
   select(starts_with("sd_")) %>% 
   set_names(str_c("sigma[", c("age", "decade~married", "education", "state"), "]")) %>% 
@@ -2210,8 +2241,8 @@ posterior_samples(mlm.mrp) %>%
 
 
 ---
-
-```{r, eval = FALSE}
+Census data we will use to make predictions. We will make predictions for every combination of variable we are interested in (state, age, decade married, edu)
+```{r}
 age_prop <- 
   cell_counts %>% 
   group_by(age_group) %>% 
@@ -2224,14 +2255,15 @@ age_prop
 
 ---
 .small[
-```{r, eval = FALSE}
-p <- 
-  add_predicted_draws(mlm.mrp, newdata = age_prop %>% 
+```{r}
+p <- mlm.mrp %>% 
+  add_predicted_draws(newdata = age_prop %>% 
                         filter(age_group > 20, 
                                age_group < 80, 
                                decade_married > 1969),
                       allow_new_levels = T)
 p
+
 ```
 ]
 
@@ -2239,28 +2271,29 @@ p
 
 ---
 
-If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights, which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
+If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights (prop), which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
 
 $$\frac{\sum_i N_i p_i}{\sum_i N_i}$$
 
+
 ---
 
-```{r, eval = FALSE}
-p <-
+```{r, message = FALSE, warning = FALSE}
+pp <-
   p %>% 
   group_by(age_group, .draw) %>% 
   summarise(kept_name_predict = sum(.prediction * prop)) %>% 
   group_by(age_group) %>% 
   mean_qi(kept_name_predict)
 
-p
+pp
 ```
 
 
 
 ---
-.pull-left[
-```{r, eval = FALSE, echo = FALSE, message = FALSE}
+
+```{r, echo = FALSE}
 levels <- c("raw data", "multilevel", "MRP")
 
 p1 <-
@@ -2272,11 +2305,10 @@ p1 <-
   mutate(prop = n/sum(n),
          type = factor("raw data", levels = levels)) %>% 
   filter(kept_name == 1, age_group < 80, age_group > 20) %>%
-
-  # plot!
   ggplot(aes(x = prop, y = age_group)) + 
   geom_point() +
-  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) 
+  scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
+  facet_wrap(~type)
 
 
 nd <- distinct(d, age_group) %>% arrange(age_group)
@@ -2298,9 +2330,8 @@ p2 <-
 
 
 p3 <-
-  p %>%
+  pp %>%
   mutate(type = factor("MRP", levels = levels)) %>% 
-
   ggplot(aes(x = kept_name_predict, xmin = .lower, xmax = .upper, y = age_group)) + 
   geom_pointrange(color = "orange2", size = 0.8, fatten = 2) +
   scale_x_continuous(breaks = c(0, .5, 1), limits = c(0, 1)) +
@@ -2309,13 +2340,16 @@ p3 <-
 
 # combine!
 (p1 | p2 | p3) +
-  plot_annotation(title = "Proportion of women keeping name after marriage, by age",
-                  subtitle = "Proportions are on the x-axis and age groups are on the y-axis.")
+  plot_annotation(title = "Proportion of women keeping name after marriage, by age")
 
 ```
-]
 
-.pull-right[The survey has an over-sample of highly educated women, who are more likely to keep their name, hence the regularization of MLM]
+
+---
+The general idea is that we can create predictions based on what we want to do with the predictions. Previously when we wanted to plot prediction lines we made predictions across the levels of X. When we want to see observational level variability we incorporate sigma in the predictions rather than focus on expected predictions. If we wanted the CI around a specific value rather than a band then we calculate predictions around that X value. All involve feeding in data. 
+
+Here we are doing the same thing, feeding in values to predict but choosing them to be "weighted" however we want. 
+
 
 ---
 ### Not limited to surveys

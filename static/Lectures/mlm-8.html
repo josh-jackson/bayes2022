@@ -2954,16 +2954,38 @@ summary(mlm.6)
 ![](mlm-8_files/figure-html/unnamed-chunk-80-1.png)&lt;!-- --&gt;
 
 
+
 ---
+## Making predictions
 
+We often want to make predictions for different groups or individuals. The previous slide is one example. We made these predictions using/borrowing information from other individuals, through partial pooling. This improves our predictions. 
 
+Can we improve it further? Think about predictions in presidential races, or think about if we want to make some decision for a cancer drug. Do we stick with these standard MLM based predictions?  
 
 
 ---
 ## Mr. P
-aka multilevel regression with poststratification
+Improving predictions by incorporating outside (of the model) information. MRP = multilevel regression with poststratification
 
-One of the biggest problems with psych data is that it is unrepresentative. Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+One of the biggest problems with psych data is that it is unrepresentative. (Do you trust undergrads or adults off the street wanting to help science?) Often survey weights are used. But if we know the  distribution of the broader population, we can reweight (post-stratify) our results to get more accurate estimates. Instead of making assumptions about how the observed sample was produced from the population, we make assumptions about how the observed sample can be used to reconstruct the rest of the population
+
+---
+### Weighting vs postratifying 
+
+Weighting is done all the time with data. It gives more or less "weight" to observations that are over or under sampled. Some people "count" more than others in the service of getting data that represents some population.
+
+Poststratification is similar in that it weights the posterior samples rather than the observations. 
+
+Why is this preferred?  A few reasons, but mainly one can make generalization to new groups or groups with little data. Rather than weighting those specific individuals, partial pooling from other information will help with learning
+
+---
+
+What do we need? A reliable data source (such as a census) that gives us the population weights. Data can be re-weighted based on many different categories, not just one: for example, we could post-stratify based on age, education, state of residence, etc.
+
+
+---
+
+Estimating the proportion of heterosexual women who kept their maiden name after marriage. 
 
 https://www.monicaalexander.com/posts/2019-08-07-mrp/
 https://bookdown.org/content/4857/models-with-memory.html#summary-bonus-post-stratification-in-an-example
@@ -2976,14 +2998,50 @@ mrp &lt;-load("mrp.rds")
 mrp
 ```
 
-
-```r
-head(d)
+```
+## [1] "d"           "cell_counts"
 ```
 
 
 ```r
-head(cell_counts)
+d
+```
+
+```
+## # A tibble: 4,413 × 5
+##    kept_name state_name     age_group decade_married educ_group
+##        &lt;dbl&gt; &lt;chr&gt;          &lt;chr&gt;     &lt;chr&gt;          &lt;chr&gt;     
+##  1         0 ohio           50        1979           &gt;BA       
+##  2         0 virginia       35        1999           &gt;BA       
+##  3         1 new york       35        2009           &gt;BA       
+##  4         0 rhode island   55        1999           &gt;BA       
+##  5         0 illinois       35        2009           &gt;BA       
+##  6         0 north carolina 25        2009           &gt;BA       
+##  7         1 iowa           35        1999           &gt;BA       
+##  8         1 texas          35        2009           &gt;BA       
+##  9         0 south dakota   35        1999           &gt;BA       
+## 10         0 texas          35        2009           &gt;BA       
+## # … with 4,403 more rows
+```
+
+---
+
+
+```
+## # A tibble: 6,058 × 5
+##    state_name age_group decade_married educ_group     n
+##    &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;          &lt;chr&gt;      &lt;dbl&gt;
+##  1 alabama    25        1999           &lt;BA        19012
+##  2 alabama    25        2009           &lt;BA        37488
+##  3 alabama    25        1999           &gt;BA          959
+##  4 alabama    25        2009           &gt;BA         5319
+##  5 alabama    25        1999           BA          2986
+##  6 alabama    25        2009           BA         14261
+##  7 alaska     25        1999           &lt;BA         3320
+##  8 alaska     25        2009           &lt;BA         7001
+##  9 alaska     25        1999           &gt;BA          159
+## 10 alaska     25        2009           &gt;BA          435
+## # … with 6,048 more rows
 ```
 
 ---
@@ -3006,10 +3064,58 @@ mlm.mrp &lt;-
 ---
 
 
+```r
+summary(mlm.mrp)
+```
+
+```
+##  Family: binomial 
+##   Links: mu = logit 
+## Formula: kept_name | trials(1) ~ 1 + (1 | age_group) + (1 | decade_married) + (1 | educ_group) + (1 | state_name) 
+##    Data: d (Number of observations: 4373) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Group-Level Effects: 
+## ~age_group (Number of levels: 11) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     1.15      0.29     0.71     1.89 1.00     1544     2340
+## 
+## ~decade_married (Number of levels: 5) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     1.00      0.40     0.50     1.98 1.00     2132     2750
+## 
+## ~educ_group (Number of levels: 4) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.91      0.46     0.35     2.05 1.00     2672     3039
+## 
+## ~state_name (Number of levels: 52) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     0.25      0.06     0.15     0.38 1.00     1675     2589
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept    -0.71      0.61    -1.89     0.49 1.00     2181     2391
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
 
 
 ---
 
+
+```
+## Warning: Method 'posterior_samples' is deprecated. Please see ?as_draws for
+## recommended alternatives.
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-86-1.png)&lt;!-- --&gt;
+
+
+---
+Census data we will use to make predictions. We will make predictions for every combination of variable we are interested in (state, age, decade married, edu)
 
 ```r
 age_prop &lt;- 
@@ -3021,18 +3127,55 @@ age_prop &lt;-
 age_prop
 ```
 
+```
+## # A tibble: 6,058 × 6
+##    state_name age_group decade_married educ_group     n      prop
+##    &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;          &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+##  1 alabama    25        1999           &lt;BA        19012 0.00414  
+##  2 alabama    25        2009           &lt;BA        37488 0.00816  
+##  3 alabama    25        1999           &gt;BA          959 0.000209 
+##  4 alabama    25        2009           &gt;BA         5319 0.00116  
+##  5 alabama    25        1999           BA          2986 0.000650 
+##  6 alabama    25        2009           BA         14261 0.00310  
+##  7 alaska     25        1999           &lt;BA         3320 0.000723 
+##  8 alaska     25        2009           &lt;BA         7001 0.00152  
+##  9 alaska     25        1999           &gt;BA          159 0.0000346
+## 10 alaska     25        2009           &gt;BA          435 0.0000947
+## # … with 6,048 more rows
+```
+
 
 ---
 .small[
 
 ```r
-p &lt;- 
-  add_predicted_draws(mlm.mrp, newdata = age_prop %&gt;% 
+p &lt;- mlm.mrp %&gt;% 
+  add_predicted_draws(newdata = age_prop %&gt;% 
                         filter(age_group &gt; 20, 
                                age_group &lt; 80, 
                                decade_married &gt; 1969),
                       allow_new_levels = T)
 p
+```
+
+```
+## # A tibble: 24,232,000 × 11
+## # Groups:   state_name, age_group, decade_married, educ_group, n, prop, .row
+## #   [6,058]
+##    state_name age_group decade_married educ_group     n    prop  .row .chain
+##    &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;          &lt;chr&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;
+##  1 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  2 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  3 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  4 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  5 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  6 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  7 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  8 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+##  9 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+## 10 alabama    25        1999           &lt;BA        19012 0.00414     1     NA
+## # … with 24,231,990 more rows, and 3 more variables: .iteration &lt;int&gt;,
+## #   .draw &lt;int&gt;, .prediction &lt;int&gt;
 ```
 ]
 
@@ -3040,32 +3183,60 @@ p
 
 ---
 
-If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights, which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
+If we group the results by age_group and .draw, we can sum the product of the posterior predictions and the weights (prop), which will leave us with 4,000 stratified posterior draws for each of the 11 levels of age_group
 
 `$$\frac{\sum_i N_i p_i}{\sum_i N_i}$$`
+
 
 ---
 
 
 ```r
-p &lt;-
+pp &lt;-
   p %&gt;% 
   group_by(age_group, .draw) %&gt;% 
   summarise(kept_name_predict = sum(.prediction * prop)) %&gt;% 
   group_by(age_group) %&gt;% 
   mean_qi(kept_name_predict)
 
-p
+pp
+```
+
+```
+## # A tibble: 11 × 7
+##    age_group kept_name_predict .lower .upper .width .point .interval
+##    &lt;chr&gt;                 &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+##  1 25                    0.177 0.0909  0.279   0.95 mean   qi       
+##  2 30                    0.181 0.115   0.262   0.95 mean   qi       
+##  3 35                    0.218 0.149   0.299   0.95 mean   qi       
+##  4 40                    0.245 0.174   0.331   0.95 mean   qi       
+##  5 45                    0.280 0.205   0.368   0.95 mean   qi       
+##  6 50                    0.301 0.215   0.394   0.95 mean   qi       
+##  7 55                    0.321 0.234   0.427   0.95 mean   qi       
+##  8 60                    0.438 0.328   0.558   0.95 mean   qi       
+##  9 65                    0.560 0.413   0.704   0.95 mean   qi       
+## 10 70                    0.515 0.288   0.753   0.95 mean   qi       
+## 11 75                    0.230 0.0517  0.514   0.95 mean   qi
 ```
 
 
 
 ---
-.pull-left[
 
-]
 
-.pull-right[The survey has an over-sample of highly educated women, who are more likely to keep their name, hence the regularization of MLM]
+```
+## `summarise()` has grouped output by 'age_group'. You can override using the
+## `.groups` argument.
+```
+
+![](mlm-8_files/figure-html/unnamed-chunk-90-1.png)&lt;!-- --&gt;
+
+
+---
+The general idea is that we can create predictions based on what we want to do with the predictions. Previously when we wanted to plot prediction lines we made predictions across the levels of X. When we want to see observational level variability we incorporate sigma in the predictions rather than focus on expected predictions. If we wanted the CI around a specific value rather than a band then we calculate predictions around that X value. All involve feeding in data. 
+
+Here we are doing the same thing, feeding in values to predict but choosing them to be "weighted" however we want. 
+
 
 ---
 ### Not limited to surveys
