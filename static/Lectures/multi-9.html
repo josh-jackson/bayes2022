@@ -1,0 +1,2486 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>grabbag</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Josh Jackson" />
+    <script src="multi-9_files/header-attrs-2.11/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+
+&lt;style type="text/css"&gt;
+
+.remark-slide-content {
+    font-size: 30px;
+    padding: 1em 4em 1em 4em;
+}
+
+
+.small { font-size: 80% }
+.tiny { font-size: 55% }
+
+&lt;/style&gt;
+
+
+## Multivariate models
+Any model that has more than 1 DV. While common within SEM frameworks, multivariate models are not often used within standard linear modeling (outside of MANOVA), mostly because of computational difficulties. 
+
+When do you want to use multivariate models? All the time! Mediation, path models, distributional models, IRT models, parallel process MLMs, etc etc. 
+What are advantages? Fewer models than doing separate, additional parameters, novel Qs. 
+
+
+---
+## multivariate MLMs
+
+
+.pull-left[
+
+```r
+mlm.4 &lt;- 
+  brm(family = gaussian,
+      CON ~ 1 + time + (1 + time | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(normal(0, 1.5), class = sd, coef = Intercept, group = ID), 
+                prior(normal(0, 1.5), class = sd, coef = time, group = ID), 
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mlm.4",
+      data = mlm)
+```
+]
+
+.pull-right[
+
+```r
+mv.1 &lt;- 
+  brm(family = gaussian,
+      mvbind(CON, DAN) ~ 1 + time + (1 + time | ID),
+      prior = c(prior(normal(0, 1.5), class = Intercept),
+                prior(normal(0, 1.5), class = b),
+                prior(lkj(2), class = cor),
+                prior(lkj(2), class = rescor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mv.1",
+      data = mlm)
+```
+]
+
+---
+.small[
+
+```
+##  Family: MV(gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: CON ~ 1 + time + (1 + time | ID) 
+##          DAN ~ 1 + time + (1 + time | ID) 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 91) 
+##                             Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(CON_Intercept)               0.06      0.01     0.04     0.07 1.00     3729
+## sd(CON_time)                    0.00      0.00     0.00     0.01 1.00     1310
+## sd(DAN_Intercept)               0.04      0.01     0.03     0.05 1.00     3416
+## sd(DAN_time)                    0.00      0.00     0.00     0.01 1.00     1537
+## cor(CON_Intercept,CON_time)    -0.12      0.39    -0.77     0.70 1.00     9370
+## cor(DAN_Intercept,DAN_time)    -0.03      0.41    -0.75     0.77 1.00     9596
+##                             Tail_ESS
+## sd(CON_Intercept)               6136
+## sd(CON_time)                    2633
+## sd(DAN_Intercept)               5375
+## sd(DAN_time)                    1934
+## cor(CON_Intercept,CON_time)     7324
+## cor(DAN_Intercept,DAN_time)     7983
+## 
+## Population-Level Effects: 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## CON_Intercept     0.19      0.01     0.18     0.21 1.00     6004     6890
+## DAN_Intercept     0.20      0.01     0.19     0.22 1.00     8213     9643
+## CON_time         -0.00      0.00    -0.01     0.00 1.00    13582     9609
+## DAN_time         -0.01      0.00    -0.01    -0.00 1.00    13155     9555
+## 
+## Family Specific Parameters: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_CON     0.05      0.00     0.04     0.05 1.00     4019     5246
+## sigma_DAN     0.05      0.00     0.04     0.06 1.00     3413     4195
+## 
+## Residual Correlations: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## rescor(CON,DAN)     0.12      0.09    -0.05     0.29 1.00     7360     6532
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+]
+
+---
+
+```r
+fixef(mv.1)
+```
+
+```
+##                   Estimate   Est.Error         Q2.5         Q97.5
+## CON_Intercept  0.194314209 0.007849149  0.179156276  0.2096659072
+## DAN_Intercept  0.203603203 0.006704129  0.190255575  0.2165872611
+## CON_time      -0.002875116 0.002308426 -0.007436153  0.0016510180
+## DAN_time      -0.005148392 0.002217759 -0.009487712 -0.0008444931
+```
+
+
+```r
+mv.1 %&gt;% 
+  gather_draws(sd_ID__CON_Intercept, sd_ID__CON_time, sd_ID__DAN_Intercept, sd_ID__DAN_time, cor_ID__CON_Intercept__CON_time, cor_ID__DAN_Intercept__DAN_time, rescor__CON__DAN) %&gt;% 
+   median_qi()
+```
+
+```
+## # A tibble: 7 × 7
+##   .variable                       .value   .lower .upper .width .point .interval
+##   &lt;chr&gt;                            &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 cor_ID__CON_Intercept__CON_t… -0.160   -7.67e-1 0.704    0.95 median qi       
+## 2 cor_ID__DAN_Intercept__DAN_t… -0.0482  -7.52e-1 0.766    0.95 median qi       
+## 3 rescor__CON__DAN               0.119   -5.23e-2 0.293    0.95 median qi       
+## 4 sd_ID__CON_Intercept           0.0561   4.49e-2 0.0698   0.95 median qi       
+## 5 sd_ID__CON_time                0.00394  1.85e-4 0.0122   0.95 median qi       
+## 6 sd_ID__DAN_Intercept           0.0411   2.90e-2 0.0539   0.95 median qi       
+## 7 sd_ID__DAN_time                0.00366  1.54e-4 0.0116   0.95 median qi
+```
+
+---
+
+```r
+mv.1 %&gt;% 
+  spread_draws(rescor__CON__DAN) %&gt;% 
+  ggplot(aes( x = rescor__CON__DAN))+
+  stat_halfeye()
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+---
+## Everything is SEM
+
+Structural equation modeling (SEM) is the most popular way to handle multiple DVs. SEM is also known as covariance structure analysis, which really means unstandardized correlations. We can fit some simple SEM models using brms! 
+
+Also, SEM is really regression but a broader form. Also SEM can be equivalent to MLM in many respects. 
+
+
+---
+# correlations (as multivariate models)
+
+
+
+```r
+mv.1c &lt;- 
+  brm(family = gaussian,
+      bf(mvbind(CON, DAN) ~ 1) +
+      set_rescor(TRUE),
+      prior = c(prior(normal(0, 1.5), class = Intercept, resp = CON),
+                prior(normal(0, 1.5), class = Intercept, resp = DAN),
+                prior(normal(0, 1.5), class = sigma, resp = CON),
+                prior(normal(0, 1.5), class = sigma, resp = DAN),
+                prior(lkj(2), class = rescor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mv.1c",
+      data = mlm)
+```
+
+
+---
+
+
+```r
+summary(mv.1c)
+```
+
+```
+##  Family: MV(gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: CON ~ 1 
+##          DAN ~ 1 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Population-Level Effects: 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## CON_Intercept     0.19      0.00     0.18     0.20 1.00    14108     9576
+## DAN_Intercept     0.19      0.00     0.19     0.20 1.00    15128     9769
+## 
+## Family Specific Parameters: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_CON     0.07      0.00     0.07     0.08 1.00    12194     8479
+## sigma_DAN     0.06      0.00     0.06     0.07 1.00    13327     9251
+## 
+## Residual Correlations: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## rescor(CON,DAN)     0.26      0.06     0.14     0.38 1.00    12942     9196
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+---
+
+
+```r
+mv.1c %&gt;% 
+  spread_draws(rescor__CON__DAN) %&gt;% 
+  mean_qi()
+```
+
+```
+## # A tibble: 1 × 6
+##   rescor__CON__DAN .lower .upper .width .point .interval
+##              &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1            0.261  0.137  0.380   0.95 mean   qi
+```
+
+
+```r
+cor(mlm$CON, mlm$DAN)
+```
+
+```
+## [1] 0.2657764
+```
+
+
+---
+Make it robust
+
+
+```r
+mv.1cr &lt;- 
+  brm(family = student,
+      bf(mvbind(CON, DAN) ~ 1) +
+      set_rescor(TRUE),
+      prior = c(prior(gamma(2, .1), class = nu),
+                prior(normal(0, 1.5), class = Intercept, resp = CON),
+                prior(normal(0, 1.5), class = Intercept, resp = DAN),
+                prior(normal(0, 1.5), class = sigma, resp = CON),
+                prior(normal(0, 1.5), class = sigma, resp = DAN),
+                prior(lkj(2), class = rescor)),
+      iter = 4000, warmup = 1000, chains = 4, cores = 4,
+      file = "mv.1cr",
+      data = mlm)
+```
+
+
+---
+
+```r
+summary(mv.1cr)
+```
+
+```
+##  Family: MV(student, student) 
+##   Links: mu = identity; sigma = identity; nu = identity
+##          mu = identity; sigma = identity; nu = identity 
+## Formula: CON ~ 1 
+##          DAN ~ 1 
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 4000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 12000
+## 
+## Population-Level Effects: 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## CON_Intercept     0.19      0.00     0.18     0.20 1.00    17262     9339
+## DAN_Intercept     0.19      0.00     0.18     0.20 1.00    17473    10121
+## 
+## Family Specific Parameters: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_CON     0.07      0.00     0.06     0.08 1.00    10821     8501
+## sigma_DAN     0.06      0.00     0.05     0.07 1.00    11919     7865
+## nu           20.82     10.71     7.98    48.56 1.00    10518     8696
+## nu_CON        1.00      0.00     1.00     1.00   NA       NA       NA
+## nu_DAN        1.00      0.00     1.00     1.00   NA       NA       NA
+## 
+## Residual Correlations: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## rescor(CON,DAN)     0.26      0.06     0.13     0.38 1.00    14539     8323
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+
+```r
+library(patchwork)
+g1 &lt;- mv.1c %&gt;% 
+  spread_draws(rescor__CON__DAN) %&gt;% 
+   ggplot(aes( x = rescor__CON__DAN))+
+    stat_pointinterval() +xlim(.1,.4)
+
+g2 &lt;- mv.1cr %&gt;% 
+  spread_draws(rescor__CON__DAN) %&gt;% 
+   ggplot(aes( x = rescor__CON__DAN))+
+    stat_pointinterval()+xlim(.1,.4)
+
+(g1 / g2)  
+```
+
+```
+## Warning: Removed 186 rows containing missing values (stat_slabinterval).
+```
+
+```
+## Warning: Removed 221 rows containing missing values (stat_slabinterval).
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+
+
+---
+Residual correlations are useful because they can be conceptualized as what is left over in the DV after accounting for your predictors. Or it is a measure of your DV controlling/adjusting for the predictors. 
+
+What can we do with this outside of looking at correlations?
+
+
+---
+## Simple mediation
+
+.pull-left[
+`$$M  = i_M + a X + e_M$$`
+`$$Y  = i_Y + c' X + b M + e_Y$$`
+
+]
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+]
+
+---
+
+```r
+X &lt;- rnorm(100)
+M &lt;- 0.5*X + rnorm(100)
+Y &lt;- 0.7*M + rnorm(100)
+Data &lt;- data.frame(X = X, Y = Y, M = M)
+
+# describe your equations
+y_model &lt;- bf(Y ~ 1 + X + M)
+m_model &lt;- bf(M ~ 1 + X)
+
+# simultaneously estimate
+med.1 &lt;-
+  brm(family = gaussian,
+      y_model + m_model + set_rescor(FALSE),
+      data = Data,
+      cores = 4,
+      file = "med.1")
+```
+
+
+---
+.small[
+
+```r
+summary(med.1)
+```
+
+```
+##  Family: MV(gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: Y ~ 1 + X + M 
+##          M ~ 1 + X 
+##    Data: Data (Number of observations: 100) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##             Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Y_Intercept    -0.06      0.10    -0.26     0.13 1.00     6810     3027
+## M_Intercept    -0.11      0.10    -0.31     0.09 1.00     6070     2754
+## Y_X             0.10      0.11    -0.13     0.32 1.00     5110     3254
+## Y_M             0.77      0.10     0.58     0.97 1.00     4645     3286
+## M_X             0.52      0.10     0.32     0.72 1.00     5742     2878
+## 
+## Family Specific Parameters: 
+##         Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_Y     0.99      0.07     0.86     1.15 1.00     6140     2930
+## sigma_M     1.01      0.07     0.88     1.16 1.00     6132     2965
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+]
+
+
+---
+## Indirect effects
+
+
+```r
+library(tidybayes)
+get_variables(med.1)
+```
+
+```
+##  [1] "b_Y_Intercept" "b_M_Intercept" "b_Y_X"         "b_Y_M"        
+##  [5] "b_M_X"         "sigma_Y"       "sigma_M"       "lp__"         
+##  [9] "accept_stat__" "stepsize__"    "treedepth__"   "n_leapfrog__" 
+## [13] "divergent__"   "energy__"
+```
+
+
+```r
+med.1 %&gt;% 
+  spread_draws(b_Y_M, b_M_X,b_Y_X) 
+```
+
+```
+## # A tibble: 4,000 × 6
+##    .chain .iteration .draw b_Y_M b_M_X   b_Y_X
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
+##  1      1          1     1 0.745 0.614  0.114 
+##  2      1          2     2 0.770 0.503  0.105 
+##  3      1          3     3 0.863 0.515 -0.0769
+##  4      1          4     4 0.883 0.455  0.0163
+##  5      1          5     5 0.673 0.525  0.193 
+##  6      1          6     6 0.720 0.493  0.0510
+##  7      1          7     7 0.794 0.547  0.167 
+##  8      1          8     8 0.668 0.668  0.110 
+##  9      1          9     9 0.835 0.640 -0.0576
+## 10      1         10    10 0.807 0.486  0.147 
+## # … with 3,990 more rows
+```
+
+
+---
+## calculate indirect effects
+
+```r
+med.1 %&gt;% 
+  spread_draws(b_Y_M, b_M_X, b_Y_X) %&gt;% 
+  mutate(indirect = b_Y_M * b_M_X) %&gt;% 
+  mutate(direct = b_Y_X) %&gt;% 
+  mutate(total = indirect + direct ) %&gt;% 
+  median_qi(indirect, direct,total)
+```
+
+```
+## # A tibble: 1 × 12
+##   indirect indirect.lower indirect.upper direct direct.lower direct.upper total
+##      &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt; &lt;dbl&gt;
+## 1    0.397          0.228          0.600 0.0965       -0.130        0.325 0.495
+## # … with 5 more variables: total.lower &lt;dbl&gt;, total.upper &lt;dbl&gt;, .width &lt;dbl&gt;,
+## #   .point &lt;chr&gt;, .interval &lt;chr&gt;
+```
+
+
+---
+.pull-left[
+
+```r
+med.1 %&gt;% 
+  spread_draws(b_Y_M, b_M_X, b_Y_X) %&gt;% 
+  mutate(indirect = b_Y_M * b_M_X) %&gt;% 
+  mutate(direct = b_Y_X) %&gt;% 
+  mutate(total = indirect + direct ) %&gt;% 
+  select(indirect, direct, total) %&gt;% 
+  gather() %&gt;% 
+  ggplot(aes(y = key, x = value)) +
+  stat_dotsinterval()
+```
+]
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+]
+
+---
+## priors for mediation
+7 parameters to estimate
+
+
+```r
+med.2 &lt;-
+  brm(family = gaussian,
+      y_model + m_model + set_rescor(FALSE),
+       prior = c(prior(normal(0, 1), class = Intercept, resp = M),
+                 prior(normal(0, 1), class = Intercept, resp = Y),
+                prior(normal(0, 2), class = b, coef = X, resp = M),
+                prior(normal(0, 2), class = b, coef = M, resp = Y),
+                prior(normal(0, 2), class = b, coef = X, resp = Y),
+                prior(exponential(1), class = sigma, resp = M),
+                prior(exponential(1), class = sigma, resp = Y)),
+      data = Data,
+      cores = 4,
+      file = "med.2")
+```
+
+---
+
+```r
+summary(med.2)
+```
+
+```
+##  Family: MV(gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: Y ~ 1 + X + M 
+##          M ~ 1 + X 
+##    Data: Data (Number of observations: 100) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##             Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Y_Intercept    -0.06      0.10    -0.25     0.13 1.00     4798     2871
+## M_Intercept    -0.11      0.10    -0.30     0.08 1.00     5209     2967
+## Y_X             0.10      0.11    -0.12     0.32 1.00     4780     3189
+## Y_M             0.77      0.10     0.58     0.96 1.00     5316     2945
+## M_X             0.52      0.10     0.32     0.71 1.00     6007     2924
+## 
+## Family Specific Parameters: 
+##         Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_Y     0.99      0.07     0.86     1.14 1.00     4905     2567
+## sigma_M     1.00      0.07     0.87     1.16 1.00     5155     2954
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+
+```r
+med.2 %&gt;% 
+  spread_draws(b_Y_M, b_M_X) %&gt;% 
+  mutate(indirect = b_Y_M * b_M_X) %&gt;% 
+  median_qi(indirect)
+```
+
+```
+## # A tibble: 1 × 6
+##   indirect .lower .upper .width .point .interval
+##      &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1    0.396  0.223  0.590   0.95 median qi
+```
+
+
+
+```r
+med.1 %&gt;% 
+  spread_draws(b_Y_M, b_M_X) %&gt;% 
+  mutate(indirect = b_Y_M * b_M_X) %&gt;% 
+  median_qi(indirect)
+```
+
+```
+## # A tibble: 1 × 6
+##   indirect .lower .upper .width .point .interval
+##      &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1    0.397  0.228  0.600   0.95 median qi
+```
+
+
+---
+## Multiple Predictors, mediators and outcomes
+.pull-left[
+
+```r
+n &lt;- 1e3
+set.seed(4.5)
+mult.X &lt;-
+  tibble(X1 = rnorm(n, mean = 0, sd = 1),
+         X2 = rnorm(n, mean = 0, sd = 1),
+         X3 = rnorm(n, mean = 0, sd = 1)) %&gt;% 
+  mutate(med = rnorm(n, mean = 0 + X1 * -1 + X2 * 0 + X3 * 1, sd = 1),
+         dv  = rnorm(n, mean = 0 + X1 * 0 + X2 * .5 + X3 * 1 + M * .5, sd = 1))
+```
+]
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+]
+
+---
+
+
+```r
+med.3 &lt;-
+  brm(family = gaussian,
+      bf(dv ~ 1 + X1 + X2 + X3 + med) + 
+        bf(med ~ 1 + X1 + X2 + X3) + 
+        set_rescor(FALSE),
+      data = mult.X, 
+      file = "med.3", 
+      cores = 4)
+```
+
+---
+.small[
+
+```r
+summary(med.3)
+```
+
+```
+##  Family: MV(gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: dv ~ 1 + X1 + X2 + X3 + med 
+##          med ~ 1 + X1 + X2 + X3 
+##    Data: mult.X (Number of observations: 1000) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## dv_Intercept     -0.06      0.04    -0.13     0.01 1.00     5005     2895
+## med_Intercept     0.00      0.03    -0.06     0.06 1.00     5657     3222
+## dv_X1             0.02      0.05    -0.08     0.12 1.00     2586     2951
+## dv_X2             0.56      0.04     0.49     0.64 1.00     5343     2851
+## dv_X3             1.00      0.05     0.90     1.10 1.00     2758     3181
+## dv_med           -0.04      0.04    -0.12     0.03 1.00     1965     2858
+## med_X1           -0.93      0.03    -0.99    -0.87 1.00     5505     3108
+## med_X2            0.03      0.03    -0.03     0.09 1.00     5449     2783
+## med_X3            0.98      0.03     0.92     1.04 1.00     5071     2998
+## 
+## Family Specific Parameters: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_dv      1.15      0.03     1.10     1.20 1.00     4516     2802
+## sigma_med     0.97      0.02     0.93     1.02 1.00     5808     3217
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+]
+
+---
+## Multiple Outcomes
+.pull-left[
+
+```r
+n &lt;- 1e3
+
+set.seed(4.5)
+Ys &lt;-
+  tibble(X  = rnorm(n, mean = 0, sd = 1)) %&gt;% 
+  mutate(M = rnorm(n, mean = 0 + X * .5, sd = 1)) %&gt;% 
+  mutate(Y1 = rnorm(n, mean = 0 + X * -1 + M * 0,  sd = 1),
+         Y2 = rnorm(n, mean = 0 + X * 0  + M * .5, sd = 1),
+         Y3 = rnorm(n, mean = 0 + X * 1  + M * 1,  sd = 1))
+```
+]
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+]
+
+---
+
+```r
+mult.Ys &lt;-
+  brm(family = gaussian,
+      bf(Y1 ~ 1 + X + M) + 
+        bf(Y2 ~ 1 + X + M) + 
+        bf(Y3 ~ 1 + X + M) + 
+        bf(M ~ 1 + X) + 
+        set_rescor(FALSE),
+      data = Ys, 
+      cores = 4,
+      fit = "med.4")
+```
+
+```
+## Compiling Stan program...
+```
+
+```
+## Trying to compile a simple C file
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
+## Start sampling
+```
+
+---
+
+.tiny[
+
+```r
+summary(mult.Ys)
+```
+
+```
+##  Family: MV(gaussian, gaussian, gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity
+##          mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: Y1 ~ 1 + X + M 
+##          Y2 ~ 1 + X + M 
+##          Y3 ~ 1 + X + M 
+##          M ~ 1 + X 
+##    Data: Ys (Number of observations: 1000) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     9320     2809
+## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00     8195     2854
+## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00    11058     3391
+## M_Intercept      0.03      0.03    -0.04     0.09 1.00     8986     2420
+## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     5875     2954
+## Y1_M             0.05      0.03    -0.01     0.11 1.00     6261     3205
+## Y2_X             0.06      0.04    -0.02     0.13 1.00     5792     3259
+## Y2_M             0.53      0.03     0.47     0.59 1.00     5223     2819
+## Y3_X             1.03      0.04     0.95     1.10 1.00     6744     3265
+## Y3_M             1.06      0.03     1.00     1.12 1.00     6639     3183
+## M_X              0.53      0.03     0.46     0.59 1.00     7788     2852
+## 
+## Family Specific Parameters: 
+##          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_Y1     0.98      0.02     0.93     1.02 1.00     8557     3087
+## sigma_Y2     0.97      0.02     0.93     1.02 1.00     8284     3177
+## sigma_Y3     1.00      0.02     0.96     1.05 1.00     7585     2238
+## sigma_M      1.00      0.02     0.95     1.04 1.00     8888     2762
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+]
+
+---
+## Multiple Mediators
+Note we can compute individual and total indirect effects
+
+![](multi-9_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
+
+---
+## parallel
+
+```r
+m1_model &lt;- bf(M1 ~ 1 + X)
+m2_model &lt;- bf(M2  ~ 1 + X)
+y_model  &lt;- bf(Y ~ 1 + X + M1 + M2)
+
+par &lt;-
+  brm(family = gaussian,
+      y_model + m1_model + m2_model + set_rescor(FALSE),
+      data = d)
+```
+3 indirect effects can be calculated
+
+---
+## serial
+
+```r
+ser &lt;-
+  brm(family = gaussian,
+        bf(M1 ~ 1 + X) + 
+        bf(M2 ~ 1 + X + M1) + 
+        bf(Y ~ 1 + X + M1 + M2) + 
+        set_rescor(FALSE),
+        data=d)
+```
+
+4 indirect effects can be calculated
+
+---
+## moderated mediation? 
+
+```r
+y_model &lt;- bf(Y ~ 1 + X + M)
+m_model &lt;- bf(M ~ 1 + X*moderator)
+
+med.5 &lt;-
+  brm(family = gaussian,
+      y_model + m_model + set_rescor(FALSE),
+      data = Data,
+      cores = 4,
+      file = "med.5")
+```
+
+
+
+
+---
+# Distributional Models
+
+In basic regression with a Gaussian DV, we predict the mean, `\(\mu\)` through some linear model. The second parameter of the normal distribution – the residual standard deviation `\(\sigma\)` – is assumed to be constant across observations. We estimate it but do not try to predict it.
+
+This extends beyond Gaussian DVs, as most response distributions have a "location" parameter and one or more "scale" or "shape" parameters. Instead of only predicting the location parameters, we can also predict the scale parameters
+
+When to use? You've seen this with Welch's t-test, and if you've ever done SEM you can model variance differences through constraints or  group models
+
+---
+
+`$$y_{ik} \sim t(\mu_{ik}, \sigma_{ik})$$`
+`$$\mu_{ik} = \beta_0 + \beta_1 Group_{ik}$$`
+`$$\sigma_{ik} = \gamma_0 + \gamma_1 Group_{ik}$$`
+
+---
+
+```r
+d.1a &lt;- 
+  brm(family = student,
+     bf( CON ~ 0 + group,
+         sigma ~ 0 + group),
+                file = "d.1a",
+                data = mlm)
+```
+
+---
+
+```r
+summary(d.1a)
+```
+
+```
+##  Family: student 
+##   Links: mu = identity; sigma = log; nu = identity 
+## Formula: CON ~ 0 + group 
+##          sigma ~ 0 + group
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## groupCTRL           0.20      0.01     0.19     0.22 1.00     4267     2779
+## groupPD             0.18      0.01     0.17     0.20 1.00     4607     3089
+## sigma_groupCTRL    -2.87      0.10    -3.07    -2.66 1.00     3526     3011
+## sigma_groupPD      -2.64      0.07    -2.78    -2.50 1.00     3498     2839
+## 
+## Family Specific Parameters: 
+##    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## nu    18.91     11.42     6.13    46.98 1.00     3482     3112
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+```r
+d.1b &lt;- 
+  brm(family = gaussian,
+     bf( CON ~ 1 + group,
+         sigma ~ 1 + group),
+                file = "d.1b",
+                data = mlm)
+```
+
+---
+
+
+```r
+summary(d.1b)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = log 
+## Formula: CON ~ 1 + group 
+##          sigma ~ 1 + group
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept           0.20      0.01     0.19     0.22 1.00     4992     3116
+## sigma_Intercept    -2.80      0.09    -2.97    -2.61 1.00     3931     2808
+## groupPD            -0.02      0.01    -0.04     0.00 1.00     4218     3069
+## sigma_groupPD       0.25      0.11     0.03     0.46 1.00     4002     3063
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+---
+
+
+```r
+d.2 &lt;- 
+  brm(family = gaussian,
+     bf( CON ~ 1 + group,
+         sigma ~ 1 + group*Education),
+                file = "d.2",
+                data = mlm)
+```
+
+
+---
+
+
+```r
+summary(d.2)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = log 
+## Formula: CON ~ 1 + group 
+##          sigma ~ 1 + group * Education
+##    Data: mlm (Number of observations: 225) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##                         Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## Intercept                   0.20      0.01     0.19     0.22 1.00     3545
+## sigma_Intercept            -3.29      0.46    -4.19    -2.38 1.00     1761
+## groupPD                    -0.02      0.01    -0.03     0.00 1.00     2972
+## sigma_groupPD               0.08      0.58    -1.07     1.20 1.00     1586
+## sigma_Education             0.03      0.03    -0.03     0.10 1.00     1713
+## sigma_groupPD:Education     0.01      0.04    -0.07     0.08 1.00     1539
+##                         Tail_ESS
+## Intercept                   2557
+## sigma_Intercept             2281
+## groupPD                     2656
+## sigma_groupPD               1935
+## sigma_Education             2085
+## sigma_groupPD:Education     1901
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+
+```r
+d.1a %&gt;% 
+  gather_draws(b_sigma_groupCTRL, b_sigma_groupPD) %&gt;% 
+  ggplot(aes(x = .value, group = .variable,  fill = .variable)) +
+  stat_halfeye(alpha = .7)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
+
+---
+
+
+```r
+d.1a %&gt;% 
+  gather_draws(b_sigma_groupCTRL, b_sigma_groupPD) %&gt;% 
+  mutate(value = exp(.value)) %&gt;% 
+  ggplot(aes(x = value, group = .variable,  fill = .variable)) +
+  stat_halfeye(alpha = .7)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+
+---
+But these are estimates of the parameter, not variances per se. Can we have a plot that includes variances and means? 
+
+
+
+
+---
+## MELSM
+.pull-left[
+Mixed effects location scale model 
+
+```r
+library(readr)
+melsm &lt;- read_csv("melsm.csv") %&gt;% 
+  mutate(day01 = (day - 2) / max((day - 2)))
+```
+
+```
+## New names:
+## * `` -&gt; ...1
+```
+
+```
+## Rows: 13033 Columns: 9
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: ","
+## dbl (9): ...1, P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd, record_i...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+```
+]
+
+.pull-right[
+
+```r
+head(melsm)
+```
+
+```
+## # A tibble: 6 × 10
+##    ...1 P_A.std   day P_A.lag N_A.lag steps.pm steps.pmd record_id N_A.std
+##   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1     2   1.75      2   0.748   0.254    0.955     0.600         1 -0.734 
+## 2     3  -0.231     3   1.47   -0.854    0.955    -0.395         1  0.539 
+## 3     4   0.342     4  -0.377   0.961    0.955    -1.52          1  0.602 
+## 4     5   0.457     5   0.129  -0.196    0.955    -1.34          1  0.278 
+## 5     6  -0.235     6   0.329  -0.160    0.955     0.418         1  0.547 
+## 6     7   1.13      7   1.41   -0.904    0.955    -0.323         1  0.0566
+## # … with 1 more variable: day01 &lt;dbl&gt;
+```
+
+
+```r
+melsm %&gt;% 
+distinct(record_id) %&gt;% 
+  count()
+```
+
+```
+## # A tibble: 1 × 1
+##       n
+##   &lt;int&gt;
+## 1   193
+```
+]
+
+---
+.pull-left[
+Participants filled out daily affective measures and physical activity
+
+
+```r
+melsm %&gt;% 
+    count(record_id) %&gt;% 
+  ggplot(aes(x = n)) +
+  geom_bar() +
+  scale_x_continuous("number of days", limits = c(0, NA))
+```
+]
+
+.pull-right[
+
+![](multi-9_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+
+
+]
+
+---
+Participant level
+
+.pull-left[
+
+```r
+melsm %&gt;% 
+  nest(data = c(P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd, N_A.std, day01)) %&gt;% 
+  slice_sample(n = 16) %&gt;% 
+  unnest(data) %&gt;% 
+  ggplot(aes(x = day, y = N_A.lag)) +
+  geom_line(color = "black") +
+  geom_point(color = "black", size = 1/2) +
+  ylab("negative affect (standardized)") +
+  facet_wrap(~record_id)
+```
+]
+
+.pull-right[
+
+```
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
+]
+
+
+---
+## Standard MLM treatment
+
+
+```r
+melsm.1 &lt;-
+  brm(family = gaussian,
+      N_A.std ~ 1 + day01 + (1 + day01 | record_id),
+      prior = c(prior(normal(0, 0.2), class = Intercept),
+                prior(normal(0, 1), class = b),
+                prior(exponential(1), class = sd),
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 3000, warmup = 1000, chains = 4, cores = 4,
+      data = melsm,
+      file = "melsm.1")
+```
+
+
+---
+
+
+```r
+summary(melsm.1)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: N_A.std ~ 1 + day01 + (1 + day01 | record_id) 
+##    Data: melsm (Number of observations: 13033) 
+##   Draws: 4 chains, each with iter = 3000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 8000
+## 
+## Group-Level Effects: 
+## ~record_id (Number of levels: 193) 
+##                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(Intercept)            0.77      0.04     0.70     0.86 1.00     1399
+## sd(day01)                0.65      0.05     0.57     0.75 1.00     3471
+## cor(Intercept,day01)    -0.34      0.08    -0.48    -0.18 1.00     2935
+##                      Tail_ESS
+## sd(Intercept)            2569
+## sd(day01)                5161
+## cor(Intercept,day01)     4573
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept     0.03      0.06    -0.08     0.14 1.00      750     1427
+## day01        -0.16      0.06    -0.27    -0.05 1.00     2344     4092
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.61      0.00     0.60     0.62 1.00    13367     5611
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+## MLM assumptions
+
+.pull-left[
+Sigma, which captures the variation in NA not accounted for by the intercepts, time predictors, and the correlation. An assumption is that sigma does NOT vary across persons, occasions, or other variables. 
+
+Posterior predictive interval is the same (and fitted) even though it seem inappropriate from person to person
+]
+
+.pull-right[
+
+```
+## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
+## Use [add_]epred_draws() to get the expectation of the posterior predictive.
+## Use [add_]linpred_draws() to get the distribution of the linear predictor.
+## For example, you used [add_]fitted_draws(..., scale = "response"), which
+## means you most likely want [add_]epred_draws(...).
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
+]
+
+
+
+---
+
+.tiny[
+
+`$$NA_{ij} \sim \operatorname{Normal}(\mu_{ij}, \sigma_{i})$$`
+
+`$$\mu_{ij}  = \beta_0 + \beta_1 time_{ij} + u_{0i} + u_{1i} time_{ij}$$`
+`$$\log(\sigma_i )  = \eta_0 + u_{2i}$$`
+
+`$$\begin{bmatrix} u_{0i} \\ u_{1i} \\ {u_{2i}} \end{bmatrix}  \sim \operatorname{MVNormal}\begin{pmatrix} \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix}, \mathbf S \mathbf R \mathbf S \end{pmatrix}$$`
+`$$\mathbf S  = \begin{bmatrix} \sigma_0 &amp; 0 &amp; 0 \\ 0 &amp; \sigma_1 &amp; 0 \\ 0 &amp; 0 &amp; \sigma_2 \end{bmatrix}$$`
+`$$\mathbf R = \begin{bmatrix} 1 &amp; \rho_{12} &amp; \rho_{13} \\ \rho_{21} &amp; 1 &amp; \rho_{23} \\ \rho_{31} &amp; \rho_{32} &amp; 1 \end{bmatrix}$$`
+`$$\beta_0  \sim \operatorname{Normal}(0, 0.2)$$`
+$$\beta_1 \text{and } \eta_0  \sim \operatorname{Normal}(0, 1) $$
+$$ \sigma_0,\dots, \sigma_2 \sim \operatorname{Exponential}(1) $$
+`$$\mathbf R  \sim \operatorname{LKJ}(2)$$`
+]
+
+---
+
+note: 1) brms default is to use log-link when modeling sigma
+2) |i| syntax within the parentheses allow for correlated random effects. Without this, the random intercept and slope would not correlated with the random sigma term, effectively setting the correlation equal to zero 
+
+```r
+melsm.2 &lt;-
+  brm(family = gaussian,
+      bf(N_A.std ~ 1 + day01 + (1 + day01 |i| record_id),
+         sigma ~ 1 + (1 |i| record_id)),
+                prior = c(prior(normal(0, 0.2), class = Intercept),
+                prior(normal(0, 1), class = b),
+                prior(exponential(1), class = sd),
+                prior(normal(0, 1), class = Intercept, dpar = sigma),
+                prior(exponential(1), class = sd, dpar = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 3000, warmup = 1000, chains = 4, cores = 4,
+      data = melsm,
+      file = "melsm.2")
+```
+
+---
+ 
+.small[
+
+
+```r
+summary(melsm.2)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = log 
+## Formula: N_A.std ~ 1 + day01 + (1 + day01 | i | record_id) 
+##          sigma ~ 1 + (1 | i | record_id)
+##    Data: melsm (Number of observations: 13033) 
+##   Draws: 4 chains, each with iter = 3000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 8000
+## 
+## Group-Level Effects: 
+## ~record_id (Number of levels: 193) 
+##                                Estimate Est.Error l-95% CI u-95% CI Rhat
+## sd(Intercept)                      0.76      0.04     0.68     0.84 1.00
+## sd(day01)                          0.60      0.04     0.52     0.69 1.00
+## sd(sigma_Intercept)                0.70      0.04     0.63     0.77 1.00
+## cor(Intercept,day01)              -0.34      0.08    -0.49    -0.18 1.00
+## cor(Intercept,sigma_Intercept)     0.61      0.05     0.52     0.70 1.01
+## cor(day01,sigma_Intercept)        -0.10      0.08    -0.26     0.06 1.01
+##                                Bulk_ESS Tail_ESS
+## sd(Intercept)                       570     1218
+## sd(day01)                          1365     3053
+## sd(sigma_Intercept)                 665     1226
+## cor(Intercept,day01)                829     1619
+## cor(Intercept,sigma_Intercept)      642     1123
+## cor(day01,sigma_Intercept)          642     1850
+## 
+## Population-Level Effects: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept           0.03      0.05    -0.07     0.14 1.01      225      551
+## sigma_Intercept    -0.78      0.05    -0.88    -0.68 1.02      308      710
+## day01              -0.16      0.05    -0.27    -0.06 1.00      633     1437
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+]
+
+---
+
+
+```r
+melsm.2 %&gt;% 
+  spread_draws(b_sigma_Intercept) %&gt;% 
+  exp() %&gt;% 
+  median_qi()
+```
+
+```
+## # A tibble: 1 × 6
+##   b_sigma_Intercept .lower .upper .width .point .interval
+##               &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1             0.458  0.413  0.507   0.95 median qi
+```
+
+---
+
+
+```r
+melsm.2 %&gt;% 
+spread_draws(b_sigma_Intercept,r_record_id__sigma[ID, term]) 
+```
+
+```
+## Warning: `gather_()` was deprecated in tidyr 1.2.0.
+## Please use `gather()` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
+```
+
+```
+## # A tibble: 1,544,000 × 7
+## # Groups:   ID, term [193]
+##    .chain .iteration .draw b_sigma_Intercept    ID term      r_record_id__sigma
+##     &lt;int&gt;      &lt;int&gt; &lt;int&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                  &lt;dbl&gt;
+##  1      1          1     1            -0.805     1 Intercept             0.366 
+##  2      1          1     1            -0.805     2 Intercept            -1.20  
+##  3      1          1     1            -0.805     3 Intercept             0.195 
+##  4      1          1     1            -0.805     4 Intercept             0.498 
+##  5      1          1     1            -0.805     5 Intercept            -0.876 
+##  6      1          1     1            -0.805     6 Intercept             0.258 
+##  7      1          1     1            -0.805     7 Intercept             0.0512
+##  8      1          1     1            -0.805     8 Intercept            -0.917 
+##  9      1          1     1            -0.805     9 Intercept            -0.476 
+## 10      1          1     1            -0.805    10 Intercept            -0.269 
+## # … with 1,543,990 more rows
+```
+
+8000 samples * 193 participants = 1544000
+
+---
+
+.pull-left[
+
+```r
+melsm.2 %&gt;% 
+spread_draws(b_sigma_Intercept,r_record_id__sigma[ID, term]) %&gt;% 
+  mutate(b_sigma_Intercept = exp(b_sigma_Intercept)) %&gt;% 
+  mutate(r_record_id__sigma = exp(r_record_id__sigma)) %&gt;% 
+   median_qi(estimate = b_sigma_Intercept + r_record_id__sigma) %&gt;% 
+  ggplot(aes(x = reorder(ID, estimate), y = estimate, ymin = .lower, ymax = .upper)) +
+   geom_pointinterval(point_colour = "black", interval_color = "grey", point_alpha = .25) + scale_x_discrete("Participants ranked by posterior SD", breaks = NULL) + ylab("sigma estimate") + theme_light()
+```
+]
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+]
+
+---
+.pull-left[
+
+```r
+fits2 &lt;- newd %&gt;%
+  add_fitted_draws(melsm.2)
+
+preds2 &lt;- newd %&gt;%
+  add_predicted_draws(melsm.2)
+
+fits2 %&gt;% 
+ggplot(aes(x = day01, y = N_A.std)) +
+  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(data = preds2, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
+  geom_point(data = newd) +
+  facet_wrap(~record_id)
+```
+
+]
+
+
+```
+## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
+## Use [add_]epred_draws() to get the expectation of the posterior predictive.
+## Use [add_]linpred_draws() to get the distribution of the linear predictor.
+## For example, you used [add_]fitted_draws(..., scale = "response"), which
+## means you most likely want [add_]epred_draws(...).
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+
+
+
+
+---
+### time as a predictor of sigma
+
+
+```r
+melsm.3 &lt;-
+  brm(family = gaussian,
+      bf(N_A.std ~ 1 + day01 + (1 + day01 |i| record_id),
+         sigma ~ 1 + day01 + (1 + day01 |i| record_id)),
+      prior = c(prior(normal(0, 0.2), class = Intercept),
+                prior(normal(0, 1), class = b),
+                prior(exponential(1), class = sd),
+                prior(normal(0, 1), class = Intercept, dpar = sigma),
+                prior(normal(0, 1), class = b, dpar = sigma),
+                prior(exponential(1), class = sd, dpar = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 3000, warmup = 1000, chains = 4, cores = 4,
+      data = melsm,
+      file = "melsm.3")
+```
+
+```
+## Compiling Stan program...
+```
+
+```
+## Trying to compile a simple C file
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
+## Start sampling
+```
+
+
+---
+
+.small[
+
+
+
+```r
+summary(melsm.3)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = log 
+## Formula: N_A.std ~ 1 + day01 + (1 + day01 | i | record_id) 
+##          sigma ~ 1 + day01 + (1 + day01 | i | record_id)
+##    Data: melsm (Number of observations: 13033) 
+##   Draws: 4 chains, each with iter = 3000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 8000
+## 
+## Group-Level Effects: 
+## ~record_id (Number of levels: 193) 
+##                                  Estimate Est.Error l-95% CI u-95% CI Rhat
+## sd(Intercept)                        0.76      0.04     0.68     0.84 1.00
+## sd(day01)                            0.60      0.04     0.52     0.69 1.00
+## sd(sigma_Intercept)                  0.70      0.04     0.63     0.78 1.00
+## sd(sigma_day01)                      0.36      0.04     0.29     0.44 1.00
+## cor(Intercept,day01)                -0.31      0.08    -0.46    -0.14 1.00
+## cor(Intercept,sigma_Intercept)       0.64      0.05     0.54     0.72 1.00
+## cor(day01,sigma_Intercept)          -0.20      0.08    -0.36    -0.05 1.00
+## cor(Intercept,sigma_day01)          -0.16      0.11    -0.37     0.05 1.00
+## cor(day01,sigma_day01)               0.61      0.09     0.42     0.77 1.00
+## cor(sigma_Intercept,sigma_day01)    -0.15      0.10    -0.34     0.04 1.00
+##                                  Bulk_ESS Tail_ESS
+## sd(Intercept)                        1066     2287
+## sd(day01)                            2447     4642
+## sd(sigma_Intercept)                  1721     3569
+## sd(sigma_day01)                      4770     5591
+## cor(Intercept,day01)                 1586     2863
+## cor(Intercept,sigma_Intercept)       1971     3791
+## cor(day01,sigma_Intercept)           1800     3560
+## cor(Intercept,sigma_day01)           4915     6289
+## cor(day01,sigma_day01)               4844     5924
+## cor(sigma_Intercept,sigma_day01)     5016     5679
+## 
+## Population-Level Effects: 
+##                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept           0.02      0.05    -0.08     0.13 1.00      407      871
+## sigma_Intercept    -0.75      0.05    -0.85    -0.65 1.00      712     1974
+## day01              -0.15      0.05    -0.25    -0.05 1.00     1129     3010
+## sigma_day01        -0.11      0.04    -0.18    -0.03 1.00     3864     6124
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+]
+
+---
+
+.pull-left[
+
+```r
+fits3 &lt;- newd %&gt;%
+  add_fitted_draws(melsm.3)
+
+preds3 &lt;- newd %&gt;%
+  add_predicted_draws(melsm.3)
+
+fits3 %&gt;% 
+ggplot(aes(x = day01, y = N_A.std)) +
+  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(data = preds3, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
+  geom_point(data = newd) +
+  facet_wrap(~record_id)
+```
+
+]
+
+.pull-right[
+
+```
+## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
+## Use [add_]epred_draws() to get the expectation of the posterior predictive.
+## Use [add_]linpred_draws() to get the distribution of the linear predictor.
+## For example, you used [add_]fitted_draws(..., scale = "response"), which
+## means you most likely want [add_]epred_draws(...).
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-68-1.png)&lt;!-- --&gt;
+
+]
+
+
+
+---
+### Multivariate MELSM
+
+
+```r
+melsm.4 &lt;-
+  brm(family = gaussian,
+      bf(mvbind(N_A.std, P_A.std) ~ 1 + day01 + (1 + day01 |i| record_id),
+         sigma ~ 1 + day01 + (1 + day01 |i| record_id)) + set_rescor(rescor = FALSE),
+      prior = c(prior(normal(0, 0.2), class = Intercept, resp = NAstd),
+                prior(normal(0, 1), class = b, resp = NAstd),
+                prior(exponential(1), class = sd, resp = NAstd),
+                prior(normal(0, 1), class = Intercept, dpar = sigma, resp = NAstd),
+                prior(normal(0, 1), class = b, dpar = sigma, resp = NAstd),
+                prior(exponential(1), class = sd, dpar = sigma, resp = NAstd),
+                prior(normal(0, 0.2), class = Intercept, resp = PAstd),
+                prior(normal(0, 1), class = b, resp = PAstd),
+                prior(exponential(1), class = sd, resp = PAstd),
+                prior(normal(0, 1), class = Intercept, dpar = sigma, resp = PAstd),
+                prior(normal(0, 1), class = b, dpar = sigma, resp = PAstd),
+                prior(exponential(1), class = sd, dpar = sigma, resp = PAstd),
+                prior(lkj(2), class = cor)),
+      iter = 3000, warmup = 1000, chains = 4, cores = 4,
+      data = melsm,
+      file = "melsm.4")
+```
+
+---
+
+.small[
+
+
+```r
+summary(melsm.4)
+```
+
+]
+
+
+
+---
+
+
+```r
+levels &lt;- c("beta[0]^'NA'", "beta[1]^'NA'", "eta[0]^'NA'", "eta[1]^'NA'",
+            "beta[0]^'PA'", "beta[1]^'PA'", "eta[0]^'PA'", "eta[1]^'PA'")
+
+# two different options for ordering the parameters
+# levels &lt;- c("beta[0]^'NA'", "beta[1]^'NA'", "beta[0]^'PA'", "beta[1]^'PA'", "eta[0]^'NA'", "eta[1]^'NA'", "eta[0]^'PA'", "eta[1]^'PA'")
+# levels &lt;- c("beta[0]^'NA'", "beta[0]^'PA'", "beta[1]^'NA'", "beta[1]^'PA'","eta[0]^'NA'", "eta[0]^'PA'", "eta[1]^'NA'", "eta[1]^'PA'")
+
+rho &lt;-
+  posterior_summary(melsm.4) %&gt;% 
+  data.frame() %&gt;% 
+  rownames_to_column("param") %&gt;% 
+  filter(str_detect(param, "cor_")) %&gt;% 
+  mutate(param = str_remove(param, "cor_record_id__")) %&gt;% 
+  separate(param, into = c("left", "right"), sep = "__") %&gt;% 
+  mutate(
+    left = case_when(
+      left == "NAstd_Intercept"       ~ "beta[0]^'NA'",
+      left == "NAstd_day01"           ~ "beta[1]^'NA'",
+      left == "sigma_NAstd_Intercept" ~ "eta[0]^'NA'",
+      left == "sigma_NAstd_day01"     ~ "eta[1]^'NA'",
+      left == "PAstd_Intercept"       ~ "beta[0]^'PA'",
+      left == "PAstd_day01"           ~ "beta[1]^'PA'",
+      left == "sigma_PAstd_Intercept" ~ "eta[0]^'PA'",
+      left == "sigma_PAstd_day01"     ~ "eta[1]^'PA'"
+      ),
+    right = case_when(
+      right == "NAstd_Intercept"       ~ "beta[0]^'NA'",
+      right == "NAstd_day01"           ~ "beta[1]^'NA'",
+      right == "sigma_NAstd_Intercept" ~ "eta[0]^'NA'",
+      right == "sigma_NAstd_day01"     ~ "eta[1]^'NA'",
+      right == "PAstd_Intercept"       ~ "beta[0]^'PA'",
+      right == "PAstd_day01"           ~ "beta[1]^'PA'",
+      right == "sigma_PAstd_Intercept" ~ "eta[0]^'PA'",
+      right == "sigma_PAstd_day01"     ~ "eta[1]^'PA'"
+    )
+  ) %&gt;% 
+  mutate(label = formatC(Estimate, digits = 2, format = "f") %&gt;% str_replace(., "0.", ".")) %&gt;% 
+  mutate(left  = factor(left, levels = levels),
+         right = factor(right, levels = levels)) %&gt;% 
+  mutate(right = fct_rev(right))
+
+rho %&gt;% 
+  full_join(rename(rho, right = left, left = right),
+            by = c("left", "right", "Estimate", "Est.Error", "Q2.5", "Q97.5", "label")) %&gt;%
+  ggplot(aes(x = left, y = right)) +
+  geom_tile(aes(fill = Estimate)) +
+  geom_hline(yintercept = 4.5, color = "#100F14") +
+  geom_vline(xintercept = 4.5, color = "#100F14") +
+  geom_text(aes(label = label),
+            family = "Courier", size = 3) +
+  scale_fill_gradient2(expression(rho),
+                       low = "#59708b", mid = "#FCF9F0", high = "#A65141", midpoint = 0,
+                       labels = c(-1, "", 0, "", 1), limits = c(-1, 1)) +
+  scale_x_discrete(NULL, expand = c(0, 0), labels = ggplot2:::parse_safe, position = "top") +
+  scale_y_discrete(NULL, expand = c(0, 0), labels = ggplot2:::parse_safe) +
+  theme(axis.text = element_text(size = 12),
+        axis.ticks = element_blank(),
+        legend.text = element_text(hjust = 1))
+```
+
+---
+## Missing data
+How to solve? 
+1. Listwise
+2. Estimation algorithm eg FIML
+3. Multiple Imputation
+4. Bayesian
+
+---
+## brms and multiple imputation
+
+Each missing value is not imputed N times leading to a total of N fully imputed data sets. The model is fitted to each data sets separately and results are pooled across models.
+
+
+```r
+library(mice)
+#multivariate imputation by chained equations
+```
+
+---
+
+```r
+data("nhanes")
+#National Health and Nutrition Examination Survey
+nhanes
+```
+
+```
+##    age  bmi hyp chl
+## 1    1   NA  NA  NA
+## 2    2 22.7   1 187
+## 3    1   NA   1 187
+## 4    3   NA  NA  NA
+## 5    1 20.4   1 113
+## 6    3   NA  NA 184
+## 7    1 22.5   1 118
+## 8    1 30.1   1 187
+## 9    2 22.0   1 238
+## 10   2   NA  NA  NA
+## 11   1   NA  NA  NA
+## 12   2   NA  NA  NA
+## 13   3 21.7   1 206
+## 14   2 28.7   2 204
+## 15   1 29.6   1  NA
+## 16   1   NA  NA  NA
+## 17   3 27.2   2 284
+## 18   2 26.3   2 199
+## 19   1 35.3   1 218
+## 20   3 25.5   2  NA
+## 21   1   NA  NA  NA
+## 22   1 33.2   1 229
+## 23   1 27.5   1 131
+## 24   3 24.9   1  NA
+## 25   2 27.4   1 186
+```
+
+---
+
+```r
+nhanes.imp &lt;- mice(nhanes, m = 10)
+```
+
+```
+## 
+##  iter imp variable
+##   1   1  bmi  hyp  chl
+##   1   2  bmi  hyp  chl
+##   1   3  bmi  hyp  chl
+##   1   4  bmi  hyp  chl
+##   1   5  bmi  hyp  chl
+##   1   6  bmi  hyp  chl
+##   1   7  bmi  hyp  chl
+##   1   8  bmi  hyp  chl
+##   1   9  bmi  hyp  chl
+##   1   10  bmi  hyp  chl
+##   2   1  bmi  hyp  chl
+##   2   2  bmi  hyp  chl
+##   2   3  bmi  hyp  chl
+##   2   4  bmi  hyp  chl
+##   2   5  bmi  hyp  chl
+##   2   6  bmi  hyp  chl
+##   2   7  bmi  hyp  chl
+##   2   8  bmi  hyp  chl
+##   2   9  bmi  hyp  chl
+##   2   10  bmi  hyp  chl
+##   3   1  bmi  hyp  chl
+##   3   2  bmi  hyp  chl
+##   3   3  bmi  hyp  chl
+##   3   4  bmi  hyp  chl
+##   3   5  bmi  hyp  chl
+##   3   6  bmi  hyp  chl
+##   3   7  bmi  hyp  chl
+##   3   8  bmi  hyp  chl
+##   3   9  bmi  hyp  chl
+##   3   10  bmi  hyp  chl
+##   4   1  bmi  hyp  chl
+##   4   2  bmi  hyp  chl
+##   4   3  bmi  hyp  chl
+##   4   4  bmi  hyp  chl
+##   4   5  bmi  hyp  chl
+##   4   6  bmi  hyp  chl
+##   4   7  bmi  hyp  chl
+##   4   8  bmi  hyp  chl
+##   4   9  bmi  hyp  chl
+##   4   10  bmi  hyp  chl
+##   5   1  bmi  hyp  chl
+##   5   2  bmi  hyp  chl
+##   5   3  bmi  hyp  chl
+##   5   4  bmi  hyp  chl
+##   5   5  bmi  hyp  chl
+##   5   6  bmi  hyp  chl
+##   5   7  bmi  hyp  chl
+##   5   8  bmi  hyp  chl
+##   5   9  bmi  hyp  chl
+##   5   10  bmi  hyp  chl
+```
+
+---
+
+```r
+nhanes.imp
+```
+
+```
+## Class: mids
+## Number of multiple imputations:  10 
+## Imputation methods:
+##   age   bmi   hyp   chl 
+##    "" "pmm" "pmm" "pmm" 
+## PredictorMatrix:
+##     age bmi hyp chl
+## age   0   1   1   1
+## bmi   1   0   1   1
+## hyp   1   1   0   1
+## chl   1   1   1   0
+```
+pre- dictive mean matching (pmm). 
+
+More information, usually results in better imputations. 
+
+---
+### brm_multiple
+
+works well with mice objects, but brm_multiple also takes any list of dataframes. Helpful if you use amelia or mi. 
+
+```r
+imp.1 &lt;- brm_multiple(family = gaussian,
+                      bmi ~ age*chl, 
+                      data = nhanes.imp,
+                      cores = 4, 
+                      file = "imp.1")
+```
+
+```
+## Compiling the C++ model
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
+## Fitting imputed model 1
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 2
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 3
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 4
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 5
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 6
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 7
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 8
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 9
+```
+
+```
+## Start sampling
+```
+
+```
+## Fitting imputed model 10
+```
+
+```
+## Start sampling
+```
+
+
+---
+Pooling across models is trivial in a Bayesian framework but not in frequentist. 
+40 Chains! 40k samples! (10 datasets + default 4 chains and 1k samples)
+
+```r
+summary(imp.1)
+```
+
+```
+## Warning: Parts of the model have not converged (some Rhats are &gt; 1.05). Be
+## careful when analysing the results! We recommend running more iterations and/or
+## setting stronger priors.
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: bmi ~ age * chl 
+##    Data: nhanes.imp (Number of observations: 25) 
+##   Draws: 40 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 40000
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept    13.64      8.52    -2.30    31.19 1.12      208      532
+## age           1.71      4.91    -8.31    11.19 1.09      287      458
+## chl           0.09      0.05    -0.00     0.18 1.17      153      492
+## age:chl      -0.02      0.02    -0.07     0.03 1.10      258      440
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     3.41      0.70     2.28     4.99 1.30      101      364
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+---
+
+
+```r
+plot(imp.1)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-78-1.png)&lt;!-- --&gt;
+
+---
+## bayesian imputation within brms
+
+1) Which variables contain missingness? 2) Which variables should predict missingness 3) what imputed variables are used as predictors
+
+Taking care of this in brms ends up creating a multivariate model
+
+```r
+bform &lt;- bf(bmi | mi() ~ age * mi(chl)) +
+  bf(chl | mi() ~ age) + set_rescor(FALSE)
+imp.2 &lt;- brm(bform, data = nhanes, file = "imp.2")
+```
+
+```
+## Compiling Stan program...
+```
+
+```
+## Trying to compile a simple C file
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
+## Start sampling
+```
+
+```
+## 
+## SAMPLING FOR MODEL '7265478c2830b64f974d417e806380e0' NOW (CHAIN 1).
+## Chain 1: 
+## Chain 1: Gradient evaluation took 0.000106 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.06 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+## Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+## Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+## Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+## Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+## Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+## Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+## Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+## Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+## Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+## Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+## Chain 1: 
+## Chain 1:  Elapsed Time: 0.892887 seconds (Warm-up)
+## Chain 1:                0.542332 seconds (Sampling)
+## Chain 1:                1.43522 seconds (Total)
+## Chain 1: 
+## 
+## SAMPLING FOR MODEL '7265478c2830b64f974d417e806380e0' NOW (CHAIN 2).
+## Chain 2: 
+## Chain 2: Gradient evaluation took 8e-06 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.08 seconds.
+## Chain 2: Adjust your expectations accordingly!
+## Chain 2: 
+## Chain 2: 
+## Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+## Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+## Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+## Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+## Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+## Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+## Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+## Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+## Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+## Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+## Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+## Chain 2: 
+## Chain 2:  Elapsed Time: 0.838799 seconds (Warm-up)
+## Chain 2:                0.420336 seconds (Sampling)
+## Chain 2:                1.25913 seconds (Total)
+## Chain 2: 
+## 
+## SAMPLING FOR MODEL '7265478c2830b64f974d417e806380e0' NOW (CHAIN 3).
+## Chain 3: 
+## Chain 3: Gradient evaluation took 1e-05 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.1 seconds.
+## Chain 3: Adjust your expectations accordingly!
+## Chain 3: 
+## Chain 3: 
+## Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+## Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+## Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+## Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+## Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+## Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+## Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+## Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+## Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+## Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+## Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+## Chain 3: 
+## Chain 3:  Elapsed Time: 0.675773 seconds (Warm-up)
+## Chain 3:                0.561806 seconds (Sampling)
+## Chain 3:                1.23758 seconds (Total)
+## Chain 3: 
+## 
+## SAMPLING FOR MODEL '7265478c2830b64f974d417e806380e0' NOW (CHAIN 4).
+## Chain 4: 
+## Chain 4: Gradient evaluation took 1e-05 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.1 seconds.
+## Chain 4: Adjust your expectations accordingly!
+## Chain 4: 
+## Chain 4: 
+## Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+## Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+## Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+## Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+## Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+## Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+## Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+## Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+## Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+## Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+## Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+## Chain 4: 
+## Chain 4:  Elapsed Time: 0.856922 seconds (Warm-up)
+## Chain 4:                0.502992 seconds (Sampling)
+## Chain 4:                1.35991 seconds (Total)
+## Chain 4:
+```
+
+
+---
+
+```r
+summary(imp.2)
+```
+
+```
+##  Family: MV(gaussian, gaussian) 
+##   Links: mu = identity; sigma = identity
+##          mu = identity; sigma = identity 
+## Formula: bmi | mi() ~ age * mi(chl) 
+##          chl | mi() ~ age 
+##    Data: nhanes (Number of observations: 25) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## bmi_Intercept    13.89      8.98    -4.63    31.18 1.00     1806     2332
+## chl_Intercept   142.05     24.62    94.83   190.45 1.00     2748     2401
+## bmi_age           2.64      5.63    -8.28    14.53 1.00     1627     2251
+## chl_age          28.48     13.11     2.53    54.09 1.00     2673     2573
+## bmi_michl         0.10      0.05     0.01     0.19 1.00     1824     2350
+## bmi_michl:age    -0.03      0.03    -0.08     0.02 1.00     1636     2223
+## 
+## Family Specific Parameters: 
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma_bmi     3.35      0.76     2.23     5.17 1.00     1433     2554
+## sigma_chl    40.10      7.67    28.08    57.82 1.00     2359     2605
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+---
+### pro v con
+
+Pros: Can use multilevel structure and complex non-linear relationships for the imputation of missing values, which is not achieved as easily in standard multiple imputation software
+
+Cons: cannot impute discrete values within brms/Stan
+
+---
+
+
+```r
+posterior_summary(imp.2)
+```
+
+```
+##                        Estimate   Est.Error          Q2.5         Q97.5
+## b_bmi_Intercept     13.89167061  8.98228901 -4.626180e+00   31.18384469
+## b_chl_Intercept    142.04827093 24.61644641  9.483119e+01  190.45120107
+## b_bmi_age            2.64430952  5.62534554 -8.275042e+00   14.53132477
+## b_chl_age           28.47511154 13.10543595  2.528329e+00   54.09222721
+## bsp_bmi_michl        0.09834657  0.04653474  7.037218e-03    0.19021482
+## bsp_bmi_michl:age   -0.02991149  0.02549007 -8.355402e-02    0.01758573
+## sigma_bmi            3.35482997  0.75905081  2.227966e+00    5.17393099
+## sigma_chl           40.09549959  7.67111167  2.808123e+01   57.82398035
+## Ymi_bmi[1]          28.14366753  4.76274459  1.893400e+01   37.65251181
+## Ymi_bmi[3]          29.33231679  3.71877268  2.197022e+01   36.75811178
+## Ymi_bmi[4]          23.83291301  4.16871109  1.561718e+01   32.10473546
+## Ymi_bmi[6]          23.38482373  4.18729469  1.502611e+01   32.04172586
+## Ymi_bmi[10]         26.89400362  4.08661726  1.851898e+01   34.97536872
+## Ymi_bmi[11]         28.19411170  4.91615568  1.845984e+01   37.98853860
+## Ymi_bmi[12]         26.84183547  4.09621382  1.872918e+01   34.86224029
+## Ymi_bmi[16]         28.20417227  4.84149888  1.844790e+01   38.10420651
+## Ymi_bmi[21]         28.12933438  4.88845169  1.805308e+01   37.54989752
+## Ymi_chl[1]         170.37453667 42.90398826  8.703153e+01  255.32340749
+## Ymi_chl[4]         227.17465958 43.64519920  1.417680e+02  312.49885003
+## Ymi_chl[10]        199.61390320 43.70774219  1.141914e+02  281.96425253
+## Ymi_chl[11]        170.69965000 42.77070277  8.683787e+01  257.99021083
+## Ymi_chl[12]        199.75556675 42.12183969  1.194236e+02  280.80085870
+## Ymi_chl[15]        178.37311802 32.47853948  1.137576e+02  244.56030366
+## Ymi_chl[16]        170.49113326 42.07406229  8.603621e+01  255.14601559
+## Ymi_chl[20]        229.66688323 41.51211205  1.473912e+02  310.11761262
+## Ymi_chl[21]        170.37398013 43.86647259  8.388710e+01  254.93243907
+## Ymi_chl[24]        228.97395408 41.22534453  1.429583e+02  309.59430810
+## lp__              -203.10242061  5.12727297 -2.143959e+02 -194.17132768
+```
+
+---
+
+
+```r
+imp.2 %&gt;% 
+  spread_draws(Ymi_chl[ID]) 
+```
+
+```
+## # A tibble: 40,000 × 5
+## # Groups:   ID [10]
+##       ID Ymi_chl .chain .iteration .draw
+##    &lt;int&gt;   &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;
+##  1     1    217.      1          1     1
+##  2     1    209.      1          2     2
+##  3     1    184.      1          3     3
+##  4     1    171.      1          4     4
+##  5     1    238.      1          5     5
+##  6     1    205.      1          6     6
+##  7     1    126.      1          7     7
+##  8     1    181.      1          8     8
+##  9     1    199.      1          9     9
+## 10     1    206.      1         10    10
+## # … with 39,990 more rows
+```
+
+4000* * 10 (missing for chl) = 40,000
+---
+
+.pull-left[
+
+```r
+imp.2 %&gt;% 
+  spread_draws(Ymi_chl[ID]) %&gt;% 
+  ggplot(aes(x = Ymi_chl, 
+             y = reorder(ID, Ymi_chl))) +
+  stat_slab(fill = "black", alpha = 3/4, height = 1.6, slab_color = "black", slab_size = 1/4) +
+  labs(x = "Chl imputed values", y = "IDs") +
+  theme_ggdist()
+```
+]
+
+.pull-right[
+
+![](multi-9_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
+
+
+]
+
+---
+
+![](multi-9_files/figure-html/unnamed-chunk-85-1.png)&lt;!-- --&gt;
+
+
+---
+## Semester review
+
+Three goals: 
+1. Understand Bayesian estimation
+2. Better understanding of linear models
+3. To use brms and tidybayes to explore the posterior
+
+---
+## "Bayesian analysis is just counting"
+
+MCMC is just counting the ways that your data are consistent with different parameter values. Parameter values that are more consistent with your data will emerge more in the posterior samples. 
+
+---
+## "Bayesian inference is reallocation of credibility across parameter values"
+
+A `prior` distribution can be thought of as previous counts/parameters. We merely update this distribution through the collection of new data. 
+
+Regardless of whether the prior is made up, reflects past results, or the result of 1 data point in our new sample, each posterior we have can then be used as a prior for a new analysis. This is `bayesian updating` where you can always improve your model. 
+
+No deep distinction between prior and posterior
+
+---
+## Bayesian models are generative
+
+Generative models allow one to `generate` new data. Most of the linear models you have been working with are descriptive, and do not incorporate all of the components needed to generate the same data. SR talks about these as pushing data forward and backwards. Forwards to get parameters, and backwards to simulate data. We do this push and pull when we want to evaluate models. 
+
+---
+## Model statements
+
+We now have a language to describe a full generative model. Even for a simple regression we now are able to describe all components that lead to the generation of the data. The spread of your DV, sigma, plays a large role of this but is usually not even examined, let alone modeled with standard frequentest frameworks
+
+P_Height_i ~ Normal( `\(\mu_i\)` , `\(\sigma\)` )  
+`\(\mu_i\)` = `\(\beta_0\)` + `\(\beta_1\)` ( `\(\text{C_Height}_i\)` - `\({\overline{\mbox{C_Height}}}\)` ) 
+`\(\beta_0\)` ~ Normal(68, 5)
+`\(\beta_1\)` ~ Normal(0, 5)  
+`\(\sigma\)`  ~ HalfCauchy(0,1)
+
+---
+## Propogation of uncertainty
+
+One of the key components of Bayesian (and generative modeling) is that we include all of the uncertainty in our estimates. With standard frequentist we do not, as we use our best guess (the regression line) and sigma -- and do not incorporate uncertainty in the estimation of our parameter.
+
+Uncertainty estimates baked into the model also allow for easy calculation of credible intervals/bands. Just count up the samples to calculate. Within frequentist you have to use equations that make assumptions about data distribution and/or bootstrap.  
+
+---
+## Linear models all the way down (and up)
+
+Anova, logistic, etc are all parts of the glm. If you learn the glm you can model anything. 
+
+
+
+
+
+
+---
+## brms
+
+Analysis options change all the time. brms (and tidyverse) make the transition to bayesian models easier. But it doesn't have to be this way. ~40 Bayesian packages within R, Stan (within R or not), Python (Stan, PyMC), julia (Turing), etc, etc. 
+
+---
+## Terms
+
+Prior, Likelihood, Posterior. 
+Grid estimation, Credible Interval, Highest Posterior Density Interval, MAP, Posterior Predictive Distribution, prior predictive distribution, fitted values/predicted values, index variables, maximum entropy, loo, waic, Rope, zero-inflated models, ordinal regression models, monotonic regression models, hyperprior, shrinkage, MrP, multivariate and distributional models. 
+
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

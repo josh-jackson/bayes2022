@@ -10,7 +10,7 @@ output: html_document
 [cog and irt](/Lectures/irt.html)
 
 ## 9. Multivariate and distributional models
-[Multivariate and distributional](/Lectures/multi.html)
+[Multivariate and distributional](/Lectures/multi-9.html)
 
 ## 8. MLM
 [MLM](/Lectures/mlm-8.html)

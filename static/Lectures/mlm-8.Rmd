@@ -2096,7 +2096,7 @@ summary(mlm.6)
 
 ---
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
 partially_pooled_params3 <-
   coef(mlm.6)$ID [ , 1, 1:2] %>%
   as_tibble(rownames = "ID") 
