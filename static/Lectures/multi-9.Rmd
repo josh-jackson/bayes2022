@@ -1,7 +1,7 @@
 ---
 title: "grabbag"
 author: Josh Jackson
-date: "12-10-20"
+date: "12-10-22"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -126,7 +126,7 @@ mv.1 %>%
 
 Structural equation modeling (SEM) is the most popular way to handle multiple DVs. SEM is also known as covariance structure analysis, which really means unstandardized correlations. We can fit some simple SEM models using brms! 
 
-Also, SEM is really regression but a broader form. Also SEM can be equivalent to MLM in many respects. 
+Also, SEM is really regression but a broader form. Also SEM can be equivalent to MLM in many respects.  
 
 
 ---
@@ -201,7 +201,7 @@ summary(mv.1cr)
 
 ---
 
-```{r}
+```{r, echo = FALSE, warning = FALSE}
 library(patchwork)
 g1 <- mv.1c %>% 
   spread_draws(rescor__CON__DAN) %>% 
@@ -960,14 +960,14 @@ spread_draws(b_sigma_Intercept,r_record_id__sigma[ID, term]) %>%
 ```{r, eval = FALSE}
 
 fits2 <- newd %>%
-  add_fitted_draws(melsm.2)
+  add_epred_draws(melsm.2)
 
 preds2 <- newd %>%
   add_predicted_draws(melsm.2)
 
 fits2 %>% 
 ggplot(aes(x = day01, y = N_A.std)) +
-  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(aes(y = .epred),.width = c(.95), alpha = 1/4, color ="grey") +
   stat_lineribbon(data = preds2, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
   geom_point(data = newd) +
   facet_wrap(~record_id)
@@ -978,14 +978,14 @@ ggplot(aes(x = day01, y = N_A.std)) +
 ```{r, echo = FALSE}
 
 fits2 <- newd %>%
-  add_fitted_draws(melsm.2)
+  add_epred_draws(melsm.2)
 
 preds2 <- newd %>%
   add_predicted_draws(melsm.2)
 
 fits2 %>% 
 ggplot(aes(x = day01, y = N_A.std)) +
-  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(aes(y = .epred),.width = c(.95), alpha = 1/4, color ="grey") +
   stat_lineribbon(data = preds2, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
   geom_point(data = newd) +
   facet_wrap(~record_id)
@@ -1032,14 +1032,14 @@ summary(melsm.3)
 ```{r, eval = FALSE}
 
 fits3 <- newd %>%
-  add_fitted_draws(melsm.3)
+  add_epred_draws(melsm.3)
 
 preds3 <- newd %>%
   add_predicted_draws(melsm.3)
 
 fits3 %>% 
 ggplot(aes(x = day01, y = N_A.std)) +
-  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(aes(y = .epred),.width = c(.95), alpha = 1/4, color ="grey") +
   stat_lineribbon(data = preds3, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
   geom_point(data = newd) +
   facet_wrap(~record_id)
@@ -1051,14 +1051,14 @@ ggplot(aes(x = day01, y = N_A.std)) +
 ```{r, echo = FALSE}
 
 fits3 <- newd %>%
-  add_fitted_draws(melsm.3)
+  add_epred_draws(melsm.3)
 
 preds3 <- newd %>%
   add_predicted_draws(melsm.3)
 
 fits3 %>% 
 ggplot(aes(x = day01, y = N_A.std)) +
-  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(aes(y = .epred),.width = c(.95), alpha = 1/4, color ="grey") +
   stat_lineribbon(data = preds3, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
   geom_point(data = newd) +
   facet_wrap(~record_id)
