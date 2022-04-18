@@ -752,7 +752,7 @@ mlm %>%
 
 .pull-right[
 
-```{r, eval = FALSE}
+```{r, echo = FALSE}
 mlm %>% 
   data_grid(group = group) %>% 
   add_predicted_draws(d.1a) %>% 

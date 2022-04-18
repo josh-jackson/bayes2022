@@ -718,24 +718,24 @@ summary(mult.Ys)
 ## 
 ## Population-Level Effects: 
 ##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     8748     2583
-## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00     8982     3081
-## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00     9035     3198
-## M_Intercept      0.03      0.03    -0.03     0.09 1.00     9845     2770
-## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     6528     3361
-## Y1_M             0.05      0.03    -0.01     0.11 1.00     6763     3155
-## Y2_X             0.05      0.04    -0.01     0.13 1.00     6194     3330
-## Y2_M             0.53      0.03     0.47     0.59 1.00     7018     3387
-## Y3_X             1.03      0.04     0.96     1.10 1.00     6249     3517
-## Y3_M             1.06      0.03     1.00     1.12 1.00     6638     3322
-## M_X              0.53      0.03     0.46     0.59 1.00     7915     3066
+## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     8094     3090
+## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00     7704     2773
+## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00     6933     2524
+## M_Intercept      0.03      0.03    -0.04     0.09 1.00     7206     2831
+## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     6328     3203
+## Y1_M             0.05      0.03    -0.01     0.11 1.00     5797     3489
+## Y2_X             0.05      0.04    -0.02     0.12 1.00     5739     3334
+## Y2_M             0.53      0.03     0.47     0.59 1.00     5903     3450
+## Y3_X             1.03      0.04     0.96     1.10 1.00     6518     2956
+## Y3_M             1.06      0.03     1.00     1.12 1.00     7256     3336
+## M_X              0.53      0.03     0.46     0.59 1.00    10384     3114
 ## 
 ## Family Specific Parameters: 
 ##          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma_Y1     0.98      0.02     0.93     1.02 1.00     8633     2865
-## sigma_Y2     0.97      0.02     0.93     1.02 1.00     8356     2770
-## sigma_Y3     1.00      0.02     0.96     1.05 1.00     9116     2679
-## sigma_M      1.00      0.02     0.95     1.05 1.00     9500     3028
+## sigma_Y1     0.98      0.02     0.93     1.02 1.00     7154     2791
+## sigma_Y2     0.97      0.02     0.93     1.02 1.00     9507     3171
+## sigma_Y3     1.00      0.02     0.96     1.05 1.00     7827     2874
+## sigma_M      1.00      0.02     0.96     1.04 1.00     8477     2631
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -995,14 +995,7 @@ mlm %&gt;%
 
 .pull-right[
 
-
-```r
-mlm %&gt;% 
-  data_grid(group = group) %&gt;% 
-  add_predicted_draws(d.1a) %&gt;% 
-  ggplot(aes(x = .prediction, group =  fct_rev(group), fill = fct_rev(group))) +
-  stat_halfeye(alpha = .6)
-```
+![](multi-9_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1107,6 +1100,10 @@ melsm %&gt;%
 .pull-right[
 
 ```
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
 ## geom_path: Each group consists of only one observation. Do you need to adjust
 ## the group aesthetic?
 ## geom_path: Each group consists of only one observation. Do you need to adjust
