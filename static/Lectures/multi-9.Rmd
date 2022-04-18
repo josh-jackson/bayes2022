@@ -709,8 +709,8 @@ d.1a %>%
 ```
 
 ---
-
-```{r}
+.pull-left[
+```{r, eval = FALSE}
 d.1a %>% 
   gather_draws(b_sigma_groupCTRL, b_sigma_groupPD) %>% 
   mutate(value = exp(.value)) %>% 
@@ -718,9 +718,49 @@ d.1a %>%
   stat_halfeye(alpha = .7)
 ```
 
+]
+
+
+.pull-right[
+```{r, echo = FALSE}
+d.1a %>% 
+  gather_draws(b_sigma_groupCTRL, b_sigma_groupPD) %>% 
+  mutate(value = exp(.value)) %>% 
+  ggplot(aes(x = value, group = .variable,  fill = .variable)) +
+  stat_halfeye(alpha = .7)
+```
+
+]
+
+
 ---
 But these are estimates of the parameter, not variances per se. Can we have a plot that includes variances and means? 
 
+
+
+---
+
+.pull-left[
+```{r, eval = FALSE}
+mlm %>% 
+  data_grid(group = group) %>% 
+  add_predicted_draws(d.1a) %>% 
+  ggplot(aes(x = .prediction, group =  fct_rev(group), fill = fct_rev(group))) +
+  stat_halfeye(alpha = .6)
+```
+]
+
+.pull-right[
+
+```{r, eval = FALSE}
+mlm %>% 
+  data_grid(group = group) %>% 
+  add_predicted_draws(d.1a) %>% 
+  ggplot(aes(x = .prediction, group =  fct_rev(group), fill = fct_rev(group))) +
+  stat_halfeye(alpha = .6)
+```
+
+]
 
 
 
@@ -781,7 +821,7 @@ Participant level
 ```{r, eval = FALSE}
 melsm %>% 
   nest(data = c(P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd, N_A.std, day01)) %>% 
-  slice_sample(n = 16) %>% 
+  slice_sample(n = 12) %>% 
   unnest(data) %>% 
   ggplot(aes(x = day, y = N_A.lag)) +
   geom_line(color = "black") +
@@ -847,14 +887,14 @@ newd <-
   select(record_id, N_A.std, day01)
 
 fits <- newd %>%
-  add_fitted_draws(melsm.1)
+  add_epred_draws(melsm.1)
 
 preds <- newd %>%
   add_predicted_draws(melsm.1)
 
 fits %>% 
 ggplot(aes(x = day01, y = N_A.std)) +
-  stat_lineribbon(aes(y = .value),.width = c(.95), alpha = 1/4, color ="grey") +
+  stat_lineribbon(aes(y = .epred),.width = c(.95), alpha = 1/4, color ="grey") +
   stat_lineribbon(data = preds, aes(y = .prediction),.width = c(.90), alpha = 1/4, color ="blue") +
   geom_point(data = newd) +
   facet_wrap(~record_id)

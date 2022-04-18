@@ -718,24 +718,24 @@ summary(mult.Ys)
 ## 
 ## Population-Level Effects: 
 ##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     8771     2699
-## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00     7309     2921
-## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00     7290     3140
-## M_Intercept      0.02      0.03    -0.04     0.09 1.00     7933     3138
-## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     5312     3090
-## Y1_M             0.05      0.03    -0.01     0.11 1.00     5856     2941
-## Y2_X             0.05      0.04    -0.02     0.13 1.00     5264     3388
-## Y2_M             0.53      0.03     0.47     0.59 1.00     5213     3297
-## Y3_X             1.03      0.04     0.96     1.10 1.00     6046     3338
-## Y3_M             1.06      0.03     1.00     1.12 1.00     5577     3648
-## M_X              0.53      0.03     0.46     0.59 1.00     8246     2869
+## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     8748     2583
+## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00     8982     3081
+## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00     9035     3198
+## M_Intercept      0.03      0.03    -0.03     0.09 1.00     9845     2770
+## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     6528     3361
+## Y1_M             0.05      0.03    -0.01     0.11 1.00     6763     3155
+## Y2_X             0.05      0.04    -0.01     0.13 1.00     6194     3330
+## Y2_M             0.53      0.03     0.47     0.59 1.00     7018     3387
+## Y3_X             1.03      0.04     0.96     1.10 1.00     6249     3517
+## Y3_M             1.06      0.03     1.00     1.12 1.00     6638     3322
+## M_X              0.53      0.03     0.46     0.59 1.00     7915     3066
 ## 
 ## Family Specific Parameters: 
 ##          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma_Y1     0.98      0.02     0.93     1.02 1.00     7463     3104
-## sigma_Y2     0.97      0.02     0.93     1.02 1.00     7571     3170
-## sigma_Y3     1.00      0.02     0.96     1.05 1.00     8116     3131
-## sigma_M      1.00      0.02     0.96     1.04 1.00     8005     2860
+## sigma_Y1     0.98      0.02     0.93     1.02 1.00     8633     2865
+## sigma_Y2     0.97      0.02     0.93     1.02 1.00     8356     2770
+## sigma_Y3     1.00      0.02     0.96     1.05 1.00     9116     2679
+## sigma_M      1.00      0.02     0.95     1.05 1.00     9500     3028
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -956,7 +956,7 @@ d.1a %&gt;%
 ![](multi-9_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
 
 ---
-
+.pull-left[
 
 ```r
 d.1a %&gt;% 
@@ -966,11 +966,45 @@ d.1a %&gt;%
   stat_halfeye(alpha = .7)
 ```
 
-![](multi-9_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
+]
+
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
+
+]
+
 
 ---
 But these are estimates of the parameter, not variances per se. Can we have a plot that includes variances and means? 
 
+
+
+---
+
+.pull-left[
+
+```r
+mlm %&gt;% 
+  data_grid(group = group) %&gt;% 
+  add_predicted_draws(d.1a) %&gt;% 
+  ggplot(aes(x = .prediction, group =  fct_rev(group), fill = fct_rev(group))) +
+  stat_halfeye(alpha = .6)
+```
+]
+
+.pull-right[
+
+
+```r
+mlm %&gt;% 
+  data_grid(group = group) %&gt;% 
+  add_predicted_draws(d.1a) %&gt;% 
+  ggplot(aes(x = .prediction, group =  fct_rev(group), fill = fct_rev(group))) +
+  stat_halfeye(alpha = .6)
+```
+
+]
 
 
 
@@ -1047,7 +1081,7 @@ melsm %&gt;%
 
 .pull-right[
 
-![](multi-9_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
 
 
 ]
@@ -1060,7 +1094,7 @@ Participant level
 ```r
 melsm %&gt;% 
   nest(data = c(P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd, N_A.std, day01)) %&gt;% 
-  slice_sample(n = 16) %&gt;% 
+  slice_sample(n = 12) %&gt;% 
   unnest(data) %&gt;% 
   ggplot(aes(x = day, y = N_A.lag)) +
   geom_line(color = "black") +
@@ -1103,7 +1137,7 @@ melsm %&gt;%
 ## the group aesthetic?
 ```
 
-![](multi-9_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -1176,16 +1210,7 @@ Posterior predictive interval is the same (and fitted) even though it seem inapp
 ]
 
 .pull-right[
-
-```
-## Warning: `fitted_draws` and `add_fitted_draws` are deprecated as their names were confusing.
-## Use [add_]epred_draws() to get the expectation of the posterior predictive.
-## Use [add_]linpred_draws() to get the distribution of the linear predictor.
-## For example, you used [add_]fitted_draws(..., scale = "response"), which
-## means you most likely want [add_]epred_draws(...).
-```
-
-![](multi-9_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -1344,7 +1369,7 @@ spread_draws(b_sigma_Intercept,r_record_id__sigma[ID, term]) %&gt;%
 ]
 
 .pull-right[
-![](multi-9_files/figure-html/unnamed-chunk-62-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1367,7 +1392,7 @@ ggplot(aes(x = day01, y = N_A.std)) +
 
 ]
 
-![](multi-9_files/figure-html/unnamed-chunk-64-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
 
 
 
@@ -1474,7 +1499,7 @@ ggplot(aes(x = day01, y = N_A.std)) +
 ]
 
 .pull-right[
-![](multi-9_files/figure-html/unnamed-chunk-68-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-71-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -1784,7 +1809,7 @@ summary(imp.1)
 plot(imp.1)
 ```
 
-![](multi-9_files/figure-html/unnamed-chunk-78-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-81-1.png)&lt;!-- --&gt;
 
 ---
 ## bayesian imputation within brms
@@ -1925,14 +1950,14 @@ imp.2 %&gt;%
 
 .pull-right[
 
-![](multi-9_files/figure-html/unnamed-chunk-84-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-87-1.png)&lt;!-- --&gt;
 
 
 ]
 
 ---
 
-![](multi-9_files/figure-html/unnamed-chunk-85-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-88-1.png)&lt;!-- --&gt;
 
 
 ---
