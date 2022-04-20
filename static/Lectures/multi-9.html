@@ -691,6 +691,34 @@ mult.Ys &lt;-
 ```
 
 ```
+## Trying to compile a simple C file
+```
+
+```
+## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+## clang -arch arm64 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/Rcpp/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/unsupported"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/src/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppParallel/include/"  -I"/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DBOOST_NO_AUTO_PTR  -include '/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include   -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:88:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:1: error: unknown type name 'namespace'
+## namespace Eigen {
+## ^
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:628:16: error: expected ';' after top level declarator
+## namespace Eigen {
+##                ^
+##                ;
+## In file included from &lt;built-in&gt;:1:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/Eigen.hpp:13:
+## In file included from /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+## /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/RcppEigen/include/Eigen/Core:96:10: fatal error: 'complex' file not found
+## #include &lt;complex&gt;
+##          ^~~~~~~~~
+## 3 errors generated.
+## make: *** [foo.o] Error 1
+```
+
+```
 ## Start sampling
 ```
 
@@ -718,24 +746,24 @@ summary(mult.Ys)
 ## 
 ## Population-Level Effects: 
 ##              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     8094     3090
-## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00     7704     2773
-## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00     6933     2524
-## M_Intercept      0.03      0.03    -0.04     0.09 1.00     7206     2831
-## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     6328     3203
-## Y1_M             0.05      0.03    -0.01     0.11 1.00     5797     3489
-## Y2_X             0.05      0.04    -0.02     0.12 1.00     5739     3334
-## Y2_M             0.53      0.03     0.47     0.59 1.00     5903     3450
-## Y3_X             1.03      0.04     0.96     1.10 1.00     6518     2956
-## Y3_M             1.06      0.03     1.00     1.12 1.00     7256     3336
-## M_X              0.53      0.03     0.46     0.59 1.00    10384     3114
+## Y1_Intercept     0.01      0.03    -0.05     0.07 1.00     8328     3290
+## Y2_Intercept     0.00      0.03    -0.06     0.06 1.00    10068     3036
+## Y3_Intercept    -0.01      0.03    -0.07     0.05 1.00     8073     3035
+## M_Intercept      0.03      0.03    -0.04     0.09 1.00     8247     2700
+## Y1_X            -1.05      0.04    -1.12    -0.98 1.00     6138     2993
+## Y1_M             0.05      0.03    -0.01     0.11 1.00     6129     3183
+## Y2_X             0.05      0.04    -0.01     0.12 1.00     6504     3312
+## Y2_M             0.53      0.03     0.47     0.59 1.00     6790     3363
+## Y3_X             1.03      0.04     0.96     1.10 1.00     6420     3370
+## Y3_M             1.06      0.03     1.00     1.12 1.00     6398     3420
+## M_X              0.53      0.03     0.46     0.59 1.00     7651     2913
 ## 
 ## Family Specific Parameters: 
 ##          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma_Y1     0.98      0.02     0.93     1.02 1.00     7154     2791
-## sigma_Y2     0.97      0.02     0.93     1.02 1.00     9507     3171
-## sigma_Y3     1.00      0.02     0.96     1.05 1.00     7827     2874
-## sigma_M      1.00      0.02     0.96     1.04 1.00     8477     2631
+## sigma_Y1     0.98      0.02     0.93     1.02 1.00     8964     2673
+## sigma_Y2     0.97      0.02     0.93     1.02 1.00     8830     2915
+## sigma_Y3     1.00      0.02     0.96     1.05 1.00     9098     2977
+## sigma_M      1.00      0.02     0.96     1.05 1.00     8423     2943
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -1007,41 +1035,14 @@ mlm %&gt;%
 Mixed effects location scale model 
 
 ```r
-library(readr)
-melsm &lt;- read_csv("melsm.csv") %&gt;% 
-  mutate(day01 = (day - 2) / max((day - 2)))
-```
+melsm &lt;- read.csv("~/Library/CloudStorage/Box-Box/Bayesian Statistics/bayes22/static/Lectures/melsm.csv")
 
-```
-## New names:
-## Rows: 13033 Columns: 9
-## ── Column specification
-## ──────────────────────────────────────────────────────── Delimiter: "," dbl
-## (9): ...1, P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd, record_i...
-## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
-## Specify the column types or set `show_col_types = FALSE` to quiet this message.
-## • `` -&gt; `...1`
+melsm &lt;- melsm %&gt;% 
+  mutate(day01 = (day - 2) / max((day - 2)))
 ```
 ]
 
 .pull-right[
-
-```r
-head(melsm)
-```
-
-```
-## # A tibble: 6 × 10
-##    ...1 P_A.std   day P_A.lag N_A.lag steps.pm steps.pmd record_id N_A.std
-##   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
-## 1     2   1.75      2   0.748   0.254    0.955     0.600         1 -0.734 
-## 2     3  -0.231     3   1.47   -0.854    0.955    -0.395         1  0.539 
-## 3     4   0.342     4  -0.377   0.961    0.955    -1.52          1  0.602 
-## 4     5   0.457     5   0.129  -0.196    0.955    -1.34          1  0.278 
-## 5     6  -0.235     6   0.329  -0.160    0.955     0.418         1  0.547 
-## 6     7   1.13      7   1.41   -0.904    0.955    -0.323         1  0.0566
-## # … with 1 more variable: day01 &lt;dbl&gt;
-```
 
 
 ```r
@@ -1051,10 +1052,8 @@ distinct(record_id) %&gt;%
 ```
 
 ```
-## # A tibble: 1 × 1
-##       n
-##   &lt;int&gt;
-## 1   193
+##     n
+## 1 193
 ```
 ]
 
@@ -1074,7 +1073,7 @@ melsm %&gt;%
 
 .pull-right[
 
-![](multi-9_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-53-1.png)&lt;!-- --&gt;
 
 
 ]
@@ -1085,8 +1084,10 @@ Participant level
 .pull-left[
 
 ```r
+set.seed(16)
 melsm %&gt;% 
-  nest(data = c(P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd, N_A.std, day01)) %&gt;% 
+  ungroup() %&gt;% 
+  nest(data = !record_id) %&gt;% 
   slice_sample(n = 12) %&gt;% 
   unnest(data) %&gt;% 
   ggplot(aes(x = day, y = N_A.lag)) +
@@ -1098,43 +1099,7 @@ melsm %&gt;%
 ]
 
 .pull-right[
-
-```
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-```
-
-![](multi-9_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -1198,6 +1163,436 @@ summary(melsm.1)
 ```
 
 ---
+We have to be careful with plotting MLMs
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), .model= melsm) 
+```
+
+```
+## # A tibble: 20 × 9
+##     day01 P_A.std   day P_A.lag N_A.lag steps.pm steps.pmd record_id N_A.std
+##     &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;int&gt;   &lt;dbl&gt;
+##  1 0       0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  2 0.0526  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  3 0.105   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  4 0.158   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  5 0.211   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  6 0.263   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  7 0.316   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  8 0.368   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  9 0.421   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 10 0.474   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 11 0.526   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 12 0.579   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 13 0.632   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 14 0.684   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 15 0.737   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 16 0.789   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 17 0.842   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 18 0.895   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 19 0.947   0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 20 1       0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+```
+
+---
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), .model= melsm) %&gt;% 
+  add_epred_draws(melsm.1 )
+```
+
+```
+## # A tibble: 160,000 × 14
+## # Groups:   day01, P_A.std, day, P_A.lag, N_A.lag, steps.pm, steps.pmd,
+## #   record_id, N_A.std, .row [20]
+##    day01 P_A.std   day P_A.lag N_A.lag steps.pm steps.pmd record_id N_A.std
+##    &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;int&gt;   &lt;dbl&gt;
+##  1     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  2     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  3     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  4     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  5     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  6     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  7     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  8     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+##  9     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## 10     0  0.0141    41  0.0239  -0.418   0.0480 -0.000672        96  -0.351
+## # … with 159,990 more rows, and 5 more variables: .row &lt;int&gt;, .chain &lt;int&gt;,
+## #   .iteration &lt;int&gt;, .draw &lt;int&gt;, .epred &lt;dbl&gt;
+```
+
+---
+If we do not care about random effects, specify re_formula = NA
+
+```r
+fixed.slope&lt;- melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20)) %&gt;% 
+  add_epred_draws(melsm.1, re_formula = NA )
+  fixed.slope
+```
+
+```
+## # A tibble: 160,000 × 6
+## # Groups:   day01, .row [20]
+##    day01  .row .chain .iteration .draw   .epred
+##    &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;
+##  1     0     1     NA         NA     1  0.0416 
+##  2     0     1     NA         NA     2  0.0672 
+##  3     0     1     NA         NA     3  0.0616 
+##  4     0     1     NA         NA     4  0.0401 
+##  5     0     1     NA         NA     5  0.0478 
+##  6     0     1     NA         NA     6 -0.00325
+##  7     0     1     NA         NA     7  0.0225 
+##  8     0     1     NA         NA     8 -0.00109
+##  9     0     1     NA         NA     9 -0.0337 
+## 10     0     1     NA         NA    10  0.0304 
+## # … with 159,990 more rows
+```
+
+---
+If we want random effects we need to specify the variable to get ALL levels. 
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) 
+```
+
+```
+## # A tibble: 3,860 × 2
+##    day01 record_id
+##    &lt;dbl&gt;     &lt;int&gt;
+##  1     0         1
+##  2     0         2
+##  3     0         3
+##  4     0         4
+##  5     0         5
+##  6     0         6
+##  7     0         7
+##  8     0         8
+##  9     0         9
+## 10     0        10
+## # … with 3,850 more rows
+```
+193 people * 20 = 3860
+
+---
+Then we need to state re_forumla = NULL (which is the default)
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) %&gt;% 
+  add_epred_draws(melsm.1, re_formula = NULL )
+```
+
+```
+## # A tibble: 30,880,000 × 7
+## # Groups:   day01, record_id, .row [3,860]
+##    day01 record_id  .row .chain .iteration .draw  .epred
+##    &lt;dbl&gt;     &lt;int&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;
+##  1     0         1     1     NA         NA     1 -0.144 
+##  2     0         1     1     NA         NA     2  0.302 
+##  3     0         1     1     NA         NA     3  0.0147
+##  4     0         1     1     NA         NA     4  0.319 
+##  5     0         1     1     NA         NA     5  0.0305
+##  6     0         1     1     NA         NA     6  0.158 
+##  7     0         1     1     NA         NA     7  0.183 
+##  8     0         1     1     NA         NA     8  0.113 
+##  9     0         1     1     NA         NA     9 -0.0389
+## 10     0         1     1     NA         NA    10  0.264 
+## # … with 30,879,990 more rows
+```
+
+---
+
+re_formula formula helps us focus on either the average trajectory (gammas) or the group specific (person Us). If NULL (default), include all group-level effects; if NA, include no group-level effects.
+
+ 160,000 = 20 (different values of X we chose) x 8000 iterations (2k x 4 chains)
+ 30,880,000 = 20* 8000 iterations * 193 people in our dataset
+
+---
+
+
+```r
+ melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) %&gt;% 
+  add_epred_draws(melsm.1, re_formula = NA) %&gt;% 
+  ggplot()+
+  aes(x = day01, y = .epred) +
+  stat_lineribbon(.width = 0.95, alpha = .5)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
+
+```r
+fixed.slope 
+```
+
+```
+## # A tibble: 160,000 × 6
+## # Groups:   day01, .row [20]
+##    day01  .row .chain .iteration .draw   .epred
+##    &lt;dbl&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;
+##  1     0     1     NA         NA     1  0.0416 
+##  2     0     1     NA         NA     2  0.0672 
+##  3     0     1     NA         NA     3  0.0616 
+##  4     0     1     NA         NA     4  0.0401 
+##  5     0     1     NA         NA     5  0.0478 
+##  6     0     1     NA         NA     6 -0.00325
+##  7     0     1     NA         NA     7  0.0225 
+##  8     0     1     NA         NA     8 -0.00109
+##  9     0     1     NA         NA     9 -0.0337 
+## 10     0     1     NA         NA    10  0.0304 
+## # … with 159,990 more rows
+```
+
+---
+
+
+```r
+## https://www.tjmahr.com/sample-n-groups/
+sample_n_of &lt;- function(data, size, ...) {
+  dots &lt;- quos(...)
+  group_ids &lt;- data %&gt;% 
+    group_by(!!! dots) %&gt;% 
+    group_indices()
+  sampled_groups &lt;- sample(unique(group_ids), size)
+  data %&gt;% 
+    filter(group_ids %in% sampled_groups)
+}
+
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) %&gt;% 
+    sample_n_of(5,record_id) %&gt;% 
+  add_epred_draws(melsm.1, re_formula = NULL) %&gt;% 
+  ggplot(aes(x = day01)) +
+  stat_lineribbon(aes(y = .epred, group = record_id))
+
+##Note that this below won't work
+  geom_line(aes(y = .epred, group = levels(record_id)))
+```
+
+
+---
+
+![](multi-9_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
+
+```
+## mapping: y = ~.epred, group = ~levels(record_id) 
+## geom_line: na.rm = FALSE, orientation = NA
+## stat_identity: na.rm = FALSE
+## position_identity
+```
+
+---
+
+![](multi-9_files/figure-html/unnamed-chunk-66-1.png)&lt;!-- --&gt;
+
+
+---
+
+.pull-left[
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) %&gt;% 
+    sample_n_of(50,record_id) %&gt;% 
+  add_epred_draws(melsm.1, re_formula = NULL) %&gt;% 
+  ggplot(aes(x = day01)) +
+  stat_lineribbon(aes(y = .epred, group = record_id, color = record_id), .width = 0, show.legend = F, alpha = .4)
+```
+]
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-68-1.png)&lt;!-- --&gt;
+]
+
+---
+
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) %&gt;% 
+    sample_n_of(50,record_id) %&gt;% 
+  add_epred_draws(melsm.1, re_formula = NULL) %&gt;% 
+  ggplot(aes(x = day01)) +
+  stat_lineribbon(aes(y = .epred, group = record_id, color = record_id), .width = 0, show.legend = F, alpha = .4) + 
+  stat_lineribbon(data = fixed.slope, aes(x = day01, y = .epred), show.legend = F, alpha = .5)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-69-1.png)&lt;!-- --&gt;
+
+
+---
+What about interactions? 
+
+
+```r
+melsm.1i &lt;-
+  brm(family = gaussian,
+      N_A.std ~ 1 + day01+ P_A.std*steps.pm + (1 + day01 | record_id),
+      prior = c(prior(normal(0, 0.2), class = Intercept),
+                prior(normal(0, 1), class = b),
+                prior(exponential(1), class = sd),
+                prior(exponential(1), class = sigma),
+                prior(lkj(2), class = cor)),
+      iter = 3000, warmup = 1000, chains = 4, cores = 4,
+      data = melsm,
+      file = "melsm.1i")
+```
+
+---
+
+
+```r
+summary(melsm.1i)
+```
+
+```
+##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: N_A.std ~ 1 + day01 + P_A.std * steps.pm + (1 + day01 | record_id) 
+##    Data: melsm (Number of observations: 13033) 
+##   Draws: 4 chains, each with iter = 3000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 8000
+## 
+## Group-Level Effects: 
+## ~record_id (Number of levels: 193) 
+##                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(Intercept)            0.77      0.04     0.70     0.86 1.00     1288
+## sd(day01)                0.65      0.04     0.56     0.74 1.00     3169
+## cor(Intercept,day01)    -0.34      0.08    -0.49    -0.19 1.00     2868
+##                      Tail_ESS
+## sd(Intercept)            3019
+## sd(day01)                4538
+## cor(Intercept,day01)     4486
+## 
+## Population-Level Effects: 
+##                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept            0.03      0.05    -0.07     0.14 1.01      749     1314
+## day01               -0.17      0.06    -0.28    -0.06 1.00     2123     4000
+## P_A.std             -0.05      0.01    -0.07    -0.03 1.00    13667     6849
+## steps.pm            -0.02      0.08    -0.18     0.15 1.00      872     1743
+## P_A.std:steps.pm     0.02      0.02    -0.01     0.05 1.00    15161     6017
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     0.61      0.00     0.60     0.62 1.00    18032     5819
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).
+```
+
+
+---
+
+
+```r
+library(psych)
+```
+
+```
+## 
+## Attaching package: 'psych'
+```
+
+```
+## The following object is masked from 'package:brms':
+## 
+##     cs
+```
+
+```
+## The following objects are masked from 'package:ggplot2':
+## 
+##     %+%, alpha
+```
+
+```r
+describe(melsm$steps.pm)
+```
+
+```
+##    vars     n mean   sd median trimmed  mad   min  max range skew kurtosis   se
+## X1    1 13033 0.05 0.63   0.05    0.04 0.54 -1.41 2.48   3.9 0.39     1.19 0.01
+```
+
+
+
+```r
+ melsm %&gt;% 
+  data_grid(steps.pm = seq_range(steps.pm, n = 5), P_A.std = c(-1,0,1), day01 = .5, .model = melsm)
+```
+
+```
+## # A tibble: 15 × 9
+##    steps.pm P_A.std day01   day P_A.lag N_A.lag steps.pmd record_id N_A.std
+##       &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;     &lt;int&gt;   &lt;dbl&gt;
+##  1   -1.41       -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  2   -1.41        0   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  3   -1.41        1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  4   -0.441      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  5   -0.441       0   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  6   -0.441       1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  7    0.533      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  8    0.533       0   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  9    0.533       1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 10    1.51       -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 11    1.51        0   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 12    1.51        1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 13    2.48       -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 14    2.48        0   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 15    2.48        1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+```
+5 * 3 = 15 rows
+---
+
+
+```r
+ melsm %&gt;% 
+  data_grid(steps.pm = seq_range(steps.pm, n = 5), P_A.std = c(-1,0,1), day01 = .5, .model = melsm) %&gt;% 
+  add_epred_draws(melsm.1i, re_formula = NA) 
+```
+
+```
+## # A tibble: 120,000 × 14
+## # Groups:   steps.pm, P_A.std, day01, day, P_A.lag, N_A.lag, steps.pmd,
+## #   record_id, N_A.std, .row [15]
+##    steps.pm P_A.std day01   day P_A.lag N_A.lag steps.pmd record_id N_A.std
+##       &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;     &lt;int&gt;   &lt;dbl&gt;
+##  1    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  2    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  3    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  4    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  5    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  6    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  7    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  8    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+##  9    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## 10    -1.41      -1   0.5    41  0.0239  -0.418 -0.000672        96  -0.351
+## # … with 119,990 more rows, and 5 more variables: .row &lt;int&gt;, .chain &lt;int&gt;,
+## #   .iteration &lt;int&gt;, .draw &lt;int&gt;, .epred &lt;dbl&gt;
+```
+12 * 8000 samples = 120,000 rows
+
+
+---
+
+```r
+ melsm %&gt;% 
+  data_grid(steps.pm = seq_range(steps.pm, n = 5), P_A.std = c(-1,0,1), day01 = .5, .model = melsm) %&gt;% 
+  add_epred_draws(melsm.1i, re_formula = NA) %&gt;% 
+  ggplot( aes(x = steps.pm, y = N_A.std)) +
+  stat_lineribbon(aes(y = .epred, group = P_A.std, color = P_A.std),  .width = 0, show.legend = F) 
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-75-1.png)&lt;!-- --&gt;
+
+
+---
 ## MLM assumptions
 
 .pull-left[
@@ -1207,7 +1602,7 @@ Posterior predictive interval is the same (and fitted) even though it seem inapp
 ]
 
 .pull-right[
-![](multi-9_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-76-1.png)&lt;!-- --&gt;
 ]
 
 
@@ -1233,7 +1628,7 @@ $$ \sigma_0,\dots, \sigma_2 \sim \operatorname{Exponential}(1) $$
 ---
 
 note: 1) brms default is to use log-link when modeling sigma
-2) |i| syntax within the parentheses allow for correlated random effects. Without this, the random intercept and slope would not correlated with the random sigma term, effectively setting the correlation equal to zero 
+2) |i| syntax within the parentheses allow for correlated random effects. Without this, the random intercept and slope would not be correlated with the random sigma term, effectively setting the correlation equal to zero 
 
 ```r
 melsm.2 &lt;-
@@ -1315,6 +1710,21 @@ melsm.2 %&gt;%
 ## 1             0.458  0.413  0.507   0.95 median qi
 ```
 
+
+```r
+melsm.2 %&gt;% 
+  spread_draws(b_day01) %&gt;% 
+  median_qi()
+```
+
+```
+## # A tibble: 1 × 6
+##   b_day01 .lower  .upper .width .point .interval
+##     &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1  -0.157 -0.265 -0.0564   0.95 median qi
+```
+
+
 ---
 
 
@@ -1366,7 +1776,7 @@ spread_draws(b_sigma_Intercept,r_record_id__sigma[ID, term]) %&gt;%
 ]
 
 .pull-right[
-![](multi-9_files/figure-html/unnamed-chunk-65-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-83-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -1389,7 +1799,7 @@ ggplot(aes(x = day01, y = N_A.std)) +
 
 ]
 
-![](multi-9_files/figure-html/unnamed-chunk-67-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-85-1.png)&lt;!-- --&gt;
 
 
 
@@ -1474,6 +1884,203 @@ summary(melsm.3)
 
 ]
 
+
+---
+
+
+```r
+melsm.3 %&gt;% 
+  gather_draws(b_sigma_Intercept, b_sigma_day01) %&gt;% 
+  median_qi()
+```
+
+```
+## # A tibble: 2 × 7
+##   .variable         .value .lower  .upper .width .point .interval
+##   &lt;chr&gt;              &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 b_sigma_day01     -0.106 -0.184 -0.0297   0.95 median qi       
+## 2 b_sigma_Intercept -0.753 -0.854 -0.654    0.95 median qi
+```
+
+---
+
+```r
+melsm.3 %&gt;% 
+  spread_draws(b_sigma_Intercept) %&gt;% 
+  mutate(sigma_day0 = exp(b_sigma_Intercept)) %&gt;% 
+  select(sigma_day0) %&gt;% 
+  median_qi()
+```
+
+```
+## # A tibble: 1 × 6
+##   sigma_day0 .lower .upper .width .point .interval
+##        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1      0.471  0.426  0.520   0.95 median qi
+```
+
+
+```r
+melsm.3 %&gt;% 
+  spread_draws(b_sigma_Intercept, b_sigma_day01) %&gt;% 
+  mutate(sigma_day1 = exp(b_sigma_Intercept + b_sigma_day01)) %&gt;% 
+  select(sigma_day1) %&gt;% 
+  median_qi()
+```
+
+```
+## # A tibble: 1 × 6
+##   sigma_day1 .lower .upper .width .point .interval
+##        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1      0.424  0.379  0.473   0.95 median qi
+```
+
+---
+
+
+```r
+ melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), .model = melsm) %&gt;% 
+  add_epred_draws(melsm.3, re_formula = NA, dpar = T) %&gt;% 
+  ungroup() %&gt;% 
+  select(day01, .epred, sigma)
+```
+
+```
+## # A tibble: 160,000 × 3
+##    day01   .epred sigma
+##    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+##  1     0  0.0322  0.447
+##  2     0  0.0902  0.468
+##  3     0  0.0608  0.461
+##  4     0  0.0583  0.459
+##  5     0  0.0526  0.457
+##  6     0  0.0422  0.456
+##  7     0  0.0336  0.464
+##  8     0  0.0138  0.450
+##  9     0  0.00629 0.446
+## 10     0 -0.0208  0.429
+## # … with 159,990 more rows
+```
+20 * 8000 = 160000
+
+---
+
+
+```r
+melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), .model = melsm) %&gt;% 
+  add_epred_draws(melsm.3, re_formula = NA, dpar = T) %&gt;% 
+  ungroup() %&gt;% 
+  select(day01, .epred, sigma) %&gt;% 
+  ggplot()+
+  aes(x = day01, y = sigma) +
+  stat_lineribbon(.width = 0.95, alpha = .5)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-92-1.png)&lt;!-- --&gt;
+
+
+---
+
+
+```r
+ melsm %&gt;% 
+  data_grid(day01 = seq_range(day01, n = 20), record_id) %&gt;% 
+  add_linpred_draws(melsm.3, re_formula = NA, dpar = T) %&gt;% 
+  ggplot()+
+  aes(x = day01, y = sigma) +
+  stat_lineribbon(.width = 0.95, alpha = .5)
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-93-1.png)&lt;!-- --&gt;
+
+
+---
+Lets look at random effects. Remember we fit a random effect for both the intercept and the slope (time)
+
+```r
+melsm.3 %&gt;% 
+spread_draws(r_record_id__sigma[ID, term]) %&gt;% 
+  mutate(r_record_id__sigma = exp(r_record_id__sigma)) 
+```
+
+```
+## # A tibble: 3,088,000 × 6
+## # Groups:   ID, term [386]
+##       ID term  r_record_id__sigma .chain .iteration .draw
+##    &lt;int&gt; &lt;chr&gt;              &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt; &lt;int&gt;
+##  1     1 day01              1.44       1          1     1
+##  2     1 day01              1.03       1          2     2
+##  3     1 day01              1.86       1          3     3
+##  4     1 day01              0.848      1          4     4
+##  5     1 day01              0.863      1          5     5
+##  6     1 day01              0.935      1          6     6
+##  7     1 day01              1.18       1          7     7
+##  8     1 day01              1.06       1          8     8
+##  9     1 day01              1.54       1          9     9
+## 10     1 day01              1.46       1         10    10
+## # … with 3,087,990 more rows
+```
+193 * 8000 *2
+
+---
+
+```r
+melsm.3 %&gt;% 
+spread_draws(r_record_id__sigma[ID, term]) %&gt;% 
+  mutate(r_record_id__sigma = exp(r_record_id__sigma)) %&gt;% 
+   median_qi(estimate = r_record_id__sigma) 
+```
+
+```
+## # A tibble: 386 × 8
+##       ID term      estimate .lower .upper .width .point .interval
+##    &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+##  1     1 day01        1.19   0.828  1.75    0.95 median qi       
+##  2     1 Intercept    1.41   1.10   1.84    0.95 median qi       
+##  3     2 day01        1.56   1.04   2.37    0.95 median qi       
+##  4     2 Intercept    0.238  0.180  0.320   0.95 median qi       
+##  5     3 day01        0.831  0.561  1.24    0.95 median qi       
+##  6     3 Intercept    1.32   1.03   1.74    0.95 median qi       
+##  7     4 day01        0.970  0.635  1.52    0.95 median qi       
+##  8     4 Intercept    1.90   1.46   2.54    0.95 median qi       
+##  9     5 day01        1.14   0.634  2.09    0.95 median qi       
+## 10     5 Intercept    0.435  0.300  0.682   0.95 median qi       
+## # … with 376 more rows
+```
+
+---
+
+.pull-left[
+
+```r
+melsm.3 %&gt;% 
+spread_draws(r_record_id__sigma[ID, term]) %&gt;% 
+  mutate(r_record_id__sigma = exp(r_record_id__sigma)) %&gt;% 
+   median_qi(estimate = r_record_id__sigma) %&gt;% 
+  filter(term == "Intercept") %&gt;% 
+  ggplot(aes(x = reorder(ID, estimate), y = estimate, ymin = .lower, ymax = .upper)) +
+   geom_pointinterval(point_colour = "black", interval_color = "grey", point_alpha = .25) + scale_x_discrete("Participants ranked by posterior SD", breaks = NULL) + ylab("sigma estimate") + theme_light()
+```
+]
+
+.pull-right[
+![](multi-9_files/figure-html/unnamed-chunk-97-1.png)&lt;!-- --&gt;
+
+]
+
+---
+
+
+![](multi-9_files/figure-html/unnamed-chunk-98-1.png)&lt;!-- --&gt;
+
+
+---
+When on the log scale you can more easily see some people are less than average where some are more than average in terms of sigma
+![](multi-9_files/figure-html/unnamed-chunk-99-1.png)&lt;!-- --&gt;
+
+
 ---
 
 .pull-left[
@@ -1496,9 +2103,22 @@ ggplot(aes(x = day01, y = N_A.std)) +
 ]
 
 .pull-right[
-![](multi-9_files/figure-html/unnamed-chunk-71-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-101-1.png)&lt;!-- --&gt;
 
 ]
+
+
+---
+
+
+```
+## Warning: Removed 1149 rows containing missing values (stat_slabinterval).
+```
+
+![](multi-9_files/figure-html/unnamed-chunk-102-1.png)&lt;!-- --&gt;
+
+
+---
 
 
 
@@ -1806,7 +2426,7 @@ summary(imp.1)
 plot(imp.1)
 ```
 
-![](multi-9_files/figure-html/unnamed-chunk-81-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-112-1.png)&lt;!-- --&gt;
 
 ---
 ## bayesian imputation within brms
@@ -1947,14 +2567,14 @@ imp.2 %&gt;%
 
 .pull-right[
 
-![](multi-9_files/figure-html/unnamed-chunk-87-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-118-1.png)&lt;!-- --&gt;
 
 
 ]
 
 ---
 
-![](multi-9_files/figure-html/unnamed-chunk-88-1.png)&lt;!-- --&gt;
+![](multi-9_files/figure-html/unnamed-chunk-119-1.png)&lt;!-- --&gt;
 
 
 ---
